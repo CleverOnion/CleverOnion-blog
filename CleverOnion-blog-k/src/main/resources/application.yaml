@@ -1,0 +1,44 @@
+ktor:
+  application:
+    modules:
+      - com.cleveronion.ApplicationKt.module
+  deployment:
+    port: 8080
+    host: 0.0.0.0
+
+database:
+  url: "jdbc:postgresql://pgm-bp169mgqz2i5772lwo.rwlb.rds.aliyuncs.com:5432/blog"
+  driver: "org.postgresql.Driver"
+  user: "blog_dev"
+  password: "Shicong666"
+  maxPoolSize: 10
+  minPoolSize: 2
+
+oauth2:
+  github:
+    clientId: "${GITHUB_CLIENT_ID:your_github_client_id}"
+    clientSecret: "${GITHUB_CLIENT_SECRET:your_github_client_secret}"
+    redirectUri: "http://localhost:8080/auth/github/callback"
+    scope: "user:email"
+
+jwt:
+  secret: "${JWT_SECRET:your_jwt_secret_key_here}"
+  issuer: "cleveronion-blog"
+  audience: "cleveronion-blog-users"
+  expirationTime: 3600000 # 1小时
+  refreshExpirationTime: 604800000 # 7天
+
+app:
+  environment: "development"
+  baseUrl: "http://localhost:8080"
+
+# 阿里云OSS配置
+oss:
+  endpoint: "${OSS_ENDPOINT:oss-cn-hangzhou.aliyuncs.com}"
+  accessKeyId: "${OSS_ACCESS_KEY_ID:your_access_key_id}"
+  accessKeySecret: "${OSS_ACCESS_KEY_SECRET:your_access_key_secret}"
+  bucketName: "${OSS_BUCKET_NAME:your_bucket_name}"
+  # 文件上传配置
+  maxFileSize: 10485760 # 10MB
+  allowedExtensions: ["jpg", "jpeg", "png", "gif", "webp"]
+  urlPrefix: "${OSS_URL_PREFIX:https://your_bucket_name.oss-cn-hangzhou.aliyuncs.com}"
