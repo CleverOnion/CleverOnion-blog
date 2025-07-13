@@ -8,6 +8,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'FZDaHei';
+  src: url('./assets/fonts/FZDaHei-B02S.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
@@ -33,6 +41,7 @@
   
   --font-family-sans: Inter, system-ui, sans-serif;
   --font-family-ubuntu: 'Ubuntu', sans-serif;
+  --font-family-fzdahei: 'FZDaHei', sans-serif;
 }
 
 :root {
