@@ -60,6 +60,15 @@ body {
   box-sizing: border-box;
 }
 
+/* 全局文字选中颜色 */
+::selection {
+  background-color: rgb(52, 215, 188);
+}
+
+::-moz-selection {
+  background-color: rgb(52, 215, 188);
+}
+
 /* 自定义样式 */
 .prose {
   max-width: none;
