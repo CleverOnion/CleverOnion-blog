@@ -4,12 +4,12 @@ import Header from './Header';
 
 const Layout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+    <div className="min-h-screen">
+      {/* Header - 透明固定在顶部 */}
       <Header />
 
       {/* 主要内容区域 */}
-      <main className="py-8">
+      <main>
         <Outlet />
       </main>
 
