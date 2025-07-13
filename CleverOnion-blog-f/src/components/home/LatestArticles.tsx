@@ -18,69 +18,59 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({ articles = [] }) => {
   const mockArticles: Article[] = [
     {
       id: 1,
-      title: "React 18 新特性详解",
-      excerpt: "深入了解 React 18 带来的并发特性和性能优化...",
+      title: "Partial Keyframes",
+      excerpt: "Creating dynamic, composable CSS keyframe animations",
       author: "张三",
       publishedAt: "2024-01-15",
-      tags: ["React", "前端"]
+      tags: ["CSS", "Animation"]
     },
     {
       id: 2,
-      title: "TypeScript 高级类型应用",
-      excerpt: "探索 TypeScript 中的高级类型系统和实际应用场景...",
+      title: "The Height Enigma",
+      excerpt: "Unraveling the mystery of percentage-based heights in CSS",
       author: "李四",
       publishedAt: "2024-01-14",
-      tags: ["TypeScript", "编程"]
+      tags: ["CSS", "Layout"]
     },
     {
       id: 3,
-      title: "Node.js 性能优化实践",
-      excerpt: "分享 Node.js 应用性能优化的最佳实践和工具...",
+      title: "Advanced React Patterns",
+      excerpt: "Exploring compound components and render props patterns",
       author: "王五",
       publishedAt: "2024-01-13",
-      tags: ["Node.js", "后端"]
+      tags: ["React", "Patterns"]
     }
   ];
 
   const displayArticles = articles.length > 0 ? articles : mockArticles;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">最新文章</h2>
+    <div className="space-y-8">
+      <div className="text-center mb-12">
+        <p className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-2">LATEST ARTICLES</p>
+      </div>
       
-      <div className="space-y-4">
+      <div className="space-y-12">
         {displayArticles.map((article) => (
-          <article key={article.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">
-              {article.title}
-            </h3>
-            
-            <p className="text-gray-600 mb-4 line-clamp-2">
-              {article.excerpt}
-            </p>
-            
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <div className="flex items-center space-x-4">
-                <span>作者: {article.author}</span>
-                <span>{article.publishedAt}</span>
-              </div>
-              
-              <div className="flex space-x-2">
-                {article.tags.map((tag) => (
-                  <span key={tag} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+          <article key={article.id} className="max-w-4xl mx-auto">
+            <div className="mb-6">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                {article.title}
+              </h2>
+              <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+                {article.excerpt}
+              </p>
+              <p className="text-gray-700 text-lg leading-relaxed mb-8">
+                CSS Keyframe animations are so much more powerful than most developers realize. 
+                In this tutorial, I'll show you something that completely blew my mind, a technique 
+                that makes our keyframe animations so much more reusable and dynamic! 🤯
+              </p>
+              <button className="text-gray-900 font-semibold text-lg hover:text-gray-700 transition-colors">
+                Read more
+              </button>
             </div>
           </article>
         ))}
-      </div>
-      
-      <div className="text-center">
-        <button className="text-blue-600 hover:text-blue-800 font-medium">
-          查看更多文章 →
-        </button>
       </div>
     </div>
   );
