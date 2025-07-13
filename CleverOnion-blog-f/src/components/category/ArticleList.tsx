@@ -77,99 +77,100 @@ const ArticleList: React.FC<ArticleListProps> = ({ articles, categoryId }) => {
   const displayArticles = articles.length > 0 ? articles : mockArticles;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="text-center mb-12">
+        <p className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-2">
+          {categoryId.toUpperCase()} ARTICLES
+        </p>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
           共找到 {displayArticles.length} 篇文章
         </h2>
-        <p className="text-gray-600">
-          以下是 {categoryId} 分类下的所有文章
+        <p className="text-xl text-gray-600">
+          探索 {categoryId} 分类下的精彩内容
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-12">
         {displayArticles.map((article, index) => (
           <motion.article
             key={article.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
+            className="max-w-4xl mx-auto border-b border-gray-100 pb-12 last:border-b-0"
           >
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <Link 
-                    to={`/article/${article.id}`}
-                    className="block group"
-                  >
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
-                      {article.title}
-                    </h3>
-                  </Link>
-                  <p className="text-gray-600 leading-relaxed mb-4">
-                    {article.excerpt}
-                  </p>
-                </div>
-              </div>
-
+            <div className="mb-6">
+              <Link 
+                to={`/article/${article.id}`}
+                className="block group mb-4"
+              >
+                <h2 className="text-4xl font-bold text-gray-900 mb-4 leading-tight group-hover:text-gray-700 transition-colors duration-200">
+                  {article.title}
+                </h2>
+              </Link>
+              
+              <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+                {article.excerpt}
+              </p>
+              
               {/* 标签 */}
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-3 mb-6">
                 {article.tags.map((tag, tagIndex) => (
                   <span
                     key={tagIndex}
-                    className="inline-block px-3 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-full"
+                    className="inline-block px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors duration-200"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
-
+              
               {/* 文章元信息 */}
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-between text-gray-500 mb-6">
+                <div className="flex items-center space-x-6 text-sm">
                   <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                     </svg>
                     {article.author}
                   </span>
                   <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                     </svg>
                     {article.publishDate}
                   </span>
                   <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                     </svg>
                     {article.readTime}
                   </span>
                   <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                       <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                     </svg>
                     {article.views} 次浏览
                   </span>
                 </div>
-                <Link 
-                  to={`/article/${article.id}`}
-                  className="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
-                >
-                  阅读全文 →
-                </Link>
               </div>
+              
+              <Link 
+                to={`/article/${article.id}`}
+                className="text-gray-900 font-semibold text-lg hover:text-gray-700 transition-colors duration-200"
+              >
+                阅读文章
+              </Link>
             </div>
           </motion.article>
         ))}
       </div>
 
       {/* 分页组件占位 */}
-      <div className="mt-12 flex justify-center">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 px-6 py-4">
-          <p className="text-gray-600 text-center">
+      <div className="mt-16 flex justify-center">
+        <div className="text-center">
+          <p className="text-gray-500 text-lg">
             分页组件将在这里实现
           </p>
         </div>
