@@ -1,61 +1,46 @@
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import CategoryHero from '../components/category/CategoryHero';
+import ArticleList from '../components/category/ArticleList';
+import FloatingCategoryIndicator from '../components/category/FloatingCategoryIndicator';
 
-const Category = () => {
+const Category: React.FC = () => {
   const { categoryId } = useParams();
+  const [showFloatingIndicator, setShowFloatingIndicator] = useState(false);
+
+  // 监听滚动事件
+  useEffect(() => {
+    const handleScroll = () => {
+      // CategoryHero组件的高度是320px (h-80 = 20rem = 320px)
+      const heroHeight = 320;
+      const scrollY = window.scrollY;
+      
+      // 当滚动超过Hero区域时显示悬浮指示器
+      setShowFloatingIndicator(scrollY > heroHeight);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    
+    // 清理事件监听器
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // 这里可以根据categoryId获取对应的文章数据
+  // 目前使用ArticleList组件内的模拟数据
+  const articles = [];
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          分类：{categoryId}
-        </h1>
-        <p className="text-gray-600">浏览该分类下的所有文章</p>
-      </div>
+    <div className="min-h-screen bg-white">
+      {/* Hero区域 */}
+      <CategoryHero />
       
-      {/* 文章列表 */}
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">文章列表</h2>
-          <div className="space-y-4">
-            <div className="border-b pb-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                示例文章标题 1
-              </h3>
-              <p className="text-gray-600 mb-2">
-                这里是文章摘要内容...
-              </p>
-              <div className="flex items-center text-sm text-gray-500">
-                <span>2024-01-01</span>
-                <span className="mx-2">•</span>
-                <span>作者名称</span>
-                <span className="mx-2">•</span>
-                <span>100 次浏览</span>
-              </div>
-            </div>
-            
-            <div className="border-b pb-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                示例文章标题 2
-              </h3>
-              <p className="text-gray-600 mb-2">
-                这里是文章摘要内容...
-              </p>
-              <div className="flex items-center text-sm text-gray-500">
-                <span>2024-01-01</span>
-                <span className="mx-2">•</span>
-                <span>作者名称</span>
-                <span className="mx-2">•</span>
-                <span>100 次浏览</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* 分页 */}
-          <div className="mt-6 flex justify-center">
-            <p className="text-gray-600">分页组件将在这里...</p>
-          </div>
-        </div>
-      </div>
+      {/* 文章列表区域 */}
+      <ArticleList articles={articles} categoryId={categoryId || 'unknown'} />
+      
+      {/* 悬浮分类指示器 */}
+      <FloatingCategoryIndicator isVisible={showFloatingIndicator} />
     </div>
   );
 };
