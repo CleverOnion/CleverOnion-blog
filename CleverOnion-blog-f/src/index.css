@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Ubuntu';
+  src: url('./assets/fonts/Ubuntu-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
@@ -24,6 +32,7 @@
   --color-secondary-900: #831843;
   
   --font-family-sans: Inter, system-ui, sans-serif;
+  --font-family-ubuntu: 'Ubuntu', sans-serif;
 }
 
 :root {
