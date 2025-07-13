@@ -31,6 +31,7 @@ const Navigation: React.FC<NavigationProps> = ({ isMobileMenuOpen, onMobileMenuC
                 ? 'text-blue-600 bg-blue-50' 
                 : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
             }`}
+            style={{ fontFamily: "'FZDaHei', sans-serif" }}
           >
             {item.label}
             {(item.path === '/' ? isActive('/') : location.pathname.startsWith(item.path)) && (
@@ -53,6 +54,7 @@ const Navigation: React.FC<NavigationProps> = ({ isMobileMenuOpen, onMobileMenuC
                     ? 'text-blue-600 bg-blue-50' 
                     : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                 }`}
+                style={{ fontFamily: "'FZDaHei', sans-serif" }}
                 onClick={onMobileMenuClose}
               >
                 {item.label}
