@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
+import avatarImage from '../../assets/header/avatar/avatar.jpg';
 
 const Hero: React.FC = () => {
+  const [isAvatarClicked, setIsAvatarClicked] = useState(false);
+
+  const handleAvatarClick = () => {
+    setIsAvatarClicked(!isAvatarClicked);
+    // 3秒后自动恢复
+    setTimeout(() => setIsAvatarClicked(false), 3000);
+  };
+
   return (
     <section className="relative h-96 bg-gradient-to-b from-sky-300 to-white overflow-hidden">
       {/* 分层云朵背景 - 从下往上的大云朵局部 */}
@@ -58,7 +67,17 @@ const Hero: React.FC = () => {
         </svg>
       </div>
       
-
+      {/* 右下角头像 */}
+      <div className="absolute bottom-8 right-80">
+        <img 
+          src={avatarImage} 
+          alt="Avatar" 
+          onClick={handleAvatarClick}
+          className={`w-50 h-50 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer transition-all duration-700 ease-in-out hover:scale-110 hover:shadow-xl hover:border-blue-300 ${
+               isAvatarClicked ? 'animate-spin scale-110 border-purple-400 shadow-2xl' : ''
+             }`}
+        />
+      </div>
     </section>
   );
 };
