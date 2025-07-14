@@ -17,6 +17,8 @@ import io.ktor.server.routing.*
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 fun Route.authRoutes() {
     val securityConfig = SecurityConfig(application.environment.config)
@@ -66,16 +68,24 @@ fun Route.authRoutes() {
                     
                     when (authResult) {
                         is AuthResult.Success -> {
-                            // 将token信息编码后重定向到前端
+                            // 构造用户数据JSON
+                            val userJson = Json.encodeToString(
+                                kotlinx.serialization.json.buildJsonObject {
+                                    put("id", authResult.user.id)
+                                    put("name", authResult.user.name ?: authResult.user.githubLogin)
+                                    put("email", authResult.user.email ?: "")
+                                    put("avatarUrl", authResult.user.avatarUrl ?: "")
+                                    put("githubLogin", authResult.user.githubLogin)
+                                    put("githubId", authResult.user.githubId)
+                                }
+                            )
+                            
+                            // 将token信息和用户数据编码后重定向到前端
                             val redirectUrl = buildString {
                                 append("http://localhost:5173/auth/callback")
-                                append("?success=true")
-                                append("&access_token=${authResult.accessToken}")
+                                append("?access_token=${authResult.accessToken}")
                                 append("&refresh_token=${authResult.refreshToken}")
-                                append("&expires_in=${securityConfig.jwt.expirationTime}")
-                                append("&user_id=${authResult.user.id}")
-                                append("&user_name=${authResult.user.name ?: authResult.user.githubLogin}")
-                                append("&user_avatar=${authResult.user.avatarUrl}")
+                                append("&user=${java.net.URLEncoder.encode(userJson, "UTF-8")}")
                             }
                             call.respondRedirect(redirectUrl)
                         }
