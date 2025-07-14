@@ -58,20 +58,24 @@ fun Route.articleRoutes() {
                 
                 call.respond(
                     HttpStatusCode.OK,
-                    ArticleListResponse(
-                        articles = articles,
+                    ApiResponse.paginated(
+                        data = articles,
                         pagination = PaginationInfo(
                             currentPage = validPage,
                             pageSize = validPageSize,
                             totalCount = totalCount,
                             totalPages = totalPages.toInt()
-                        )
+                        ),
+                        message = "获取文章列表成功"
                     )
                 )
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("获取文章列表失败: ${e.message}")
+                    ApiResponse.error<PaginatedData<Article>>(
+                        error = "获取文章列表失败",
+                        message = e.message
+                    )
                 )
             }
         }
@@ -85,31 +89,37 @@ fun Route.articleRoutes() {
                 val articleId = call.parameters["id"]?.toLongOrNull()
                     ?: return@get call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse("无效的文章ID")
+                        ApiResponse.error<Article>("无效的文章ID")
                     )
                 
                 val article = articleService.findById(articleId)
                     ?: return@get call.respond(
                         HttpStatusCode.NotFound,
-                        ErrorResponse("文章不存在")
+                        ApiResponse.error<Article>("文章不存在")
                     )
                 
                 // 只有已发布的文章才能被公开访问
                 if (article.status != ArticleStatus.PUBLISHED.name) {
                     return@get call.respond(
                         HttpStatusCode.NotFound,
-                        ErrorResponse("文章不存在")
+                        ApiResponse.error<Article>("文章不存在")
                     )
                 }
                 
                 // 增加浏览量
                 articleService.incrementViewCount(articleId)
                 
-                call.respond(HttpStatusCode.OK, article)
+                call.respond(
+                    HttpStatusCode.OK,
+                    ApiResponse.success(article, "获取文章详情成功")
+                )
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("获取文章详情失败: ${e.message}")
+                    ApiResponse.error<Article>(
+                        error = "获取文章详情失败",
+                        message = e.message
+                    )
                 )
             }
         }
@@ -123,7 +133,7 @@ fun Route.articleRoutes() {
                 val keyword = call.request.queryParameters["keyword"]
                     ?: return@get call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse("搜索关键词不能为空")
+                        ApiResponse.error<SearchData<Article>>("搜索关键词不能为空")
                     )
                 
                 val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
@@ -144,17 +154,22 @@ fun Route.articleRoutes() {
                 
                 call.respond(
                     HttpStatusCode.OK,
-                    SearchResponse(
-                        keyword = keyword,
-                        articles = articles,
-                        page = validPage,
-                        pageSize = validPageSize
+                    ApiResponse.success(
+                        SearchData(
+                            keyword = keyword,
+                            items = articles,
+                            total = articles.size
+                        ),
+                        "搜索完成"
                     )
                 )
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("搜索失败: ${e.message}")
+                    ApiResponse.error<SearchData<Article>>(
+                        error = "搜索失败",
+                        message = e.message
+                    )
                 )
             }
         }
@@ -172,23 +187,32 @@ fun Route.articleRoutes() {
                     val userId = call.getUserId()
                         ?: return@post call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Article>("用户未认证")
                         )
                     
                     val request = call.receive<CreateArticleRequest>()
                     
                     val article = articleService.createArticle(userId, request)
                     
-                    call.respond(HttpStatusCode.Created, article)
+                    call.respond(
+                        HttpStatusCode.Created,
+                        ApiResponse.success(article, "文章创建成功")
+                    )
                 } catch (e: IllegalArgumentException) {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse(e.message ?: "请求参数无效")
+                        ApiResponse.error<Article>(
+                            error = "请求参数无效",
+                            message = e.message
+                        )
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("创建文章失败: ${e.message}")
+                        ApiResponse.error<Article>(
+                            error = "创建文章失败",
+                            message = e.message
+                        )
                     )
                 }
             }
@@ -202,13 +226,13 @@ fun Route.articleRoutes() {
                     val userId = call.getUserId()
                         ?: return@put call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Article>("用户未认证")
                         )
                     
                     val articleId = call.parameters["id"]?.toLongOrNull()
                         ?: return@put call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("无效的文章ID")
+                            ApiResponse.error<Article>("无效的文章ID")
                         )
                     
                     val request = call.receive<UpdateArticleRequest>()
@@ -216,19 +240,28 @@ fun Route.articleRoutes() {
                     val updatedArticle = articleService.updateArticle(articleId, userId, request)
                         ?: return@put call.respond(
                             HttpStatusCode.NotFound,
-                            ErrorResponse("文章不存在或无权限修改")
+                            ApiResponse.error<Article>("文章不存在或无权限修改")
                         )
                     
-                    call.respond(HttpStatusCode.OK, updatedArticle)
+                    call.respond(
+                        HttpStatusCode.OK,
+                        ApiResponse.success(updatedArticle, "文章更新成功")
+                    )
                 } catch (e: IllegalArgumentException) {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse(e.message ?: "请求参数无效")
+                        ApiResponse.error<Article>(
+                            error = "请求参数无效",
+                            message = e.message
+                        )
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("更新文章失败: ${e.message}")
+                        ApiResponse.error<Article>(
+                            error = "更新文章失败",
+                            message = e.message
+                        )
                     )
                 }
             }
@@ -242,13 +275,13 @@ fun Route.articleRoutes() {
                     val userId = call.getUserId()
                         ?: return@delete call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Unit>("用户未认证")
                         )
                     
                     val articleId = call.parameters["id"]?.toLongOrNull()
                         ?: return@delete call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("无效的文章ID")
+                            ApiResponse.error<Unit>("无效的文章ID")
                         )
                     
                     val deleted = articleService.deleteArticle(articleId, userId)
@@ -256,18 +289,21 @@ fun Route.articleRoutes() {
                     if (deleted) {
                         call.respond(
                             HttpStatusCode.OK,
-                            SuccessResponse("文章删除成功")
+                            ApiResponse.success("文章删除成功")
                         )
                     } else {
                         call.respond(
                             HttpStatusCode.NotFound,
-                            ErrorResponse("文章不存在或无权限删除")
+                            ApiResponse.error<Unit>("文章不存在或无权限删除")
                         )
                     }
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("删除文章失败: ${e.message}")
+                        ApiResponse.error<Unit>(
+                            error = "删除文章失败",
+                            message = e.message
+                        )
                     )
                 }
             }
@@ -281,7 +317,7 @@ fun Route.articleRoutes() {
                     val userId = call.getUserId()
                         ?: return@get call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<PaginatedData<Article>>("用户未认证")
                         )
                     
                     val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
@@ -301,7 +337,7 @@ fun Route.articleRoutes() {
                         } catch (e: IllegalArgumentException) {
                             return@get call.respond(
                                 HttpStatusCode.BadRequest,
-                                ErrorResponse("无效的文章状态: $it")
+                                ApiResponse.error<PaginatedData<Article>>("无效的文章状态: $it")
                             )
                         }
                     }
@@ -321,20 +357,21 @@ fun Route.articleRoutes() {
                     
                     call.respond(
                         HttpStatusCode.OK,
-                        ArticleListResponse(
-                            articles = articles,
+                        ApiResponse.paginated(
+                            data = articles,
                             pagination = PaginationInfo(
                                 currentPage = validPage,
                                 pageSize = validPageSize,
                                 totalCount = totalCount,
                                 totalPages = totalPages.toInt()
-                            )
+                            ),
+                            message = "获取我的文章列表成功"
                         )
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("获取文章列表失败: ${e.message}")
+                        ApiResponse.error<PaginatedData<Article>>("获取文章列表失败: ${e.message}")
                     )
                 }
             }
@@ -348,65 +385,37 @@ fun Route.articleRoutes() {
                     val userId = call.getUserId()
                         ?: return@get call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Article>("用户未认证")
                         )
                     
                     val articleId = call.parameters["id"]?.toLongOrNull()
                         ?: return@get call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("无效的文章ID")
+                            ApiResponse.error<Article>("无效的文章ID")
                         )
                     
                     val article = articleService.findById(articleId)
                         ?: return@get call.respond(
                             HttpStatusCode.NotFound,
-                            ErrorResponse("文章不存在")
+                            ApiResponse.error<Article>("文章不存在")
                         )
                     
                     // 只有作者可以预览自己的文章
                     if (article.authorId != userId) {
                         return@get call.respond(
                             HttpStatusCode.Forbidden,
-                            ErrorResponse("无权限访问此文章")
+                            ApiResponse.error<Article>("无权限访问此文章")
                         )
                     }
                     
-                    call.respond(HttpStatusCode.OK, article)
+                    call.respond(HttpStatusCode.OK, ApiResponse.success(article, "获取文章详情成功"))
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("获取文章详情失败: ${e.message}")
+                        ApiResponse.error<Article>("获取文章详情失败: ${e.message}")
                     )
                 }
             }
         }
     }
 }
-
-// ========== 响应数据类 ==========
-
-@Serializable
-data class ArticleListResponse(
-    val articles: List<Article>,
-    val pagination: PaginationInfo
-)
-
-
-
-@Serializable
-data class SearchResponse(
-    val keyword: String,
-    val articles: List<Article>,
-    val page: Int,
-    val pageSize: Int
-)
-
-@Serializable
-data class ErrorResponse(
-    val error: String
-)
-
-@Serializable
-data class SuccessResponse(
-    val message: String
-)

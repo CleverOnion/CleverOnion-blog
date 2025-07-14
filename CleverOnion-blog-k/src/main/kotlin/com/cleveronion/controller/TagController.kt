@@ -45,20 +45,24 @@ fun Route.tagRoutes() {
                 
                 call.respond(
                     HttpStatusCode.OK,
-                    TagListResponse(
-                        tags = tags,
+                    ApiResponse.paginated(
+                        data = tags,
                         pagination = PaginationInfo(
                             currentPage = validPage,
                             pageSize = validPageSize,
                             totalCount = totalCount,
                             totalPages = totalPages.toInt()
-                        )
+                        ),
+                        message = "获取标签列表成功"
                     )
                 )
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("获取标签列表失败: ${e.message}")
+                    ApiResponse.error<PaginatedData<Tag>>(
+                        error = "获取标签列表失败",
+                        message = e.message
+                    )
                 )
             }
         }
@@ -72,20 +76,26 @@ fun Route.tagRoutes() {
                 val tagId = call.parameters["id"]?.toLongOrNull()
                     ?: return@get call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse("无效的标签ID")
+                        ApiResponse.error<Tag>("无效的标签ID")
                     )
                 
                 val tag = tagService.findById(tagId)
                     ?: return@get call.respond(
                         HttpStatusCode.NotFound,
-                        ErrorResponse("标签不存在")
+                        ApiResponse.error<Tag>("标签不存在")
                     )
                 
-                call.respond(HttpStatusCode.OK, tag)
+                call.respond(
+                    HttpStatusCode.OK,
+                    ApiResponse.success(tag, "获取标签详情成功")
+                )
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("获取标签详情失败: ${e.message}")
+                    ApiResponse.error<Tag>(
+                        error = "获取标签详情失败",
+                        message = e.message
+                    )
                 )
             }
         }
@@ -99,7 +109,7 @@ fun Route.tagRoutes() {
                 val keyword = call.request.queryParameters["keyword"]
                     ?: return@get call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse("搜索关键词不能为空")
+                        ApiResponse.error<SearchData<Tag>>("搜索关键词不能为空")
                     )
                 
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
@@ -113,15 +123,22 @@ fun Route.tagRoutes() {
                 
                 call.respond(
                     HttpStatusCode.OK,
-                    TagSearchResponse(
-                        keyword = keyword,
-                        tags = tags
+                    ApiResponse.success(
+                        SearchData(
+                            keyword = keyword,
+                            items = tags,
+                            total = tags.size
+                        ),
+                        "搜索完成"
                     )
                 )
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("搜索标签失败: ${e.message}")
+                    ApiResponse.error<SearchData<Tag>>(
+                        error = "搜索标签失败",
+                        message = e.message
+                    )
                 )
             }
         }
@@ -141,11 +158,17 @@ fun Route.tagRoutes() {
                 
                 val popularTags = tagService.getPopularTags(validLimit)
                 
-                call.respond(HttpStatusCode.OK, popularTags)
+                call.respond(
+                    HttpStatusCode.OK,
+                    ApiResponse.success(popularTags, "获取热门标签成功")
+                )
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("获取热门标签失败: ${e.message}")
+                    ApiResponse.error<List<Tag>>(
+                        error = "获取热门标签失败",
+                        message = e.message
+                    )
                 )
             }
         }
@@ -163,23 +186,32 @@ fun Route.tagRoutes() {
                     val userId = call.getUserId()
                         ?: return@post call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Tag>("用户未认证")
                         )
                     
                     val request = call.receive<CreateTagRequest>()
                     
                     val tag = tagService.createTag(request)
                     
-                    call.respond(HttpStatusCode.Created, tag)
+                    call.respond(
+                        HttpStatusCode.Created,
+                        ApiResponse.success(tag, "标签创建成功")
+                    )
                 } catch (e: IllegalArgumentException) {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse(e.message ?: "请求参数无效")
+                        ApiResponse.error<Tag>(
+                            error = "请求参数无效",
+                            message = e.message
+                        )
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("创建标签失败: ${e.message}")
+                        ApiResponse.error<Tag>(
+                            error = "创建标签失败",
+                            message = e.message
+                        )
                     )
                 }
             }
@@ -193,13 +225,13 @@ fun Route.tagRoutes() {
                     val userId = call.getUserId()
                         ?: return@put call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Tag>("用户未认证")
                         )
                     
                     val tagId = call.parameters["id"]?.toLongOrNull()
                         ?: return@put call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("无效的标签ID")
+                            ApiResponse.error<Tag>("无效的标签ID")
                         )
                     
                     val request = call.receive<UpdateTagRequest>()
@@ -207,19 +239,28 @@ fun Route.tagRoutes() {
                     val updatedTag = tagService.updateTag(tagId, request.name)
                         ?: return@put call.respond(
                             HttpStatusCode.NotFound,
-                            ErrorResponse("标签不存在")
+                            ApiResponse.error<Tag>("标签不存在")
                         )
                     
-                    call.respond(HttpStatusCode.OK, updatedTag)
+                    call.respond(
+                        HttpStatusCode.OK,
+                        ApiResponse.success(updatedTag, "标签更新成功")
+                    )
                 } catch (e: IllegalArgumentException) {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse(e.message ?: "请求参数无效")
+                        ApiResponse.error<Tag>(
+                            error = "请求参数无效",
+                            message = e.message
+                        )
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("更新标签失败: ${e.message}")
+                        ApiResponse.error<Tag>(
+                            error = "更新标签失败",
+                            message = e.message
+                        )
                     )
                 }
             }
@@ -233,13 +274,13 @@ fun Route.tagRoutes() {
                     val userId = call.getUserId()
                         ?: return@delete call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Unit>("用户未认证")
                         )
                     
                     val tagId = call.parameters["id"]?.toLongOrNull()
                         ?: return@delete call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("无效的标签ID")
+                            ApiResponse.error<Unit>("无效的标签ID")
                         )
                     
                     val deleted = tagService.deleteTag(tagId)
@@ -247,18 +288,21 @@ fun Route.tagRoutes() {
                     if (deleted) {
                         call.respond(
                             HttpStatusCode.OK,
-                            SuccessResponse("标签删除成功")
+                            ApiResponse.success("标签删除成功")
                         )
                     } else {
                         call.respond(
                             HttpStatusCode.NotFound,
-                            ErrorResponse("标签不存在")
+                            ApiResponse.error<Unit>("标签不存在")
                         )
                     }
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("删除标签失败: ${e.message}")
+                        ApiResponse.error<Unit>(
+                            error = "删除标签失败",
+                            message = e.message
+                        )
                     )
                 }
             }
@@ -272,7 +316,7 @@ fun Route.tagRoutes() {
                     val userId = call.getUserId()
                         ?: return@post call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<BatchOperationData<Tag>>("用户未认证")
                         )
                     
                     val request = call.receive<BatchCreateTagsRequest>()
@@ -280,14 +324,14 @@ fun Route.tagRoutes() {
                     if (request.names.isEmpty()) {
                         return@post call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("标签名称列表不能为空")
+                            ApiResponse.error<BatchOperationData<Tag>>("标签名称列表不能为空")
                         )
                     }
                     
                     if (request.names.size > 50) {
                         return@post call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("一次最多只能创建50个标签")
+                            ApiResponse.error<BatchOperationData<Tag>>("一次最多只能创建50个标签")
                         )
                     }
                     
@@ -295,15 +339,22 @@ fun Route.tagRoutes() {
                     
                     call.respond(
                         HttpStatusCode.OK,
-                        BatchCreateTagsResponse(
-                            tags = tags,
-                            created = tags.size
+                        ApiResponse.success(
+                            BatchOperationData(
+                                items = tags,
+                                total = tags.size,
+                                success = tags.size
+                            ),
+                            "批量创建标签成功"
                         )
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("批量创建标签失败: ${e.message}")
+                        ApiResponse.error<BatchOperationData<Tag>>(
+                            error = "批量创建标签失败",
+                            message = e.message
+                        )
                     )
                 }
             }
@@ -311,7 +362,7 @@ fun Route.tagRoutes() {
     }
 }
 
-// ========== 请求和响应数据类 ==========
+// ========== 请求数据类 ==========
 
 @Serializable
 data class UpdateTagRequest(
@@ -321,22 +372,4 @@ data class UpdateTagRequest(
 @Serializable
 data class BatchCreateTagsRequest(
     val names: List<String>
-)
-
-@Serializable
-data class TagListResponse(
-    val tags: List<com.cleveronion.service.TagWithCount>,
-    val pagination: PaginationInfo
-)
-
-@Serializable
-data class TagSearchResponse(
-    val keyword: String,
-    val tags: List<Tag>
-)
-
-@Serializable
-data class BatchCreateTagsResponse(
-    val tags: List<Tag>,
-    val created: Int
 )

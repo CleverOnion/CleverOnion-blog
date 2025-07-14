@@ -2,6 +2,8 @@ package com.cleveronion.controller
 
 import com.cleveronion.config.SecurityConfig
 import com.cleveronion.service.*
+import com.cleveronion.domain.entity.ApiResponse
+import com.cleveronion.domain.entity.User
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -55,9 +57,8 @@ fun Route.authRoutes() {
             get("/github/callback") {
                 try {
                     val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()
-                        ?: return@get call.respond(
-                            HttpStatusCode.Unauthorized,
-                            mapOf("error" to "OAuth authentication failed")
+                        ?: return@get call.respondRedirect(
+                            "http://localhost:5173/auth/callback?error=oauth_failed&error_description=OAuth authentication failed"
                         )
                     
                     val accessToken = principal.accessToken
@@ -65,33 +66,33 @@ fun Route.authRoutes() {
                     
                     when (authResult) {
                         is AuthResult.Success -> {
-                            call.respond(
-                                HttpStatusCode.OK,
-                                LoginResponse(
-                                    user = authResult.user,
-                                    accessToken = authResult.accessToken,
-                                    refreshToken = authResult.refreshToken,
-                                    expiresIn = securityConfig.jwt.expirationTime
-                                )
-                            )
+                            // 将token信息编码后重定向到前端
+                            val redirectUrl = buildString {
+                                append("http://localhost:5173/auth/callback")
+                                append("?success=true")
+                                append("&access_token=${authResult.accessToken}")
+                                append("&refresh_token=${authResult.refreshToken}")
+                                append("&expires_in=${securityConfig.jwt.expirationTime}")
+                                append("&user_id=${authResult.user.id}")
+                                append("&user_name=${authResult.user.name ?: authResult.user.githubLogin}")
+                                append("&user_avatar=${authResult.user.avatarUrl}")
+                            }
+                            call.respondRedirect(redirectUrl)
                         }
                         is AuthResult.Error -> {
-                            call.respond(
-                                HttpStatusCode.BadRequest,
-                                mapOf("error" to authResult.message)
+                            call.respondRedirect(
+                                "http://localhost:5173/auth/callback?error=auth_failed&error_description=${authResult.message}"
                             )
                         }
                         null -> {
-                            call.respond(
-                                HttpStatusCode.InternalServerError,
-                                mapOf("error" to "Authentication processing failed")
+                            call.respondRedirect(
+                                "http://localhost:5173/auth/callback?error=processing_failed&error_description=Authentication processing failed"
                             )
                         }
                     }
                 } catch (e: Exception) {
-                    call.respond(
-                        HttpStatusCode.InternalServerError,
-                        mapOf("error" to "Internal server error: ${e.message}")
+                    call.respondRedirect(
+                        "http://localhost:5173/auth/callback?error=server_error&error_description=Internal server error: ${e.message}"
                     )
                 }
             }
@@ -107,29 +108,32 @@ fun Route.authRoutes() {
                     is RefreshResult.Success -> {
                         call.respond(
                             HttpStatusCode.OK,
-                            RefreshTokenResponse(
-                                accessToken = refreshResult.accessToken,
-                                expiresIn = securityConfig.jwt.expirationTime
+                            ApiResponse.success(
+                                RefreshTokenResponse(
+                                    accessToken = refreshResult.accessToken,
+                                    expiresIn = securityConfig.jwt.expirationTime
+                                ),
+                                "Token刷新成功"
                             )
                         )
                     }
                     is RefreshResult.Error -> {
                         call.respond(
                             HttpStatusCode.Unauthorized,
-                            mapOf("error" to refreshResult.message)
+                            ApiResponse.error<RefreshTokenResponse>(refreshResult.message)
                         )
                     }
                     null -> {
                         call.respond(
                             HttpStatusCode.BadRequest,
-                            mapOf("error" to "Invalid refresh token")
+                            ApiResponse.error<RefreshTokenResponse>("无效的刷新令牌")
                         )
                     }
                 }
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "Invalid request format")
+                    ApiResponse.error<RefreshTokenResponse>("请求格式无效")
                 )
             }
         }
@@ -141,18 +145,18 @@ fun Route.authRoutes() {
                     val principal = call.principal<JWTPrincipal>()
                         ?: return@post call.respond(
                             HttpStatusCode.Unauthorized,
-                            mapOf("error" to "Invalid token")
+                            ApiResponse.error<Unit>("无效的令牌")
                         )
                     
                     // 这里可以实现Token黑名单逻辑
                     call.respond(
                         HttpStatusCode.OK,
-                        mapOf("message" to "Logged out successfully")
+                        ApiResponse.success(Unit, "登出成功")
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        mapOf("error" to "Logout failed")
+                        ApiResponse.error<Unit>("登出失败")
                     )
                 }
             }
@@ -165,26 +169,26 @@ fun Route.authRoutes() {
                     val principal = call.principal<JWTPrincipal>()
                         ?: return@get call.respond(
                             HttpStatusCode.Unauthorized,
-                            mapOf("error" to "Invalid token")
+                            ApiResponse.error<User>("无效的令牌")
                         )
                     
                     val userId = principal.payload.subject?.toLongOrNull()
                         ?: return@get call.respond(
                             HttpStatusCode.BadRequest,
-                            mapOf("error" to "Invalid user ID in token")
+                            ApiResponse.error<User>("令牌中的用户ID无效")
                         )
                     
                     val user = userService.findById(userId)
                         ?: return@get call.respond(
                             HttpStatusCode.NotFound,
-                            mapOf("error" to "User not found")
+                            ApiResponse.error<User>("用户不存在")
                         )
                     
-                    call.respond(HttpStatusCode.OK, user)
+                    call.respond(HttpStatusCode.OK, ApiResponse.success(user, "获取用户信息成功"))
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        mapOf("error" to "Failed to get user info")
+                        ApiResponse.error<User>("获取用户信息失败")
                     )
                 }
             }

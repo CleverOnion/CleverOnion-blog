@@ -37,20 +37,21 @@ fun Route.userRoutes() {
                     
                     call.respond(
                         HttpStatusCode.OK,
-                        UserListResponse(
-                            users = users,
+                        ApiResponse.paginated(
+                            data = users,
                             pagination = PaginationInfo(
                                 currentPage = page,
                                 pageSize = validPageSize,
                                 totalCount = totalCount,
                                 totalPages = totalPages.toInt()
-                            )
+                            ),
+                            message = "获取用户列表成功"
                         )
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        mapOf("error" to "Failed to fetch users: ${e.message}")
+                        ApiResponse.error<PaginatedData<com.cleveronion.domain.entity.User>>("获取用户列表失败: ${e.message}")
                     )
                 }
             }
@@ -63,20 +64,20 @@ fun Route.userRoutes() {
                     val userId = call.parameters["id"]?.toLongOrNull()
                         ?: return@get call.respond(
                             HttpStatusCode.BadRequest,
-                            mapOf("error" to "Invalid user ID")
+                            ApiResponse.error<com.cleveronion.domain.entity.User>("无效的用户ID")
                         )
                     
                     val user = userService.findById(userId)
                         ?: return@get call.respond(
                             HttpStatusCode.NotFound,
-                            mapOf("error" to "User not found")
+                            ApiResponse.error<com.cleveronion.domain.entity.User>("用户不存在")
                         )
                     
-                    call.respond(HttpStatusCode.OK, user)
+                    call.respond(HttpStatusCode.OK, ApiResponse.success(user, "获取用户信息成功"))
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        mapOf("error" to "Failed to fetch user: ${e.message}")
+                        ApiResponse.error<com.cleveronion.domain.entity.User>("获取用户信息失败: ${e.message}")
                     )
                 }
             }
@@ -89,13 +90,13 @@ fun Route.userRoutes() {
                     val principal = call.principal<JWTPrincipal>()
                         ?: return@put call.respond(
                             HttpStatusCode.Unauthorized,
-                            mapOf("error" to "Invalid token")
+                            ApiResponse.error<String>("用户未认证")
                         )
                     
                     val currentUserId = principal.getUserId()
                         ?: return@put call.respond(
                             HttpStatusCode.BadRequest,
-                            mapOf("error" to "Invalid user ID in token")
+                            ApiResponse.error<String>("令牌中的用户ID无效")
                         )
                     
                     val updateRequest = call.receive<UpdateUserRequest>()
@@ -104,7 +105,7 @@ fun Route.userRoutes() {
                     val currentUser = userService.findById(currentUserId)
                         ?: return@put call.respond(
                             HttpStatusCode.NotFound,
-                            mapOf("error" to "User not found")
+                            ApiResponse.error<String>("用户不存在")
                         )
                     
                     // 这里可以添加更新用户信息的逻辑
@@ -113,12 +114,12 @@ fun Route.userRoutes() {
                     
                     call.respond(
                         HttpStatusCode.OK,
-                        mapOf("message" to "User profile update feature coming soon")
+                        ApiResponse.success("用户资料更新功能即将推出")
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        mapOf("error" to "Invalid request format")
+                        ApiResponse.error<String>("请求格式无效")
                     )
                 }
             }
@@ -131,26 +132,26 @@ fun Route.userRoutes() {
                     val principal = call.principal<JWTPrincipal>()
                         ?: return@delete call.respond(
                             HttpStatusCode.Unauthorized,
-                            mapOf("error" to "Invalid token")
+                            ApiResponse.error<Unit>("用户未认证")
                         )
                     
                     val currentUserId = principal.getUserId()
                         ?: return@delete call.respond(
                             HttpStatusCode.BadRequest,
-                            mapOf("error" to "Invalid user ID in token")
+                            ApiResponse.error<Unit>("令牌中的用户ID无效")
                         )
                     
                     val targetUserId = call.parameters["id"]?.toLongOrNull()
                         ?: return@delete call.respond(
                             HttpStatusCode.BadRequest,
-                            mapOf("error" to "Invalid user ID")
+                            ApiResponse.error<Unit>("无效的用户ID")
                         )
                     
                     // 防止用户删除自己
                     if (currentUserId == targetUserId) {
                         return@delete call.respond(
                             HttpStatusCode.BadRequest,
-                            mapOf("error" to "Cannot delete your own account")
+                            ApiResponse.error<Unit>("不能删除自己的账户")
                         )
                     }
                     
@@ -161,18 +162,18 @@ fun Route.userRoutes() {
                     if (deleted) {
                         call.respond(
                             HttpStatusCode.OK,
-                            mapOf("message" to "User deleted successfully")
+                            ApiResponse.success("用户删除成功")
                         )
                     } else {
                         call.respond(
                             HttpStatusCode.NotFound,
-                            mapOf("error" to "User not found")
+                            ApiResponse.error<Unit>("用户不存在")
                         )
                     }
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        mapOf("error" to "Failed to delete user: ${e.message}")
+                        ApiResponse.error<Unit>("删除用户失败: ${e.message}")
                     )
                 }
             }
@@ -185,13 +186,13 @@ fun Route.userRoutes() {
                     val query = call.request.queryParameters["q"]
                         ?: return@get call.respond(
                             HttpStatusCode.BadRequest,
-                            mapOf("error" to "Search query is required")
+                            ApiResponse.error<SearchData<com.cleveronion.domain.entity.User>>("搜索关键词不能为空")
                         )
                     
                     if (query.length < 2) {
                         return@get call.respond(
                             HttpStatusCode.BadRequest,
-                            mapOf("error" to "Search query must be at least 2 characters")
+                            ApiResponse.error<SearchData<com.cleveronion.domain.entity.User>>("搜索关键词至少需要2个字符")
                         )
                     }
                     
@@ -199,28 +200,25 @@ fun Route.userRoutes() {
                     // 目前返回空结果
                     call.respond(
                         HttpStatusCode.OK,
-                        mapOf(
-                            "users" to emptyList<Any>(),
-                            "message" to "User search feature coming soon"
+                        ApiResponse.success(
+                            SearchData(
+                                keyword = query,
+                                items = emptyList<com.cleveronion.domain.entity.User>(),
+                                total = 0
+                            ),
+                            "用户搜索功能即将推出"
                         )
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        mapOf("error" to "Search failed: ${e.message}")
+                        ApiResponse.error<SearchData<com.cleveronion.domain.entity.User>>("搜索失败: ${e.message}")
                     )
                 }
             }
         }
     }
 }
-
-@Serializable
-data class UserListResponse(
-    val users: List<com.cleveronion.domain.entity.User>,
-    val pagination: PaginationInfo
-)
-
 
 
 @Serializable

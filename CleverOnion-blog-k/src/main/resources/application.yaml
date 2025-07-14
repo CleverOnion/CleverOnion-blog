@@ -16,8 +16,8 @@ database:
 
 oauth2:
   github:
-    clientId: "${GITHUB_CLIENT_ID:your_github_client_id}"
-    clientSecret: "${GITHUB_CLIENT_SECRET:your_github_client_secret}"
+    clientId: "${GITHUB_CLIENT_ID:Ov23lidYpkQFTdG7UseL}"
+    clientSecret: "${GITHUB_CLIENT_SECRET:ab1bc714224d8425f4aeb0237a225746162b3ca2}"
     redirectUri: "http://localhost:8080/auth/github/callback"
     scope: "user:email"
 

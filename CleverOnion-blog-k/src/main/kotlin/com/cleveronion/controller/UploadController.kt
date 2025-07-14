@@ -71,10 +71,7 @@ fun Route.uploadRoutes() {
                     if (fileInfo == null) {
                         call.respond(
                             HttpStatusCode.BadRequest,
-                            UploadResponse(
-                                success = false,
-                                message = UploadError.NO_FILE_PROVIDED.message
-                            )
+                            ApiResponse.error<UploadData>(UploadError.NO_FILE_PROVIDED.message)
                         )
                         return@post
                     }
@@ -87,30 +84,20 @@ fun Route.uploadRoutes() {
                     // 返回成功响应
                     call.respond(
                         HttpStatusCode.OK,
-                        UploadResponse(
-                            success = true,
-                            message = "图片上传成功",
-                            data = uploadData
-                        )
+                        ApiResponse.success(uploadData, "图片上传成功")
                     )
                     
                 } catch (e: UploadException) {
                     application.log.warn("文件上传失败: ${e.message}")
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        UploadResponse(
-                            success = false,
-                            message = e.message ?: "上传失败"
-                        )
+                        ApiResponse.error<UploadData>(e.message ?: "上传失败")
                     )
                 } catch (e: Exception) {
                     application.log.error("文件上传异常", e)
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        UploadResponse(
-                            success = false,
-                            message = "服务器内部错误"
-                        )
+                        ApiResponse.error<UploadData>("服务器内部错误")
                     )
                 }
             }
@@ -128,10 +115,7 @@ fun Route.uploadRoutes() {
                     if (fileName.isNullOrBlank()) {
                         call.respond(
                             HttpStatusCode.BadRequest,
-                            UploadResponse(
-                                success = false,
-                                message = "文件名不能为空"
-                            )
+                            ApiResponse.error<Unit>("文件名不能为空")
                         )
                         return@delete
                     }
@@ -143,10 +127,7 @@ fun Route.uploadRoutes() {
                     if (!fileUploadService.fileExists(fileName)) {
                         call.respond(
                             HttpStatusCode.NotFound,
-                            UploadResponse(
-                                success = false,
-                                message = "文件不存在"
-                            )
+                            ApiResponse.error<Unit>("文件不存在")
                         )
                         return@delete
                     }
@@ -158,18 +139,12 @@ fun Route.uploadRoutes() {
                         application.log.info("用户 $userId 成功删除图片: $fileName")
                         call.respond(
                             HttpStatusCode.OK,
-                            UploadResponse(
-                                success = true,
-                                message = "文件删除成功"
-                            )
+                            ApiResponse.success(Unit, "文件删除成功")
                         )
                     } else {
                         call.respond(
                             HttpStatusCode.InternalServerError,
-                            UploadResponse(
-                                success = false,
-                                message = "文件删除失败"
-                            )
+                            ApiResponse.error<Unit>("文件删除失败")
                         )
                     }
                     
@@ -177,10 +152,7 @@ fun Route.uploadRoutes() {
                     application.log.error("删除文件异常", e)
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        UploadResponse(
-                            success = false,
-                            message = "服务器内部错误"
-                        )
+                        ApiResponse.error<Unit>("服务器内部错误")
                     )
                 }
             }
@@ -192,13 +164,14 @@ fun Route.uploadRoutes() {
          * 公开接口，返回客户端需要的配置信息
          */
         get("/config") {
+            val configData = mapOf(
+                "maxFileSize" to ossConfig.maxFileSize,
+                "allowedExtensions" to ossConfig.allowedExtensions,
+                "maxFileSizeMB" to ossConfig.maxFileSize / 1024 / 1024
+            )
             call.respond(
                 HttpStatusCode.OK,
-                mapOf(
-                    "maxFileSize" to ossConfig.maxFileSize,
-                    "allowedExtensions" to ossConfig.allowedExtensions,
-                    "maxFileSizeMB" to ossConfig.maxFileSize / 1024 / 1024
-                )
+                ApiResponse.success(configData, "获取上传配置成功")
             )
         }
     }

@@ -1,6 +1,4 @@
 package com.cleveronion.controller
-
-import com.cleveronion.domain.entity.UploadResponse
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
@@ -89,34 +87,7 @@ class UploadControllerTest {
     
     // 以下是一些辅助测试方法，用于验证响应格式
     
-    @Test
-    fun `测试UploadResponse序列化`() {
-        val response = UploadResponse(
-            success = true,
-            message = "上传成功",
-            data = null
-        )
-        
-        val jsonString = json.encodeToString(UploadResponse.serializer(), response)
-        assertTrue(jsonString.contains("success"))
-        assertTrue(jsonString.contains("message"))
-        
-        val deserializedResponse = json.decodeFromString(UploadResponse.serializer(), jsonString)
-        assertEquals(response.success, deserializedResponse.success)
-        assertEquals(response.message, deserializedResponse.message)
-    }
-    
-    @Test
-    fun `测试错误响应格式`() {
-        val errorResponse = UploadResponse(
-            success = false,
-            message = "文件大小超过限制"
-        )
-        
-        assertFalse(errorResponse.success)
-        assertTrue(errorResponse.message.isNotBlank())
-        assertEquals(null, errorResponse.data)
-    }
+    // 注意：UploadResponse已被ApiResponse替代，相关测试已移除
 }
 
 /**

@@ -33,7 +33,7 @@ fun Route.commentRoutes() {
                 val articleId = call.parameters["articleId"]?.toLongOrNull()
                     ?: return@get call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse("无效的文章ID")
+                        ApiResponse.error<PaginatedData<CommentWithReplies>>("无效的文章ID")
                     )
                 
                 val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
@@ -52,25 +52,26 @@ fun Route.commentRoutes() {
                 
                 call.respond(
                     HttpStatusCode.OK,
-                    CommentListResponse(
-                        comments = comments,
+                    ApiResponse.paginated(
+                        data = comments,
                         pagination = PaginationInfo(
                             currentPage = validPage,
                             pageSize = validPageSize,
                             totalCount = totalCount,
                             totalPages = totalPages.toInt()
-                        )
+                        ),
+                        message = "获取评论列表成功"
                     )
                 )
             } catch (e: IllegalArgumentException) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ErrorResponse(e.message ?: "请求参数无效")
+                    ApiResponse.error<PaginatedData<CommentWithReplies>>(e.message ?: "请求参数无效")
                 )
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("获取评论列表失败: ${e.message}")
+                    ApiResponse.error<PaginatedData<CommentWithReplies>>("获取评论列表失败: ${e.message}")
                 )
             }
         }
@@ -84,20 +85,20 @@ fun Route.commentRoutes() {
                 val commentId = call.parameters["id"]?.toLongOrNull()
                     ?: return@get call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse("无效的评论ID")
+                        ApiResponse.error<CommentWithReplies>("无效的评论ID")
                     )
                 
                 val comment = commentService.getCommentById(commentId)
                     ?: return@get call.respond(
                         HttpStatusCode.NotFound,
-                        ErrorResponse("评论不存在")
+                        ApiResponse.error<CommentWithReplies>("评论不存在")
                     )
                 
-                call.respond(HttpStatusCode.OK, comment)
+                call.respond(HttpStatusCode.OK, ApiResponse.success(comment, "获取评论详情成功"))
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("获取评论详情失败: ${e.message}")
+                    ApiResponse.error<CommentWithReplies>("获取评论详情失败: ${e.message}")
                 )
             }
         }
@@ -117,11 +118,11 @@ fun Route.commentRoutes() {
                 
                 val latestComments = commentService.getLatestComments(validLimit)
                 
-                call.respond(HttpStatusCode.OK, latestComments)
+                call.respond(HttpStatusCode.OK, ApiResponse.success(latestComments, "获取最新评论成功"))
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse("获取最新评论失败: ${e.message}")
+                    ApiResponse.error<List<Comment>>("获取最新评论失败: ${e.message}")
                 )
             }
         }
@@ -139,23 +140,23 @@ fun Route.commentRoutes() {
                     val userId = call.getUserId()
                         ?: return@post call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Comment>("用户未认证")
                         )
                     
                     val request = call.receive<CreateCommentRequest>()
                     
                     val comment = commentService.createComment(request, userId)
                     
-                    call.respond(HttpStatusCode.Created, comment)
+                    call.respond(HttpStatusCode.Created, ApiResponse.success(comment, "评论创建成功"))
                 } catch (e: IllegalArgumentException) {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse(e.message ?: "请求参数无效")
+                        ApiResponse.error<Comment>(e.message ?: "请求参数无效")
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("创建评论失败: ${e.message}")
+                        ApiResponse.error<Comment>("创建评论失败: ${e.message}")
                     )
                 }
             }
@@ -169,13 +170,13 @@ fun Route.commentRoutes() {
                     val userId = call.getUserId()
                         ?: return@put call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Comment>("用户未认证")
                         )
                     
                     val commentId = call.parameters["id"]?.toLongOrNull()
                         ?: return@put call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("无效的评论ID")
+                            ApiResponse.error<Comment>("无效的评论ID")
                         )
                     
                     val request = call.receive<UpdateCommentRequest>()
@@ -183,19 +184,19 @@ fun Route.commentRoutes() {
                     val updatedComment = commentService.updateComment(commentId, request.content, userId)
                         ?: return@put call.respond(
                             HttpStatusCode.NotFound,
-                            ErrorResponse("评论不存在或无权限修改")
+                            ApiResponse.error<Comment>("评论不存在或无权限修改")
                         )
                     
-                    call.respond(HttpStatusCode.OK, updatedComment)
+                    call.respond(HttpStatusCode.OK, ApiResponse.success(updatedComment, "评论更新成功"))
                 } catch (e: IllegalArgumentException) {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse(e.message ?: "请求参数无效")
+                        ApiResponse.error<Comment>(e.message ?: "请求参数无效")
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("更新评论失败: ${e.message}")
+                        ApiResponse.error<Comment>("更新评论失败: ${e.message}")
                     )
                 }
             }
@@ -209,13 +210,13 @@ fun Route.commentRoutes() {
                     val userId = call.getUserId()
                         ?: return@delete call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Unit>("用户未认证")
                         )
                     
                     val commentId = call.parameters["id"]?.toLongOrNull()
                         ?: return@delete call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("无效的评论ID")
+                            ApiResponse.error<Unit>("无效的评论ID")
                         )
                     
                     val deleted = commentService.deleteComment(commentId, userId)
@@ -223,18 +224,18 @@ fun Route.commentRoutes() {
                     if (deleted) {
                         call.respond(
                             HttpStatusCode.OK,
-                            SuccessResponse("评论删除成功")
+                            ApiResponse.success("评论删除成功")
                         )
                     } else {
                         call.respond(
                             HttpStatusCode.NotFound,
-                            ErrorResponse("评论不存在或无权限删除")
+                            ApiResponse.error<Unit>("评论不存在或无权限删除")
                         )
                     }
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("删除评论失败: ${e.message}")
+                        ApiResponse.error<Unit>("删除评论失败: ${e.message}")
                     )
                 }
             }
@@ -248,7 +249,7 @@ fun Route.commentRoutes() {
                     val userId = call.getUserId()
                         ?: return@get call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<PaginatedData<Comment>>("用户未认证")
                         )
                     
                     val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
@@ -267,20 +268,21 @@ fun Route.commentRoutes() {
                     
                     call.respond(
                         HttpStatusCode.OK,
-                        UserCommentListResponse(
-                            comments = comments,
+                        ApiResponse.paginated(
+                            data = comments,
                             pagination = PaginationInfo(
                                 currentPage = validPage,
                                 pageSize = validPageSize,
                                 totalCount = totalCount,
                                 totalPages = totalPages.toInt()
-                            )
+                            ),
+                            message = "获取用户评论列表成功"
                         )
                     )
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("获取用户评论列表失败: ${e.message}")
+                        ApiResponse.error<PaginatedData<Comment>>("获取用户评论列表失败: ${e.message}")
                     )
                 }
             }
@@ -295,7 +297,7 @@ fun Route.commentRoutes() {
                     val userId = call.getUserId()
                         ?: return@delete call.respond(
                             HttpStatusCode.Unauthorized,
-                            ErrorResponse("用户未认证")
+                            ApiResponse.error<Unit>("用户未认证")
                         )
                     
                     // TODO: 添加管理员权限验证
@@ -304,7 +306,7 @@ fun Route.commentRoutes() {
                     val commentId = call.parameters["id"]?.toLongOrNull()
                         ?: return@delete call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse("无效的评论ID")
+                            ApiResponse.error<Unit>("无效的评论ID")
                         )
                     
                     val deleted = commentService.adminDeleteComment(commentId)
@@ -312,18 +314,18 @@ fun Route.commentRoutes() {
                     if (deleted) {
                         call.respond(
                             HttpStatusCode.OK,
-                            SuccessResponse("评论删除成功")
+                            ApiResponse.success("评论删除成功")
                         )
                     } else {
                         call.respond(
                             HttpStatusCode.NotFound,
-                            ErrorResponse("评论不存在")
+                            ApiResponse.error<Unit>("评论不存在")
                         )
                     }
                 } catch (e: Exception) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse("删除评论失败: ${e.message}")
+                        ApiResponse.error<Unit>("删除评论失败: ${e.message}")
                     )
                 }
             }
@@ -336,16 +338,4 @@ fun Route.commentRoutes() {
 @Serializable
 data class UpdateCommentRequest(
     val content: String
-)
-
-@Serializable
-data class CommentListResponse(
-    val comments: List<CommentWithReplies>,
-    val pagination: PaginationInfo
-)
-
-@Serializable
-data class UserCommentListResponse(
-    val comments: List<Comment>,
-    val pagination: PaginationInfo
 )
