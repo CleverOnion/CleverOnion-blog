@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface ToastProps {
   message: string;
@@ -15,58 +16,52 @@ const Toast: React.FC<ToastProps> = ({
   duration = 5000,
   type = 'error'
 }) => {
-  const [isAnimating, setIsAnimating] = useState(false);
-
   useEffect(() => {
     if (isVisible) {
-      setIsAnimating(true);
       const timer = setTimeout(() => {
-        handleClose();
+        onClose();
       }, duration);
       return () => clearTimeout(timer);
     }
-  }, [isVisible, duration]);
-
-  const handleClose = () => {
-    setIsAnimating(false);
-    setTimeout(() => {
-      onClose();
-    }, 300); // 等待动画完成
-  };
+  }, [isVisible, duration, onClose]);
 
   const getTypeStyles = () => {
     switch (type) {
       case 'warning':
         return {
-          bg: 'bg-yellow-50',
-          border: 'border-yellow-200',
-          icon: 'text-yellow-500',
-          text: 'text-yellow-800',
-          subtext: 'text-yellow-600'
+          bg: 'bg-white/95',
+          border: 'border-amber-200',
+          iconBg: 'bg-amber-100',
+          icon: 'text-amber-600',
+          text: 'text-gray-800',
+          subtext: 'text-gray-600'
         };
       case 'info':
         return {
-          bg: 'bg-blue-50',
+          bg: 'bg-white/95',
           border: 'border-blue-200',
-          icon: 'text-blue-500',
-          text: 'text-blue-800',
-          subtext: 'text-blue-600'
+          iconBg: 'bg-blue-100',
+          icon: 'text-blue-600',
+          text: 'text-gray-800',
+          subtext: 'text-gray-600'
         };
       case 'success':
         return {
-          bg: 'bg-green-50',
+          bg: 'bg-white/95',
           border: 'border-green-200',
-          icon: 'text-green-500',
-          text: 'text-green-800',
-          subtext: 'text-green-600'
+          iconBg: 'bg-green-100',
+          icon: 'text-green-600',
+          text: 'text-gray-800',
+          subtext: 'text-gray-600'
         };
       default:
         return {
-          bg: 'bg-red-50',
+          bg: 'bg-white/95',
           border: 'border-red-200',
-          icon: 'text-red-500',
-          text: 'text-red-800',
-          subtext: 'text-red-600'
+          iconBg: 'bg-red-100',
+          icon: 'text-red-600',
+          text: 'text-gray-800',
+          subtext: 'text-gray-600'
         };
     }
   };
@@ -102,41 +97,53 @@ const Toast: React.FC<ToastProps> = ({
 
   const styles = getTypeStyles();
 
-  if (!isVisible) return null;
-
   return (
-    <div className="fixed top-4 right-4 z-50">
-      <div 
-        className={`
-          ${styles.bg} ${styles.border} rounded-lg p-4 shadow-lg border
-          transform transition-all duration-300 ease-in-out
-          ${isAnimating ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
-          max-w-sm w-full sm:w-80
-        `}
-      >
-        <div className="flex items-start space-x-3">
-          <div className={`${styles.icon} mt-0.5 flex-shrink-0`}>
-            {getIcon()}
+    <AnimatePresence mode="wait">
+      {isVisible && (
+        <motion.div
+          initial={{ x: 400, opacity: 0, scale: 0.8 }}
+          animate={{ x: 0, opacity: 1, scale: 1 }}
+          exit={{ x: 400, opacity: 0, scale: 0.8 }}
+          transition={{ 
+            type: 'spring', 
+            stiffness: 300, 
+            damping: 30,
+            duration: 0.4
+          }}
+          className={`
+            ${styles.bg} ${styles.border}
+            backdrop-blur-sm rounded-2xl shadow-2xl
+            p-4 min-w-80 max-w-md
+            border-2
+          `}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`${styles.iconBg} p-2 rounded-xl flex-shrink-0`}>
+              <div className={styles.icon}>
+                {getIcon()}
+              </div>
+            </div>
+            
+            <div className="flex-1 min-w-0 flex items-center justify-center">
+              <p className={`${styles.text} text-sm font-bold leading-5`} style={{fontFamily: 'FZDaHei, sans-serif'}}>
+                {message}
+              </p>
+            </div>
+            
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 ml-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </motion.button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className={`text-sm font-medium ${styles.text}`}>
-              {type === 'error' ? '操作失败' : type === 'warning' ? '警告' : type === 'success' ? '操作成功' : '提示'}
-            </p>
-            <p className={`text-sm mt-1 ${styles.subtext} break-words`}>
-              {message}
-            </p>
-          </div>
-          <button 
-            onClick={handleClose}
-            className={`${styles.icon} hover:opacity-70 transition-opacity flex-shrink-0`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
