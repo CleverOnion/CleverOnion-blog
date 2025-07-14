@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { authAPI, type User, type AuthResponse } from '../api/auth';
+import { showErrorToast, showSuccessToast } from './toastStore';
 
 // 认证状态接口
 interface AuthState {
@@ -45,14 +46,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
         error: null 
       });
+      showSuccessToast('已成功退出登录');
     } catch (error) {
       console.error('Logout failed:', error);
+      showErrorToast('退出登录失败，请重试');
       // 即使登出失败，也清除本地状态
       set({ 
         user: null, 
         isAuthenticated: false, 
         isLoading: false,
-        error: 'Logout failed' 
+        error: null 
       });
     }
   },
@@ -116,6 +119,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             });
           } catch (refreshError) {
             // 刷新失败，清除认证状态
+            console.error('Token refresh failed:', refreshError);
             authAPI.logout();
             set({ 
               user: null, 
@@ -140,7 +144,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         user: null, 
         isAuthenticated: false, 
         isLoading: false,
-        error: 'Authentication initialization failed' 
+        error: null 
       });
     }
   },
@@ -166,9 +170,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('user', JSON.stringify(user));
     } catch (error) {
       console.error('Failed to refresh user info:', error);
+      showErrorToast('刷新用户信息失败');
       set({ 
         isLoading: false,
-        error: 'Failed to refresh user information' 
+        error: null 
       });
     }
   },

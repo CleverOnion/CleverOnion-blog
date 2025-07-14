@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
 import { useAuthStore } from './store/authStore';
+import ToastManager from './components/common/ToastManager';
 import './App.css';
 
 function App() {
@@ -12,7 +13,12 @@ function App() {
     initializeAuth();
   }, [initializeAuth]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ToastManager />
+    </>
+  );
 }
 
 export default App
