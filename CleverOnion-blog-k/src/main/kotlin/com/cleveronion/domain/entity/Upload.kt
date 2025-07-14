@@ -4,17 +4,6 @@ import kotlinx.serialization.Serializable
 import java.time.Instant
 
 /**
- * 文件上传响应数据类
- * 用于返回文件上传成功后的信息
- */
-@Serializable
-data class UploadResponse(
-    val success: Boolean,
-    val message: String,
-    val data: UploadData? = null
-)
-
-/**
  * 上传文件数据类
  * 包含上传成功后的文件信息
  */

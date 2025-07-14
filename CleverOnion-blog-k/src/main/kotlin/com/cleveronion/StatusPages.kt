@@ -1,27 +1,19 @@
 package com.cleveronion
 
+import com.cleveronion.domain.entity.ApiResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class ErrorResponse(
-    val error: String,
-    val message: String,
-    val timestamp: String
-)
 
 fun Application.configureStatusPages() {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             call.respond(
                 HttpStatusCode.InternalServerError,
-                ErrorResponse(
+                ApiResponse.error<Unit>(
                     error = "Internal Server Error",
-                    message = cause.localizedMessage ?: "Unknown error occurred",
-                    timestamp = java.time.Instant.now().toString()
+                    message = cause.localizedMessage ?: "Unknown error occurred"
                 )
             )
         }
@@ -29,10 +21,9 @@ fun Application.configureStatusPages() {
         status(HttpStatusCode.NotFound) { call, status ->
             call.respond(
                 status,
-                ErrorResponse(
+                ApiResponse.error<Unit>(
                     error = "Not Found",
-                    message = "The requested resource was not found",
-                    timestamp = java.time.Instant.now().toString()
+                    message = "The requested resource was not found"
                 )
             )
         }

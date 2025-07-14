@@ -18,12 +18,16 @@ Authorization: Bearer <your-jwt-token>
 
 ## 响应格式
 
+所有API接口都使用统一的响应格式：
+
 ### 成功响应
 
 ```json
 {
+  "success": true,
   "data": {},
-  "message": "操作成功"
+  "message": "操作成功",
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -31,7 +35,10 @@ Authorization: Bearer <your-jwt-token>
 
 ```json
 {
-  "error": "错误信息"
+  "success": false,
+  "error": "错误信息",
+  "message": "详细错误描述",
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -39,13 +46,18 @@ Authorization: Bearer <your-jwt-token>
 
 ```json
 {
-  "data": [],
-  "pagination": {
-    "currentPage": 1,
-    "pageSize": 20,
-    "totalCount": 100,
-    "totalPages": 5
-  }
+  "success": true,
+  "data": {
+    "items": [],
+    "pagination": {
+      "currentPage": 1,
+      "pageSize": 20,
+      "totalCount": 100,
+      "totalPages": 5
+    }
+  },
+  "message": "获取数据成功",
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -65,25 +77,30 @@ Authorization: Bearer <your-jwt-token>
 **响应示例**:
 ```json
 {
-  "articles": [
-    {
-      "id": 1,
-      "authorId": 1,
-      "title": "文章标题",
-      "contentMd": "Markdown内容",
-      "contentHtml": "HTML内容",
-      "status": "PUBLISHED",
-      "viewCount": 100,
-      "createdAt": "2024-01-01T00:00:00",
-      "updatedAt": "2024-01-01T00:00:00"
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "authorId": 1,
+        "title": "文章标题",
+        "contentMd": "Markdown内容",
+        "contentHtml": "HTML内容",
+        "status": "PUBLISHED",
+        "viewCount": 100,
+        "createdAt": "2024-01-01T00:00:00",
+        "updatedAt": "2024-01-01T00:00:00"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "pageSize": 20,
+      "totalCount": 50,
+      "totalPages": 3
     }
-  ],
-  "pagination": {
-    "currentPage": 1,
-    "pageSize": 20,
-    "totalCount": 50,
-    "totalPages": 3
-  }
+  },
+  "message": "获取文章列表成功",
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -164,19 +181,24 @@ Authorization: Bearer <your-jwt-token>
 **响应示例**:
 ```json
 {
-  "tags": [
-    {
-      "id": 1,
-      "name": "技术",
-      "articleCount": 10
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "name": "技术",
+        "articleCount": 10
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "pageSize": 50,
+      "totalCount": 20,
+      "totalPages": 1
     }
-  ],
-  "pagination": {
-    "currentPage": 1,
-    "pageSize": 50,
-    "totalCount": 20,
-    "totalPages": 1
-  }
+  },
+  "message": "获取标签列表成功",
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -251,34 +273,39 @@ Authorization: Bearer <your-jwt-token>
 **响应示例**:
 ```json
 {
-  "comments": [
-    {
-      "comment": {
-        "id": 1,
-        "articleId": 1,
-        "userId": 1,
-        "content": "评论内容",
-        "parentId": null,
-        "createdAt": "2024-01-01T00:00:00"
-      },
-      "replies": [
-        {
-          "id": 2,
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "comment": {
+          "id": 1,
           "articleId": 1,
-          "userId": 2,
-          "content": "回复内容",
-          "parentId": 1,
-          "createdAt": "2024-01-01T01:00:00"
-        }
-      ]
+          "userId": 1,
+          "content": "评论内容",
+          "parentId": null,
+          "createdAt": "2024-01-01T00:00:00"
+        },
+        "replies": [
+          {
+            "id": 2,
+            "articleId": 1,
+            "userId": 2,
+            "content": "回复内容",
+            "parentId": 1,
+            "createdAt": "2024-01-01T01:00:00"
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "pageSize": 20,
+      "totalCount": 10,
+      "totalPages": 1
     }
-  ],
-  "pagination": {
-    "currentPage": 1,
-    "pageSize": 20,
-    "totalCount": 10,
-    "totalPages": 1
-  }
+  },
+  "message": "获取评论列表成功",
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -369,16 +396,21 @@ Authorization: Bearer <your-jwt-token>
 **响应**:
 ```json
 {
-  "accessToken": "jwt-access-token",
-  "refreshToken": "jwt-refresh-token",
-  "user": {
-    "id": 1,
-    "githubId": 12345,
-    "githubLogin": "username",
-    "email": "user@example.com",
-    "name": "User Name",
-    "avatarUrl": "https://avatar.url"
-  }
+  "success": true,
+  "data": {
+    "accessToken": "jwt-access-token",
+    "refreshToken": "jwt-refresh-token",
+    "user": {
+      "id": 1,
+      "githubId": 12345,
+      "githubLogin": "username",
+      "email": "user@example.com",
+      "name": "User Name",
+      "avatarUrl": "https://avatar.url"
+    }
+  },
+  "message": "登录成功",
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 

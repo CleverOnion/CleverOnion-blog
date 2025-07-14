@@ -22,7 +22,7 @@ fun Application.configureRouting() {
         }
         
         // API路由
-        route("/api/v1") {
+        route("/") {
             // 认证相关路由
             authRoutes()
             
