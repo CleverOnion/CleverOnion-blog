@@ -4,6 +4,7 @@ import AdminLayout from '../components/AdminLayout';
 import Home from '../pages/Home';
 import Category from '../pages/Category';
 import Article from '../pages/Article';
+import OAuthCallback from '../pages/OAuthCallback';
 import AdminDashboard from '../pages/admin/Dashboard';
 import UserManagement from '../pages/admin/UserManagement';
 import ArticleManagement from '../pages/admin/ArticleManagement';
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
       {
         path: 'article/:articleId',
         element: <Article />
+      },
+      {
+        path: 'auth/callback',
+        element: <OAuthCallback />
       },
     ]
   },
