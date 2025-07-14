@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AdminLayout from '../components/AdminLayout';
+import ProtectedRoute from '../components/ProtectedRoute';
 import Home from '../pages/Home';
 import Category from '../pages/Category';
 import Article from '../pages/Article';
@@ -37,7 +38,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute requireAuth={true} redirectTo="/">
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
