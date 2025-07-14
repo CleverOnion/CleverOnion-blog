@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { authAPI } from '../../api/auth';
 import { showErrorToast } from '../../store/toastStore';
@@ -12,21 +13,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
   const { isAuthenticated, user, logout, isLoading } = useAuthStore();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const buttonClass = "p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200";
 
-  // 处理点击外部关闭用户菜单
+  // 清理定时器
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, []);
 
@@ -49,6 +45,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
       setIsLoggingOut(false);
     }
   };
+
 
   return (
     <div className="flex items-center space-x-1 sm:space-x-2">
@@ -82,77 +79,125 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
 
         {/* GitHub Login / User Menu */}
         {isAuthenticated && user ? (
-          <div className="relative" ref={userMenuRef}>
-            <button 
-              className="flex items-center space-x-1 sm:space-x-2 p-1.5 sm:p-2 rounded-lg hover:bg-blue-50 transition-all duration-200"
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              aria-label="用户菜单"
-            >
+          <div 
+            className="relative"
+            onMouseEnter={() => {
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+              }
+              setIsUserMenuOpen(true);
+            }}
+            onMouseLeave={() => {
+              timeoutRef.current = setTimeout(() => {
+                setIsUserMenuOpen(false);
+              }, 70);
+            }}
+          >
+            <div className="flex items-center space-x-1 sm:space-x-2 p-1.5 sm:p-2 rounded-lg hover:bg-blue-50 transition-all duration-200 cursor-pointer">
               <img 
                 src={user.avatarUrl || '/default-avatar.svg'} 
-                alt={user.name || user.githubLogin}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-gray-200 hover:border-blue-300 transition-colors"
+                alt={user.name || user.githubLogin || 'User'}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-black hover:border-gray-700 transition-colors"
               />
-              <svg 
-                className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''} hidden sm:block`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+            </div>
 
             {/* User Dropdown Menu */}
-            {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 sm:w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                <div className="px-3 sm:px-4 py-3 border-b border-gray-100">
-                  <div className="flex items-center space-x-2 sm:space-x-3">
-                    <img 
-                      src={user.avatarUrl || '/default-avatar.svg'} 
-                      alt={user.name || user.githubLogin}
-                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                        {user.name || user.githubLogin}
-                      </p>
-                      <p className="text-xs sm:text-sm text-gray-500 truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="py-1">
-                  <a 
-                    href="/admin" 
-                    className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    管理后台
-                  </a>
+            <AnimatePresence>
+              {isUserMenuOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute left-1/2 transform -translate-x-1/2 mt-4 w-56 sm:w-64 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
+                  onMouseEnter={() => {
+                    if (timeoutRef.current) {
+                      clearTimeout(timeoutRef.current);
+                      timeoutRef.current = null;
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    timeoutRef.current = setTimeout(() => {
+                      setIsUserMenuOpen(false);
+                    }, 70);
+                  }}
+                >
+                  {/* Arrow pointing up */}
+                  <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-l border-t border-gray-100 rotate-45"></div>
                   
-                  <button 
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="flex items-center w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.1, delay: 0.03 }}
+                    className="px-3 sm:px-4 py-3 border-b border-gray-100"
                   >
-                    {isLoggingOut ? (
-                      <div className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 animate-spin rounded-full border-2 border-red-600 border-t-transparent flex-shrink-0"></div>
-                    ) : (
-                      <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                      </svg>
-                    )}
-                    {isLoggingOut ? '退出中...' : '退出登录'}
-                  </button>
-                </div>
-              </div>
-            )}
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <img 
+                        src={user.avatarUrl || '/default-avatar.svg'} 
+                        alt={user.name || user.githubLogin || 'User'}
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                          {user.name || user.githubLogin}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-500 truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                  
+                  <div className="py-1">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.1, delay: 0.06 }}
+                    >
+                      <a 
+                        href="/admin" 
+                        className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 rounded-lg mx-2 transition-colors duration-200"
+                        onClick={() => {
+                          if (timeoutRef.current) {
+                            clearTimeout(timeoutRef.current);
+                            timeoutRef.current = null;
+                          }
+                          setIsUserMenuOpen(false);
+                        }}
+                      >
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        管理后台
+                      </a>
+                    </motion.div>
+                    
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.1, delay: 0.09 }}
+                    >
+                      <button 
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        className="flex items-center w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg mx-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoggingOut ? (
+                          <div className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 animate-spin rounded-full border-2 border-red-600 border-t-transparent flex-shrink-0"></div>
+                        ) : (
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                        )}
+                        {isLoggingOut ? '退出中...' : '退出登录'}
+                      </button>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
         </div>
       ) : (
         <button 

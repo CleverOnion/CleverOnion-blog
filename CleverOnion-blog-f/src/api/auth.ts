@@ -5,10 +5,10 @@ export interface User {
   id: number;
   githubId: number;
   githubLogin: string;
-  avatarUrl: string;
-  email: string;
-  name: string;
-  bio?: string;
+  avatarUrl: string | null;
+  email: string | null;
+  name: string | null;
+  bio?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,8 +33,8 @@ class AuthAPI {
    * 获取当前用户信息
    */
   async getCurrentUser(): Promise<User> {
-    const response = await api.get<User>('/auth/me');
-    return response.data;
+    const response = await api.get<{success: boolean, data: User, message: string}>('/auth/me');
+    return response.data.data;
   }
 
   /**
