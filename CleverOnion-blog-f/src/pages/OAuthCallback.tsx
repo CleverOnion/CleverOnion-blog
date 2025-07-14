@@ -87,50 +87,77 @@ const OAuthCallback: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 sm:p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-300 to-white px-4 relative overflow-hidden">
+      {/* 云朵背景装饰 */}
+      <div className="absolute inset-0">
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+          <g fill="rgb(200, 230, 250)" opacity="0.6">
+            <circle cx="200" cy="150" r="80" />
+            <circle cx="350" cy="120" r="60" />
+            <circle cx="800" cy="180" r="70" />
+            <circle cx="1000" cy="140" r="50" />
+          </g>
+          <g fill="rgb(230, 245, 255)" opacity="0.8">
+            <circle cx="100" cy="600" r="120" />
+            <circle cx="300" cy="650" r="100" />
+            <circle cx="900" cy="620" r="110" />
+            <circle cx="1100" cy="680" r="90" />
+          </g>
+          <g fill="rgb(255, 255, 255)" opacity="0.9">
+            <circle cx="0" cy="750" r="150" />
+            <circle cx="200" cy="780" r="130" />
+            <circle cx="600" cy="760" r="140" />
+            <circle cx="1000" cy="790" r="120" />
+            <circle cx="1200" cy="770" r="110" />
+          </g>
+        </svg>
+      </div>
+      
+      <div className="max-w-md w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 sm:p-8 relative z-10">
         {status === 'loading' && (
           <div className="text-center">
-            <LoadingSpinner size="xl" className="mx-auto mb-4" />
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">正在处理登录...</h2>
-            <p className="text-sm sm:text-base text-gray-600">请稍候，我们正在验证您的GitHub账户</p>
+            <div className="flex justify-center mb-6">
+              <LoadingSpinner size="xl" color="blue" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3 tracking-wide">正在处理登录...</h2>
+            <p className="text-gray-600 text-lg">请稍候，我们正在验证您的身份</p>
           </div>
         )}
 
         {status === 'success' && (
           <div className="text-center">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 mb-6 shadow-lg">
+              <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">登录成功！</h2>
-            <p className="text-sm sm:text-base text-gray-600">正在跳转到首页...</p>
-            <div className="mt-4">
-              <LoadingSpinner size="sm" className="mx-auto" />
+            <h2 className="text-2xl font-bold text-gray-800 mb-3 tracking-wide">登录成功！</h2>
+            <p className="text-gray-600 text-lg mb-4">欢迎回来，正在跳转到主页...</p>
+            <div className="flex justify-center">
+              <LoadingSpinner size="md" color="green" />
             </div>
           </div>
         )}
 
         {status === 'error' && (
           <div className="text-center">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-red-400 to-red-600 mb-6 shadow-lg">
+              <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">登录失败</h2>
-            <p className="text-sm sm:text-base text-gray-600 mb-6 break-words">{errorMessage}</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3 tracking-wide">登录失败</h2>
+            <p className="text-gray-600 text-lg mb-6 break-words">{errorMessage}</p>
             <div className="space-y-3">
               <button
                 onClick={handleRetry}
-                className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base font-medium"
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 返回首页
               </button>
               <button
                 onClick={() => window.location.reload()}
-                className="w-full bg-gray-100 text-gray-700 py-2.5 px-4 rounded-md hover:bg-gray-200 transition-colors duration-200 text-sm sm:text-base font-medium"
+                className="w-full bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:from-gray-200 hover:to-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 focus:ring-opacity-50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 重新尝试
               </button>
