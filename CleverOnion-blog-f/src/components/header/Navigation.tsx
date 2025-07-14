@@ -184,7 +184,7 @@ const Navigation: React.FC<NavigationProps> = ({ isMobileMenuOpen, onMobileMenuC
                   <div className="flex items-center space-x-3 px-4 py-3">
                     <img 
                       src={user.avatarUrl || '/default-avatar.svg'} 
-                      alt={user.name || user.githubLogin}
+                      alt={user.name || user.githubLogin || 'User'}
                       className="w-10 h-10 rounded-full"
                     />
                     <div className="flex-1 min-w-0">
