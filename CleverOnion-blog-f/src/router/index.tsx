@@ -6,6 +6,7 @@ import Home from '../pages/Home';
 import Category from '../pages/Category';
 import Article from '../pages/Article';
 import OAuthCallback from '../pages/OAuthCallback';
+import AdminTest from '../pages/AdminTest';
 import AdminDashboard from '../pages/admin/Dashboard';
 import UserManagement from '../pages/admin/UserManagement';
 import ArticleManagement from '../pages/admin/ArticleManagement';
@@ -34,12 +35,16 @@ export const router = createBrowserRouter([
         path: 'auth/callback',
         element: <OAuthCallback />
       },
+      {
+        path: 'admin-test',
+        element: <AdminTest />
+      },
     ]
   },
   {
     path: '/admin',
     element: (
-      <ProtectedRoute requireAuth={true} redirectTo="/">
+      <ProtectedRoute requireAuth={true} requireAdmin={true} redirectTo="/">
         <AdminLayout />
       </ProtectedRoute>
     ),

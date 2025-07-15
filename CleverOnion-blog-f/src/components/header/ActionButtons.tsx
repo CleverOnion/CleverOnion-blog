@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { authAPI } from '../../api/auth';
 import { showErrorToast } from '../../store/toastStore';
@@ -21,22 +21,35 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
   
   const buttonClass = "p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200";
 
-  // 检查管理员状态
+  // 检查管理员权限
   useEffect(() => {
     const checkAdminStatus = async () => {
+      // 调试信息（生产环境可移除）
+       if (import.meta.env.DEV) {
+         console.log('ActionButtons - 检查管理员权限:', {
+           isAuthenticated,
+           hasUser: !!user,
+           shouldCheck: isAuthenticated && user
+         });
+       }
+      
       if (isAuthenticated && user) {
         setIsCheckingAdmin(true);
         try {
           const adminStatus = await authAPI.checkAdminStatus();
+          if (import.meta.env.DEV) {
+             console.log('ActionButtons - 管理员权限检查结果:', adminStatus);
+           }
           setIsAdmin(adminStatus);
         } catch (error) {
-          console.error('检查管理员状态失败:', error);
+          console.error('检查管理员权限失败:', error);
           setIsAdmin(false);
         } finally {
           setIsCheckingAdmin(false);
         }
       } else {
         setIsAdmin(false);
+        setIsCheckingAdmin(false);
       }
     };
 
@@ -188,8 +201,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: 0.15 }}
                       >
-                        <a 
-                          href="/admin" 
+                        <Link 
+                          to="/admin" 
                           className="flex items-center space-x-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
                           onClick={() => {
                             if (timeoutRef.current) {
@@ -204,7 +217,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
                           <span className="font-medium">管理后台</span>
-                        </a>
+                        </Link>
                       </motion.div>
                     )}
                     
