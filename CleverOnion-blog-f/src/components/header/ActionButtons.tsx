@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { authAPI } from '../../api/auth';
 import { showErrorToast } from '../../store/toastStore';
@@ -14,6 +15,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigate = useNavigate();
   
   const buttonClass = "p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200";
 
@@ -28,7 +30,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
 
   const handleGitHubLogin = () => {
     try {
-      authAPI.loginWithGitHub();
+      // 跳转到OAuthCallback页面，在那里处理GitHub授权流程
+      navigate('/auth/callback?action=login');
     } catch (error) {
       showErrorToast('启动GitHub登录失败，请重试');
     }
@@ -203,7 +206,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
         <button 
           onClick={handleGitHubLogin}
           disabled={isLoading}
-          className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 text-xs sm:text-sm font-medium"
+          className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-600 disabled:cursor-not-allowed cursor-pointer text-white rounded-lg transition-all duration-200 text-xs sm:text-sm font-medium"
           aria-label="GitHub登录"
         >
           {isLoading ? (

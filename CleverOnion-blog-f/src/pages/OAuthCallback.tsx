@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { showErrorToast, showSuccessToast } from '../store/toastStore';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { authAPI } from '../api/auth';
 import type { AuthResponse } from '../api/auth';
 
 const OAuthCallback: React.FC = () => {
@@ -15,6 +16,14 @@ const OAuthCallback: React.FC = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        // 检查是否是初始登录请求（从登录按钮跳转过来）
+        const action = searchParams.get('action');
+        if (action === 'login') {
+          // 立即重定向到GitHub授权页面
+          authAPI.loginWithGitHub();
+          return;
+        }
+
         // 检查是否有错误参数
         const error = searchParams.get('error');
         const errorDescription = searchParams.get('error_description');
@@ -119,8 +128,15 @@ const OAuthCallback: React.FC = () => {
             <div className="flex justify-center mb-6">
               <LoadingSpinner size="xl" color="blue" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3 tracking-wide">正在处理登录...</h2>
-            <p className="text-gray-600 text-lg">请稍候，我们正在验证您的身份</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3 tracking-wide">
+              {searchParams.get('action') === 'login' ? '正在跳转到GitHub...' : '正在处理登录...'}
+            </h2>
+            <p className="text-gray-600 text-lg">
+              {searchParams.get('action') === 'login' 
+                ? '即将跳转到GitHub授权页面，请稍候...' 
+                : '请稍候，我们正在验证您的身份'
+              }
+            </p>
           </div>
         )}
 
