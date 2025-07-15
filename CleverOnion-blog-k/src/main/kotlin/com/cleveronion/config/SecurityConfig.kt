@@ -18,6 +18,10 @@ data class JwtConfig(
     val refreshExpirationTime: Long
 )
 
+data class AdminWhitelistConfig(
+    val githubIds: List<String>
+)
+
 class SecurityConfig(private val config: ApplicationConfig) {
     
     val oauth2: OAuth2Config by lazy {
@@ -41,5 +45,11 @@ class SecurityConfig(private val config: ApplicationConfig) {
     
     val baseUrl: String by lazy {
         config.property("app.baseUrl").getString()
+    }
+    
+    val adminWhitelist: AdminWhitelistConfig by lazy {
+        AdminWhitelistConfig(
+            githubIds = config.property("app.adminWhitelist.githubIds").getList()
+        )
     }
 }

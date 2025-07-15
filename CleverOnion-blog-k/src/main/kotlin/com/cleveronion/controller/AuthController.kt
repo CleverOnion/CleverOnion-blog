@@ -203,6 +203,47 @@ fun Route.authRoutes() {
                 }
             }
         }
+        
+        // 检查当前用户是否为管理员
+        authenticate("auth-jwt") {
+            get("/admin/check") {
+                try {
+                    val principal = call.principal<JWTPrincipal>()
+                        ?: return@get call.respond(
+                            HttpStatusCode.Unauthorized,
+                            ApiResponse.error<AdminCheckResponse>("无效的令牌")
+                        )
+                    
+                    val userId = principal.payload.subject?.toLongOrNull()
+                        ?: return@get call.respond(
+                            HttpStatusCode.BadRequest,
+                            ApiResponse.error<AdminCheckResponse>("令牌中的用户ID无效")
+                        )
+                    
+                    val user = userService.findById(userId)
+                        ?: return@get call.respond(
+                            HttpStatusCode.NotFound,
+                            ApiResponse.error<AdminCheckResponse>("用户不存在")
+                        )
+                    
+                    // 检查用户的GitHub ID是否在管理员白名单中
+                    val isAdmin = securityConfig.adminWhitelist.githubIds.contains(user.githubId.toString())
+                    
+                    call.respond(
+                        HttpStatusCode.OK,
+                        ApiResponse.success(
+                            AdminCheckResponse(isAdmin = isAdmin),
+                            if (isAdmin) "用户是管理员" else "用户不是管理员"
+                        )
+                    )
+                } catch (e: Exception) {
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        ApiResponse.error<AdminCheckResponse>("检查管理员权限失败")
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -219,4 +260,9 @@ private fun generateRandomState(): String {
 @Serializable
 data class RefreshTokenRequest(
     val refreshToken: String
+)
+
+@Serializable
+data class AdminCheckResponse(
+    val isAdmin: Boolean
 )

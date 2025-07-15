@@ -31,6 +31,9 @@ jwt:
 app:
   environment: "development"
   baseUrl: "http://localhost:8080"
+  # 管理员白名单配置
+  adminWhitelist:
+    githubIds: ["152043550", "987654321"] # 在这里添加GitHub用户ID
 
 # 阿里云OSS配置
 oss:

@@ -118,6 +118,19 @@ class AuthAPI {
       return null;
     }
   }
+
+  /**
+   * 检查当前用户是否为管理员
+   */
+  async checkAdminStatus(): Promise<boolean> {
+    try {
+      const response = await api.get<{success: boolean, data: {isAdmin: boolean}, message: string}>('/auth/admin/check');
+      return response.data.data.isAdmin;
+    } catch (error) {
+      console.error('Check admin status error:', error);
+      return false;
+    }
+  }
 }
 
 // 导出单例实例
