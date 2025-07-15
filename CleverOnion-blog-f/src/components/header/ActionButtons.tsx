@@ -14,10 +14,34 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
   const { isAuthenticated, user, logout, isLoading } = useAuthStore();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
   
   const buttonClass = "p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200";
+
+  // 检查管理员状态
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (isAuthenticated && user) {
+        setIsCheckingAdmin(true);
+        try {
+          const adminStatus = await authAPI.checkAdminStatus();
+          setIsAdmin(adminStatus);
+        } catch (error) {
+          console.error('检查管理员状态失败:', error);
+          setIsAdmin(false);
+        } finally {
+          setIsCheckingAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [isAuthenticated, user]);
 
   // 清理定时器
   useEffect(() => {
@@ -157,29 +181,32 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
                   
                   {/* Menu Items */}
                   <div className="p-2">
-                    <motion.div
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.15 }}
-                    >
-                      <a 
-                        href="/admin" 
-                        className="flex items-center space-x-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
-                        onClick={() => {
-                          if (timeoutRef.current) {
-                            clearTimeout(timeoutRef.current);
-                            timeoutRef.current = null;
-                          }
-                          setIsUserMenuOpen(false);
-                        }}
+                    {/* 只有管理员才显示管理后台按钮 */}
+                    {isAdmin && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: 0.15 }}
                       >
-                        <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span className="font-medium">管理后台</span>
-                      </a>
-                    </motion.div>
+                        <a 
+                          href="/admin" 
+                          className="flex items-center space-x-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                          onClick={() => {
+                            if (timeoutRef.current) {
+                              clearTimeout(timeoutRef.current);
+                              timeoutRef.current = null;
+                            }
+                            setIsUserMenuOpen(false);
+                          }}
+                        >
+                          <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span className="font-medium">管理后台</span>
+                        </a>
+                      </motion.div>
+                    )}
                     
                     <motion.div
                       initial={{ opacity: 0, x: -8 }}
