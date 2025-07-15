@@ -109,11 +109,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
             <AnimatePresence>
               {isUserMenuOpen && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  initial={{ opacity: 0, scale: 0.96, y: -8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute left-1/2 transform -translate-x-1/2 mt-4 w-56 sm:w-64 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute left-1/2 transform -translate-x-1/2 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
+                  style={{
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                  }}
                   onMouseEnter={() => {
                     if (timeoutRef.current) {
                       clearTimeout(timeoutRef.current);
@@ -126,41 +128,43 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
                     }, 70);
                   }}
                 >
-                  {/* Arrow pointing up */}
-                  <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-l border-t border-gray-100 rotate-45"></div>
-                  
+                  {/* User Info Section */}
                   <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.1, delay: 0.03 }}
-                    className="px-3 sm:px-4 py-3 border-b border-gray-100"
+                    transition={{ duration: 0.3, delay: 0.1 }}
+                    className="p-4 bg-gray-50"
                   >
-                    <div className="flex items-center space-x-2 sm:space-x-3">
-                      <img 
-                        src={user.avatarUrl || '/default-avatar.svg'} 
-                        alt={user.name || user.githubLogin || 'User'}
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
-                      />
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <img 
+                          src={user.avatarUrl || '/default-avatar.svg'} 
+                          alt={user.name || user.githubLogin || 'User'}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full"></div>
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-gray-900 truncate">
                           {user.name || user.githubLogin}
                         </p>
-                        <p className="text-xs sm:text-sm text-gray-500 truncate">
+                        <p className="text-xs text-gray-500 truncate">
                           {user.email}
                         </p>
                       </div>
                     </div>
                   </motion.div>
                   
-                  <div className="py-1">
+                  {/* Menu Items */}
+                  <div className="p-2">
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.1, delay: 0.06 }}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.15 }}
                     >
                       <a 
                         href="/admin" 
-                        className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 rounded-lg mx-2 transition-colors duration-200"
+                        className="flex items-center space-x-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
                         onClick={() => {
                           if (timeoutRef.current) {
                             clearTimeout(timeoutRef.current);
@@ -169,32 +173,32 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isMobileMenuOpen, onMobil
                           setIsUserMenuOpen(false);
                         }}
                       >
-                        <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        管理后台
+                        <span className="font-medium">管理后台</span>
                       </a>
                     </motion.div>
                     
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.1, delay: 0.09 }}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
                     >
                       <button 
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="flex items-center w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg mx-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center space-x-3 w-full px-3 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
                       >
                         {isLoggingOut ? (
-                          <div className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 animate-spin rounded-full border-2 border-red-600 border-t-transparent flex-shrink-0"></div>
+                          <div className="w-4 h-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
                         ) : (
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          <svg className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                           </svg>
                         )}
-                        {isLoggingOut ? '退出中...' : '退出登录'}
+                        <span className="font-medium">{isLoggingOut ? '退出中...' : '退出登录'}</span>
                       </button>
                     </motion.div>
                   </div>
