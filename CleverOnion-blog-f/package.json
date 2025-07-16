@@ -10,12 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@milkdown/crepe": "^7.15.1",
+    "@milkdown/kit": "^7.15.1",
+    "@milkdown/react": "^7.15.1",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.10.0",
     "motion": "^12.23.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.6.3",
     "zustand": "^5.0.6"
   },

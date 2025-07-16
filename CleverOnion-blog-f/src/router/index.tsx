@@ -68,15 +68,23 @@ export const router = createBrowserRouter([
       {
         path: 'tags',
         element: <TagManagement />
-      },
-      {
-        path: 'editor',
-        element: <ArticleEditor />
-      },
-      {
-        path: 'editor/:articleId',
-        element: <ArticleEditor />
       }
     ]
+  },
+  {
+    path: '/admin/articles/new',
+    element: (
+      <ProtectedRoute requireAuth={true} requireAdmin={true} redirectTo="/">
+        <ArticleEditor />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/admin/articles/edit/:articleId',
+    element: (
+      <ProtectedRoute requireAuth={true} requireAdmin={true} redirectTo="/">
+        <ArticleEditor />
+      </ProtectedRoute>
+    )
   }
 ]);
