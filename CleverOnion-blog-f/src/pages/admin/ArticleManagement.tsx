@@ -131,7 +131,7 @@ const ArticleManagement = () => {
   };
 
   const handleNewArticle = () => {
-    navigate('/admin/editor');
+    navigate('/admin/articles/new');
   };
 
   const renderGridView = () => (
@@ -408,7 +408,7 @@ const ArticleManagement = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <button 
-                  onClick={() => navigate(`/admin/editor/${selectedArticle.id}`)}
+                  onClick={() => navigate(`/admin/articles/edit/${selectedArticle.id}`)}
                   className="flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
                 >
                   <FiEdit3 className="w-3 h-3 mr-1" />
