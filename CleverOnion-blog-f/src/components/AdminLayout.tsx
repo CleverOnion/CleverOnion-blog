@@ -3,7 +3,7 @@ import { AdminSidebar, AdminHeader, AdminMain } from './admin';
 
 const AdminLayout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* 侧边栏 */}
       <AdminSidebar />
 

@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 
 interface MenuItem {
   path: string;
@@ -13,6 +14,7 @@ interface MenuSection {
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuSections: MenuSection[] = [
     {
@@ -87,29 +89,47 @@ const AdminSidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-white shadow-lg border-r border-gray-200">
+    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-white shadow-lg border-r border-gray-200 transition-all duration-300`}>
       {/* 头部 */}
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex items-center space-x-3 group">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer relative">
-            <img 
-              src="/src/assets/header/logo/onion.svg" 
-              alt="CleverOnion Logo" 
-              className="w-8 h-8 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 drop-shadow-lg animate-bounce"
-              style={{
-                filter: 'drop-shadow(0 4px 8px rgba(203, 113, 215, 0.3))',
-                animationDuration: '3s',
-                animationIterationCount: 'infinite',
-                animationTimingFunction: 'ease-in-out'
-              }}
-            />
-            {/* 装饰性光晕效果 */}
-            <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
+      <div className={`${isCollapsed ? 'p-3' : 'p-6'} border-b border-gray-100 transition-all duration-300`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer relative">
+              <img 
+                src="/src/assets/header/logo/onion.svg" 
+                alt="CleverOnion Logo" 
+                className="w-8 h-8 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 drop-shadow-lg animate-bounce"
+                style={{
+                  filter: 'drop-shadow(0 4px 8px rgba(203, 113, 215, 0.3))',
+                  animationDuration: '3s',
+                  animationIterationCount: 'infinite',
+                  animationTimingFunction: 'ease-in-out'
+                }}
+              />
+              {/* 装饰性光晕效果 */}
+              <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
+            </div>
+            {!isCollapsed && (
+              <div className="transition-all duration-300">
+                <h2 className="text-lg font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-300">CleverOnion</h2>
+                <p className="text-xs text-gray-500 group-hover:text-purple-400 transition-colors duration-300">Admin Panel</p>
+              </div>
+            )}
           </div>
-          <div className="transition-all duration-300">
-            <h2 className="text-lg font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-300">CleverOnion</h2>
-            <p className="text-xs text-gray-500 group-hover:text-purple-400 transition-colors duration-300">Admin Panel</p>
-          </div>
+          {/* 折叠按钮 */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+          >
+            <svg 
+              className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -117,11 +137,13 @@ const AdminSidebar = () => {
       <nav className="flex-1 py-4">
         {menuSections.map((section, sectionIndex) => (
           <div key={section.title} className={sectionIndex > 0 ? 'mt-6' : ''}>
-            <div className="px-6 mb-2">
-               <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-pink-500)' }}>
-                 {section.title}
-               </h3>
-             </div>
+            {!isCollapsed && (
+              <div className={`${isCollapsed ? 'px-3' : 'px-6'} mb-2 transition-all duration-300`}>
+                <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-pink-500)' }}>
+                  {section.title}
+                </h3>
+              </div>
+            )}
             <div className="space-y-1">
               {section.items.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -129,21 +151,20 @@ const AdminSidebar = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`group flex items-center px-6 py-2.5 text-sm font-medium transition-all duration-200 ${
+                    className={`group flex ${isCollapsed ? 'flex-col items-center px-2 py-3' : 'items-center px-6 py-2.5'} text-sm font-medium transition-all duration-200 relative ${
                       isActive
-                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600'
+                        ? 'text-blue-600'
                         : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                   >
-                    <span className={`mr-3 transition-colors duration-200 ${
+                    <span className={`${isCollapsed ? 'mb-1' : 'mr-3'} transition-colors duration-200 ${
                       isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
                     }`}>
                       {item.icon}
                     </span>
-                    <span className="truncate">{item.label}</span>
-                    {isActive && (
-                      <span className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                    )}
+                    <span className={`${isCollapsed ? 'text-xs text-center leading-tight' : 'truncate'} transition-all duration-200`}>
+                      {item.label}
+                    </span>
                   </Link>
                 );
               })}

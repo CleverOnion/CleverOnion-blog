@@ -5,13 +5,12 @@ const AdminMain = () => {
   const location = useLocation();
 
   return (
-    <main className="flex-1 p-6 bg-gray-50">
+    <main className="flex-1 p-6 bg-gray-100">
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
           transition={{
             duration: 0.3,
             ease: "easeInOut"

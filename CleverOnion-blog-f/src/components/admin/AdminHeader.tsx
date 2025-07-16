@@ -1,38 +1,53 @@
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
-const AdminHeader = () => {
-  const { logout } = useAuthStore();
+const AdminHeader: React.FC = () => {
+  const { user } = useAuthStore();
+  const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
+  // 路径到页面名称的映射
+  const getPageTitle = (pathname: string): string => {
+    const pathMap: { [key: string]: string } = {
+      '/admin': 'Dashboard',
+      '/admin/users': '用户管理',
+      '/admin/articles': '文章管理',
+      '/admin/categories': '分类管理',
+      '/admin/tags': '标签管理',
+      '/admin/editor': '文章编辑器'
+    };
+    
+    // 处理带参数的路径（如 /admin/editor/:articleId）
+    if (pathname.startsWith('/admin/editor/')) {
+      return '文章编辑器';
+    }
+    
+    return pathMap[pathname] || 'Dashboard';
   };
 
   return (
-    <header className="bg-white shadow-sm border-b">
-      <div className="px-6 py-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-gray-800">管理面板</h1>
-          <div className="flex items-center space-x-4">
-            <Link 
-              to="/" 
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              返回前台
-            </Link>
-            <button 
-              onClick={handleLogout}
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              退出登录
-            </button>
-          </div>
+    <header className="bg-gray-100 px-6 py-4">
+      <div className="flex justify-between items-center">
+        {/* 左侧：页面标题 */}
+        <div className="flex flex-col items-start">
+          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Ubuntu, sans-serif' }}>{getPageTitle(location.pathname)}</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {new Date().toLocaleDateString('zh-CN', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              weekday: 'long'
+            })}
+          </p>
+        </div>
+
+        {/* 右侧：用户头像 */}
+        <div>
+          <img
+            src={user?.avatarUrl || '/default-avatar.svg'}
+            alt={user?.name || user?.githubLogin || 'User Avatar'}
+            className="w-12 h-12 rounded-full border-2 border-gray-300 hover:border-gray-400 transition-colors object-cover"
+          />
         </div>
       </div>
     </header>

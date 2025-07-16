@@ -87,13 +87,13 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        // 刷新失败，清除本地存储并跳转到登录页
+        // 刷新失败，清除本地存储并跳转到首页
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         
-        // 可以在这里触发全局状态更新或路由跳转
-        window.location.href = '/login';
+        // 跳转到首页，用户可以重新进行GitHub登录
+        window.location.href = '/';
         
         return Promise.reject(refreshError);
       }
