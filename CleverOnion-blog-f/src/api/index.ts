@@ -25,7 +25,10 @@ apiClient.interceptors.request.use(
     // 从 localStorage 获取 token
     const token = localStorage.getItem('accessToken');
     
-    if (token && config.headers) {
+    // 排除OAuth相关路径，不添加Authorization头
+    const isOAuthRequest = config.url?.includes('/auth/github');
+    
+    if (token && config.headers && !isOAuthRequest) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
@@ -35,6 +38,7 @@ apiClient.interceptors.request.use(
         method: config.method?.toUpperCase(),
         url: config.url,
         data: config.data,
+        isOAuthRequest,
       });
     }
     
@@ -63,8 +67,11 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as ExtendedAxiosRequestConfig;
     
-    // 处理 401 未授权错误
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    // 排除OAuth回调的401重试，避免干扰GitHub OAuth流程
+    const isOAuthCallback = originalRequest?.url?.includes('/auth/github');
+    
+    // 处理 401 未授权错误（排除OAuth相关请求）
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isOAuthCallback) {
       originalRequest._retry = true;
       
       try {

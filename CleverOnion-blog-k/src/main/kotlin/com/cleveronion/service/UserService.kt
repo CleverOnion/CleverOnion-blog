@@ -6,8 +6,10 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
+import org.slf4j.LoggerFactory
 
 class UserService {
+    private val logger = LoggerFactory.getLogger(UserService::class.java)
     
     /**
      * 根据GitHub ID查找用户
@@ -46,6 +48,7 @@ class UserService {
      * 创建新用户
      */
     fun createUser(githubUser: GitHubUser, primaryEmail: String?): User {
+        logger.info("正在数据库中创建新用户: ${githubUser.login}")
         return transaction(DatabaseConfig.database) {
             val userId = Users.insertAndGetId {
                 it[githubId] = githubUser.id
@@ -58,6 +61,7 @@ class UserService {
                 it[updatedAt] = Instant.now()
             }
             
+            logger.info("用户插入成功，分配的数据库ID: ${userId.value}")
             findById(userId.value)!!
         }
     }
@@ -66,6 +70,7 @@ class UserService {
      * 更新用户信息
      */
     fun updateUser(userId: Long, githubUser: GitHubUser, primaryEmail: String?): User? {
+        logger.info("正在更新用户信息，数据库ID: $userId")
         return transaction(DatabaseConfig.database) {
             val updated = Users.update({ Users.id eq userId }) {
                 it[githubLogin] = githubUser.login
@@ -76,6 +81,7 @@ class UserService {
                 it[updatedAt] = Instant.now()
             }
             
+            logger.info("用户更新操作影响行数: $updated")
             if (updated > 0) findById(userId) else null
         }
     }
@@ -84,12 +90,19 @@ class UserService {
      * 创建或更新用户（OAuth登录时使用）
      */
     fun createOrUpdateUser(githubUser: GitHubUser, primaryEmail: String?): User {
+        logger.info("开始创建或更新用户: ${githubUser.login} (GitHub ID: ${githubUser.id})")
         val existingUser = findByGithubId(githubUser.id)
         
         return if (existingUser != null) {
-            updateUser(existingUser.id, githubUser, primaryEmail) ?: existingUser
+            logger.info("找到现有用户，正在更新: ${existingUser.githubLogin} (数据库ID: ${existingUser.id})")
+            val updatedUser = updateUser(existingUser.id, githubUser, primaryEmail) ?: existingUser
+            logger.info("用户更新完成: ${updatedUser.githubLogin}")
+            updatedUser
         } else {
-            createUser(githubUser, primaryEmail)
+            logger.info("未找到现有用户，正在创建新用户")
+            val newUser = createUser(githubUser, primaryEmail)
+            logger.info("新用户创建完成: ${newUser.githubLogin} (数据库ID: ${newUser.id})")
+            newUser
         }
     }
     

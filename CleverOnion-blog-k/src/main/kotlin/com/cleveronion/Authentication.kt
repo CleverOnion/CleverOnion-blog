@@ -11,10 +11,17 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import org.slf4j.LoggerFactory
 
 fun Application.configureAuthentication() {
+    val logger = LoggerFactory.getLogger("Authentication")
     val securityConfig = SecurityConfig(environment.config)
     val jwtUtil = JwtUtil(securityConfig.jwt)
+    
+    logger.info("正在配置认证系统...")
+    logger.info("OAuth2配置 - ClientId: ${securityConfig.oauth2.clientId}")
+    logger.info("OAuth2配置 - RedirectUri: ${securityConfig.oauth2.redirectUri}")
+    logger.info("OAuth2配置 - Scope: ${securityConfig.oauth2.scope}")
     
     install(Authentication) {
         // JWT认证配置
@@ -29,20 +36,33 @@ fun Application.configureAuthentication() {
             )
             
             validate { credential ->
+                logger.debug("正在验证JWT令牌...")
                 // 验证Token类型为access token
                 val tokenType = credential.payload.getClaim("type").asString()
+                logger.debug("JWT令牌类型: $tokenType")
+                
                 if (tokenType == "access") {
                     val userId = credential.payload.subject?.toLongOrNull()
                     val email = credential.payload.getClaim("email").asString()
                     val username = credential.payload.getClaim("username").asString()
                     
+                    logger.debug("JWT令牌信息 - 用户ID: $userId, 邮箱: $email, 用户名: $username")
+                    
                     if (userId != null && email != null && username != null) {
+                        logger.debug("JWT令牌验证成功")
                         JWTPrincipal(credential.payload)
-                    } else null
-                } else null
+                    } else {
+                        logger.warn("JWT令牌缺少必要信息")
+                        null
+                    }
+                } else {
+                    logger.warn("JWT令牌类型不正确: $tokenType")
+                    null
+                }
             }
             
             challenge { defaultScheme, realm ->
+                logger.warn("JWT认证失败，返回401错误")
                 call.respond(
                     HttpStatusCode.Unauthorized,
                     mapOf(
@@ -55,9 +75,13 @@ fun Application.configureAuthentication() {
         
         // OAuth2认证配置（用于GitHub登录）
         oauth("auth-oauth-github") {
-            urlProvider = { securityConfig.oauth2.redirectUri }
+            urlProvider = { 
+                logger.info("OAuth2 URL Provider调用，返回: ${securityConfig.oauth2.redirectUri}")
+                securityConfig.oauth2.redirectUri 
+            }
             providerLookup = {
-                OAuthServerSettings.OAuth2ServerSettings(
+                logger.info("OAuth2 Provider Lookup调用")
+                val settings = OAuthServerSettings.OAuth2ServerSettings(
                     name = "github",
                     authorizeUrl = "https://github.com/login/oauth/authorize",
                     accessTokenUrl = "https://github.com/login/oauth/access_token",
@@ -66,6 +90,8 @@ fun Application.configureAuthentication() {
                     clientSecret = securityConfig.oauth2.clientSecret,
                     defaultScopes = listOf(securityConfig.oauth2.scope)
                 )
+                logger.info("OAuth2设置创建完成: ${settings.name}")
+                settings
             }
             client = HttpClient(CIO)
         }

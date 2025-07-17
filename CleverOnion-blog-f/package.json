@@ -17,12 +17,15 @@
     "@milkdown/plugin-clipboard": "^7.15.1",
     "@milkdown/plugin-emoji": "^7.15.1",
     "@milkdown/plugin-history": "^7.15.1",
+    "@milkdown/plugin-indent": "^7.15.1",
+    "@milkdown/plugin-prism": "^7.15.1",
     "@milkdown/plugin-tooltip": "^7.15.1",
     "@milkdown/prose": "^7.15.1",
     "@milkdown/react": "^7.15.1",
     "@milkdown/theme-nord": "^7.15.1",
     "@milkdown/transformer": "^7.15.1",
     "@milkdown/utils": "^7.15.1",
+    "@prosemirror-adapter/react": "^0.4.1",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.10.0",
     "motion": "^12.23.3",
@@ -31,6 +34,7 @@
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.6.3",
+    "refractor": "^5.0.0",
     "zustand": "^5.0.6"
   },
   "devDependencies": {

@@ -19,8 +19,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import org.slf4j.LoggerFactory
 
 fun Route.authRoutes() {
+    val logger = LoggerFactory.getLogger("AuthController")
     val securityConfig = SecurityConfig(application.environment.config)
     
     // 创建HTTP客户端
@@ -42,6 +44,7 @@ fun Route.authRoutes() {
         
         // GitHub OAuth登录入口
         get("/github") {
+            logger.info("GitHub OAuth登录请求开始")
             val state = generateRandomState()
             val githubAuthUrl = buildString {
                 append("https://github.com/login/oauth/authorize")
@@ -51,6 +54,7 @@ fun Route.authRoutes() {
                 append("&state=$state")
             }
             
+            logger.info("重定向到GitHub授权页面: $githubAuthUrl")
             call.respondRedirect(githubAuthUrl)
         }
         
@@ -58,16 +62,28 @@ fun Route.authRoutes() {
         authenticate("auth-oauth-github") {
             get("/github/callback") {
                 try {
+                    logger.info("GitHub OAuth回调请求开始")
+                    logger.info("请求参数: ${call.request.queryParameters.entries()}")
+                    logger.info("请求头: ${call.request.headers.entries()}")
+                    
                     val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()
-                        ?: return@get call.respondRedirect(
+                    if (principal == null) {
+                        logger.error("OAuth principal为空，认证失败")
+                        return@get call.respondRedirect(
                             "http://localhost:5173/auth/callback?error=oauth_failed&error_description=OAuth authentication failed"
                         )
+                    }
                     
                     val accessToken = principal.accessToken
+                    logger.info("获取到GitHub访问令牌，长度: ${accessToken.length}")
+                    
                     val authResult = authService.handleGitHubCallback(accessToken)
+                    logger.info("认证服务处理结果类型: ${authResult?.javaClass?.simpleName}")
                     
                     when (authResult) {
                         is AuthResult.Success -> {
+                            logger.info("认证成功，用户: ${authResult.user.githubLogin} (ID: ${authResult.user.id})")
+                            
                             // 构造用户数据JSON
                             val userJson = Json.encodeToString(
                                 kotlinx.serialization.json.buildJsonObject {
@@ -87,20 +103,24 @@ fun Route.authRoutes() {
                                 append("&refresh_token=${authResult.refreshToken}")
                                 append("&user=${java.net.URLEncoder.encode(userJson, "UTF-8")}")
                             }
+                            logger.info("重定向到前端成功页面")
                             call.respondRedirect(redirectUrl)
                         }
                         is AuthResult.Error -> {
+                            logger.error("认证失败: ${authResult.message}")
                             call.respondRedirect(
                                 "http://localhost:5173/auth/callback?error=auth_failed&error_description=${authResult.message}"
                             )
                         }
                         null -> {
+                            logger.error("认证处理返回null结果")
                             call.respondRedirect(
                                 "http://localhost:5173/auth/callback?error=processing_failed&error_description=Authentication processing failed"
                             )
                         }
                     }
                 } catch (e: Exception) {
+                    logger.error("GitHub OAuth回调处理异常", e)
                     call.respondRedirect(
                         "http://localhost:5173/auth/callback?error=server_error&error_description=Internal server error: ${e.message}"
                     )
