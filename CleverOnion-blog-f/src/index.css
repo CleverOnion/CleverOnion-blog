@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@import 'prosemirror-view/style/prosemirror.css';
+
+@import './styles/milkdown.css';
+
 @font-face {
   font-family: 'Ubuntu';
   src: url('./assets/fonts/Ubuntu-Medium.ttf') format('truetype');
