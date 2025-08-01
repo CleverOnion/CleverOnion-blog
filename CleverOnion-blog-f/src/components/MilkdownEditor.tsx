@@ -11,17 +11,16 @@ import { history } from '@milkdown/kit/plugin/history'
 import { cursor } from '@milkdown/kit/plugin/cursor'
 import { prism, prismConfig } from '@milkdown/plugin-prism'
 import { indent } from '@milkdown/kit/plugin/indent'
-import css from 'refractor/css'
-import javascript from 'refractor/javascript'
-import jsx from 'refractor/jsx'
-import markdown from 'refractor/markdown'
-import tsx from 'refractor/tsx'
-import typescript from 'refractor/typescript'
-import { tooltip, TooltipView } from './editor/milkdown/ToolTip';
+import { configurePrismLanguages } from './editor/milkdown/prismLanguages'
+import { tooltip, TooltipView } from './editor/milkdown/Tooltip';
+import { blockEdit } from './editor/milkdown/BlockEdit';
+import { BlockHandleView } from './editor/milkdown/BlockEdit';
+import { blockSpec } from '@milkdown/plugin-block';
 import { usePluginViewFactory, ProsemirrorAdapterProvider } from '@prosemirror-adapter/react';
 
 
 import "@milkdown/crepe/theme/common/style.css";
+import "./editor/milkdown/BlockEdit/SlashMenu.css";
 
 interface MilkdownEditorProps {
   value: string;
@@ -49,13 +48,8 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange,
       .use(cursor)
       .config((ctx) => {
         ctx.set(prismConfig.key, {
-          configureRefractor: (refractor) => {
-            refractor.register(markdown)
-            refractor.register(css)
-            refractor.register(javascript)
-            refractor.register(typescript)
-            refractor.register(jsx)
-            refractor.register(tsx)
+          configureRefractor: () => {
+            configurePrismLanguages()
           },
         })
       })
@@ -69,6 +63,17 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange,
         })
       })
       .use(tooltip)
+      .use(blockEdit.configCtx)
+      .config(blockEdit.configureSlashMenu)
+      .use(blockEdit.plugins)
+      .use(blockSpec)
+      .config(ctx => {
+        ctx.set(blockSpec.key, {
+          view: pluginViewFactory({
+            component: BlockHandleView,
+          })
+        })
+      })
   );
 
   return (

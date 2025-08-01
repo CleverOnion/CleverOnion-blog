@@ -1,0 +1,61 @@
+/* BlockEdit 样式文件 */
+
+/* 块句柄容器 */
+.block-handle-container {
+  position: absolute;
+  z-index: 1000;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: auto;
+}
+
+/* 当块被激活时显示句柄 */
+.block-handle-container[data-show="true"] {
+  opacity: 1;
+}
+
+/* 鼠标悬停时显示句柄 */
+.block-handle-container:hover {
+  opacity: 1;
+}
+
+/* 拖拽句柄按钮 */
+.drag-handle-button {
+  cursor: grab;
+  transition: all 0.15s ease;
+}
+
+.drag-handle-button:active {
+  cursor: grabbing;
+}
+
+.drag-handle-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* 添加按钮 */
+.add-button {
+  transition: all 0.15s ease;
+}
+
+.add-button:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: rgb(59, 130, 246);
+}
+
+/* 确保块元素在拖拽时有正确的样式 */
+.ProseMirror [draggable="true"] {
+  cursor: grab;
+}
+
+.ProseMirror [draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* 拖拽时的视觉反馈 */
+.ProseMirror .ProseMirror-selectednode {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
