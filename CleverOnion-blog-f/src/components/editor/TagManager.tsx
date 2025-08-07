@@ -42,7 +42,7 @@ const TagManager: React.FC<TagManagerProps> = ({ tags, onAddTag, onRemoveTag }) 
           />
           <button
             onClick={handleAddTagClick}
-            className="px-3 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 transition-colors"
+            className="px-3 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <FiPlus className="w-4 h-4" />
           </button>
@@ -58,7 +58,7 @@ const TagManager: React.FC<TagManagerProps> = ({ tags, onAddTag, onRemoveTag }) 
                 {tag}
                 <button
                   onClick={() => onRemoveTag(tag)}
-                  className="ml-1.5 text-blue-600 hover:text-blue-800"
+                  className="ml-1.5 text-blue-600 hover:text-blue-800 cursor-pointer"
                 >
                   <FiX className="w-3 h-3" />
                 </button>

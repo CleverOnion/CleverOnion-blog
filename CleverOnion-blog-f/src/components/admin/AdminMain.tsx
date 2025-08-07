@@ -5,7 +5,7 @@ const AdminMain = () => {
   const location = useLocation();
 
   return (
-    <main className="flex-1 p-6 bg-gray-100">
+    <main className="flex-1 bg-gray-50">
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}

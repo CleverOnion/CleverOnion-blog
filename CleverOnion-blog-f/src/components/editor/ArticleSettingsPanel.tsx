@@ -1,5 +1,6 @@
 import React from 'react';
 import TagManager from './TagManager';
+import Select from '../ui/Select';
 
 interface Category {
   id: string;
@@ -37,32 +38,33 @@ const ArticleSettingsPanel: React.FC<ArticleSettingsPanelProps> = ({
             <label className="block text-xs font-medium text-gray-700 mb-1">
               状态
             </label>
-            <select
+            <Select
               value={status}
-              onChange={(e) => onStatusChange(e.target.value as 'draft' | 'published')}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="draft">草稿</option>
-              <option value="published">已发布</option>
-            </select>
+              onChange={(value) => onStatusChange(value as 'draft' | 'published')}
+              options={[
+                { value: 'draft', label: '草稿' },
+                { value: 'published', label: '已发布' }
+              ]}
+              placeholder="选择状态"
+            />
           </div>
         </div>
         
         {/* 分类选择 */}
         <div className="bg-white rounded-lg p-4 shadow-sm">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">分类</h3>
-          <select
+          <Select
             value={categoryId}
-            onChange={(e) => onCategoryChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">选择分类</option>
-            {categories.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+            onChange={onCategoryChange}
+            options={[
+              { value: '', label: '选择分类' },
+              ...categories.map(category => ({
+                value: category.id,
+                label: category.name
+              }))
+            ]}
+            placeholder="选择分类"
+          />
         </div>
         
         {/* 标签管理 */}

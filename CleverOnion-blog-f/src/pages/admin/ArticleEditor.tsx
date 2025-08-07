@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import EditorToolbar from '../../components/editor/EditorToolbar';
 import EditorContent from '../../components/editor/EditorContent';
@@ -17,8 +17,6 @@ const ArticleEditor = () => {
   const { articleId } = useParams();
   const navigate = useNavigate();
   const isEdit = !!articleId;
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
   const [article, setArticle] = useState<Article>({
     title: '',
     content: '',
@@ -26,8 +24,6 @@ const ArticleEditor = () => {
     tags: [],
     status: 'draft'
   });
-
-  const [isUploading, setIsUploading] = useState(false);
   
   const categories = [
     { id: '1', name: '前端开发' },
@@ -48,34 +44,7 @@ const ArticleEditor = () => {
     console.log('发布文章:', { ...article, status: 'published' });
   };
   
-  const handleImageUpload = useCallback(async (file: File) => {
-    setIsUploading(true);
-    try {
-      // TODO: 实现图片上传到后端
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      // 模拟上传
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const imageUrl = URL.createObjectURL(file);
-      
-      // 插入图片到编辑器
-      const imageMarkdown = `![${file.name}](${imageUrl})`;
-      const newContent = article.content + '\n\n' + imageMarkdown;
-      setArticle(prev => ({ ...prev, content: newContent }));
-    } catch (error) {
-      console.error('图片上传失败:', error);
-    } finally {
-      setIsUploading(false);
-    }
-  }, [article.content]);
-  
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      handleImageUpload(file);
-    }
-  };
+
   
   const handleAddTag = (tag: string) => {
     setArticle(prev => ({
@@ -101,8 +70,6 @@ const ArticleEditor = () => {
         onBack={() => navigate('/admin/articles')}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
-        onImageUpload={() => fileInputRef.current?.click()}
-        isUploading={isUploading}
       />
       
       <div className="flex-1 flex overflow-hidden">
@@ -123,13 +90,7 @@ const ArticleEditor = () => {
         />
       </div>
       
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
+
     </div>
   );
 };

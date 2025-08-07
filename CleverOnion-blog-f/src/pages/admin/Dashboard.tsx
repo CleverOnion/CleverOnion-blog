@@ -1,6 +1,7 @@
 const AdminDashboard = () => {
   return (
-    <div className="space-y-6">
+    <div className="h-full p-6 overflow-y-auto">
+      <div className="space-y-6">
       {/* 统计卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Sales Card */}
@@ -252,6 +253,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

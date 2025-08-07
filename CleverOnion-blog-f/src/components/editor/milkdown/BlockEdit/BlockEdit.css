@@ -37,6 +37,7 @@
 
 /* 添加按钮 */
 .add-button {
+  cursor: pointer;
   transition: all 0.15s ease;
 }
 

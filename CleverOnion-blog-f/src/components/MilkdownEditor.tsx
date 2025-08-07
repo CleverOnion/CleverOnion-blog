@@ -17,10 +17,17 @@ import { blockEdit } from './editor/milkdown/BlockEdit';
 import { BlockHandleView } from './editor/milkdown/BlockEdit';
 import { blockSpec } from '@milkdown/plugin-block';
 import { usePluginViewFactory, ProsemirrorAdapterProvider } from '@prosemirror-adapter/react';
+import { configureCodeMirror, codeBlockComponent } from './editor/milkdown/CodeMirror';
+import { codeMirrorLanguages } from './editor/milkdown/CodeMirror/languages';
+import { configureImageBlock, imageBlockComponent } from './editor/milkdown/ImageBlock';
+import { imageInlineComponent, inlineImageConfig } from '@milkdown/kit/component/image-inline';
+import { imageBlockConfig } from './editor/milkdown/ImageBlock/imageUploadConfig';
 
 
 import "@milkdown/crepe/theme/common/style.css";
 import "./editor/milkdown/BlockEdit/SlashMenu.css";
+import "./editor/milkdown/CodeMirror/CodeMirror.css";
+import "./editor/milkdown/ImageBlock/ImageBlock.css";
 
 interface MilkdownEditorProps {
   value: string;
@@ -74,6 +81,33 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange,
           })
         })
       })
+      .config((ctx) => {
+        configureCodeMirror(ctx, {
+          languages: codeMirrorLanguages,
+          searchPlaceholder: '搜索编程语言',
+          copyText: '复制代码',
+          noResultText: '未找到匹配的语言',
+          onCopy: (text: string) => {
+            navigator.clipboard.writeText(text).then(() => {
+              console.log('代码已复制到剪贴板')
+            }).catch(err => {
+              console.error('复制失败:', err)
+            })
+          }
+        })
+      })
+      .use(codeBlockComponent)
+      .config((ctx) => {
+        configureImageBlock(ctx, imageBlockConfig)
+      })
+      .use(imageBlockComponent)
+      .config((ctx) => {
+        ctx.update(inlineImageConfig.key, (defaultConfig) => ({
+          ...defaultConfig,
+          onUpload: imageBlockConfig.onUpload // 使用相同的上传逻辑
+        }))
+      })
+      .use(imageInlineComponent)
   );
 
   return (

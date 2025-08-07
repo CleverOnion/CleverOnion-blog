@@ -26,27 +26,35 @@ const AdminHeader: React.FC = () => {
   };
 
   return (
-    <header className="bg-gray-100 px-6 py-4">
+    <header className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
       <div className="flex justify-between items-center">
-        {/* 左侧：页面标题 */}
-        <div className="flex flex-col items-start">
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Ubuntu, sans-serif' }}>{getPageTitle(location.pathname)}</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {new Date().toLocaleDateString('zh-CN', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              weekday: 'long'
-            })}
-          </p>
+        {/* 左侧：页面标题和面包屑 */}
+        <div className="flex items-center space-x-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Ubuntu, sans-serif' }}>
+              {getPageTitle(location.pathname)}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {new Date().toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+              })}
+            </p>
+          </div>
         </div>
 
-        {/* 右侧：用户头像 */}
-        <div>
+        {/* 右侧：用户信息 */}
+        <div className="flex items-center space-x-4">
+          <div className="text-right">
+            <p className="text-sm font-medium text-gray-900">{user?.name || user?.githubLogin}</p>
+            <p className="text-xs text-gray-500">管理员</p>
+          </div>
           <img
             src={user?.avatarUrl || '/default-avatar.svg'}
             alt={user?.name || user?.githubLogin || 'User Avatar'}
-            className="w-12 h-12 rounded-full border-2 border-gray-300 hover:border-gray-400 transition-colors object-cover"
+            className="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-gray-300 transition-colors object-cover"
           />
         </div>
       </div>

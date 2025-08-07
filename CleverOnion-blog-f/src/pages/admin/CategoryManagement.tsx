@@ -1,15 +1,18 @@
 const CategoryManagement = () => {
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">分类管理</h1>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          新建分类
-        </button>
+    <div className="h-full flex flex-col">
+      {/* 顶部工具栏 */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex justify-end">
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            新建分类
+          </button>
+        </div>
       </div>
       
       {/* 分类列表 */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="flex-1 p-6">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -128,6 +131,7 @@ const CategoryManagement = () => {
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
       
       {/* 新建分类模态框占位 */}
