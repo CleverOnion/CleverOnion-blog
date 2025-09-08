@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import Header from './Header';
+import Footer from './Footer';
 
 const Layout: React.FC = () => {
   const location = useLocation();
@@ -29,13 +30,7 @@ const Layout: React.FC = () => {
       </main>
 
       {/* 底部 */}
-      <footer className="bg-white border-t mt-auto">
-        <div className="py-6">
-          <p className="text-center text-gray-600">
-            © 2024 CleverOnion Blog. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

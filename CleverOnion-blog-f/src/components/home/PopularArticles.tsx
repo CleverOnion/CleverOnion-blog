@@ -1,93 +1,75 @@
-import React from 'react';
-
-interface PopularArticle {
-  id: number;
-  title: string;
-  author: string;
-  publishedAt: string;
-  viewCount: number;
-}
+import React, { useState, useEffect } from 'react';
+import { articleApi, type Article } from '../../api/articles';
 
 interface PopularArticlesProps {
-  articles?: PopularArticle[];
+  articles?: Article[];
 }
 
 const PopularArticles: React.FC<PopularArticlesProps> = ({ articles = [] }) => {
-  // 模拟数据
-  const mockArticles: PopularArticle[] = [
-    {
-      id: 1,
-      title: "An Interactive Guide to Flexbox",
-      author: "张三",
-      publishedAt: "2024-01-10",
-      viewCount: 1250
-    },
-    {
-      id: 2,
-      title: "A Modern CSS Reset",
-      author: "李四",
-      publishedAt: "2024-01-08",
-      viewCount: 980
-    },
-    {
-      id: 3,
-      title: "An Interactive Guide to CSS Transitions",
-      author: "王五",
-      publishedAt: "2024-01-05",
-      viewCount: 856
-    },
-    {
-      id: 4,
-      title: "How To Center a Div",
-      author: "赵六",
-      publishedAt: "2024-01-03",
-      viewCount: 742
-    },
-    {
-      id: 5,
-      title: "The End of Front-End Development",
-      author: "孙七",
-      publishedAt: "2024-01-01",
-      viewCount: 689
-    },
-    {
-      id: 6,
-      title: "Designing Beautiful Shadows in CSS",
-      author: "孙七",
-      publishedAt: "2024-01-01",
-      viewCount: 689
-    },
-    {
-      id: 7,
-      title: "An Interactive Guide to CSS Grid",
-      author: "孙七",
-      publishedAt: "2024-01-01",
-      viewCount: 689
-    },
-    {
-      id: 8,
-      title: "CSS Variables for React Devs",
-      author: "孙七",
-      publishedAt: "2024-01-01",
-      viewCount: 689
-    },
-    {
-      id: 9,
-      title: "Why React Re-Renders",
-      author: "孙七",
-      publishedAt: "2024-01-01",
-      viewCount: 689
-    },
-    {
-      id: 10,
-      title: "Making Sense of React Server Components",
-      author: "孙七",
-      publishedAt: "2024-01-01",
-      viewCount: 689
-    }
-  ];
+  const [popularArticles, setPopularArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const displayArticles = articles.length > 0 ? articles : mockArticles;
+  // 加载热门文章
+  const loadPopularArticles = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // 获取已发布的文章，按阅读量排序，取前10篇
+      const response = await articleApi.getAllArticles({
+        page: 0,
+        size: 10,
+        status: 'PUBLISHED',
+        sortBy: 'viewCount',
+        sortDirection: 'desc'
+      });
+      
+      setPopularArticles(response.articles || []);
+    } catch (err) {
+      console.error('加载热门文章失败:', err);
+      setError('加载热门文章失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPopularArticles();
+  }, []);
+
+  const displayArticles = articles.length > 0 ? articles : popularArticles;
+
+  if (loading) {
+    return (
+      <div className="p-6 sticky top-20">
+        <div className="text-center mb-8">
+          <h3 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">POPULAR CONTENT</h3>
+        </div>
+        <div className="space-y-4">
+          {[...Array(10)].map((_, index) => (
+            <div key={index} className="flex items-center">
+              <span className="text-gray-300 mr-3 text-lg">→</span>
+              <div className="h-4 bg-gray-200 rounded animate-pulse flex-1"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 sticky top-20">
+        <div className="text-center mb-8">
+          <h3 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">POPULAR CONTENT</h3>
+        </div>
+        <div className="text-center text-red-500 text-sm">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 sticky top-20">
@@ -96,14 +78,20 @@ const PopularArticles: React.FC<PopularArticlesProps> = ({ articles = [] }) => {
       </div>
       
       <div className="space-y-4">
-        {displayArticles.map((article) => (
-          <div key={article.id} className="flex items-center group cursor-pointer">
-            <span className="text-gray-800 mr-3 text-lg">→</span>
-            <h4 className="text-gray-800 font-bold text-base group-hover:text-blue-600 transition-colors">
-              {article.title}
-            </h4>
+        {displayArticles.length > 0 ? (
+          displayArticles.map((article) => (
+            <div key={article.id} className="flex items-center group cursor-pointer">
+              <span className="text-gray-800 mr-3 text-lg">→</span>
+              <h4 className="text-gray-800 font-bold text-base group-hover:text-blue-600 transition-colors">
+                {article.title}
+              </h4>
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-gray-500 text-sm">
+            暂无热门文章
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

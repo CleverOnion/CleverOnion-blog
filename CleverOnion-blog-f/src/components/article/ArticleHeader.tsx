@@ -66,7 +66,7 @@ const ArticleHeader: React.FC<ArticleHeaderProps> = ({
             >
               {tags.map((tag, index) => (
                 <motion.span
-                  key={tag}
+                  key={`header-tag-${tag}-${index}`}
                   className="px-3 py-1 bg-sky-100 text-sky-700 rounded-full text-sm font-medium hover:bg-sky-200 transition-colors cursor-pointer"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}

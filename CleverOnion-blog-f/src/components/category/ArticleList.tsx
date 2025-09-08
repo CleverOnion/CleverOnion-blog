@@ -1,179 +1,203 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FaCalendar, FaUser, FaEye } from 'react-icons/fa';
+
+interface Author {
+  id: number;
+  github_id?: number;
+  username: string;
+  avatar_url?: string;
+  name?: string;
+  avatar?: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  icon?: string;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+}
 
 interface Article {
   id: string;
   title: string;
-  excerpt: string;
-  author: string;
-  publishDate: string;
-  readTime: string;
-  views: number;
-  tags: string[];
-  coverImage?: string;
+  content: string;
+  summary: string;
+  excerpt?: string;
+  status: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED';
+  category_id?: number;
+  category?: Category;
+  author_id?: number;
+  author?: Author;
+  tag_ids?: number[];
+  tags?: Tag[];
+  views?: number;
+  created_at: string | null;
+  updated_at: string | null;
+  published_at: string;
+  publishedAt?: string;
 }
 
 interface ArticleListProps {
   articles: Article[];
-  categoryId: string;
+  categoryId?: string;
+  loading: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
 }
 
-const ArticleList: React.FC<ArticleListProps> = ({ articles, categoryId }) => {
-  // 模拟数据，实际应该从props或API获取
-  const mockArticles: Article[] = [
-    {
-      id: '1',
-      title: 'React Hooks 深度解析：从入门到精通',
-      excerpt: '深入探讨React Hooks的工作原理，包括useState、useEffect、useContext等核心Hook的使用技巧和最佳实践。',
-      author: 'CleverOnion',
-      publishDate: '2024-01-15',
-      readTime: '8 分钟',
-      views: 1234,
-      tags: ['React', 'Hooks', '前端开发']
-    },
-    {
-      id: '2',
-      title: 'CSS Grid 布局完全指南',
-      excerpt: '全面介绍CSS Grid布局系统，从基础概念到高级应用，帮助你掌握现代网页布局的强大工具。',
-      author: 'CleverOnion',
-      publishDate: '2024-01-12',
-      readTime: '12 分钟',
-      views: 987,
-      tags: ['CSS', 'Grid', '布局']
-    },
-    {
-      id: '3',
-      title: 'JavaScript 异步编程最佳实践',
-      excerpt: '探讨Promise、async/await、以及现代JavaScript异步编程模式，提升代码质量和性能。',
-      author: 'CleverOnion',
-      publishDate: '2024-01-10',
-      readTime: '10 分钟',
-      views: 756,
-      tags: ['JavaScript', '异步编程', 'Promise']
-    },
-    {
-      id: '4',
-      title: 'TypeScript 进阶技巧与实战应用',
-      excerpt: '深入学习TypeScript的高级特性，包括泛型、装饰器、模块系统等，提升开发效率。',
-      author: 'CleverOnion',
-      publishDate: '2024-01-08',
-      readTime: '15 分钟',
-      views: 543,
-      tags: ['TypeScript', '进阶', '实战']
-    },
-    {
-      id: '5',
-      title: '前端性能优化实用指南',
-      excerpt: '从代码分割到懒加载，从缓存策略到图片优化，全方位提升前端应用性能的实用技巧。',
-      author: 'CleverOnion',
-      publishDate: '2024-01-05',
-      readTime: '18 分钟',
-      views: 432,
-      tags: ['性能优化', '前端', '最佳实践']
-    }
-  ];
-
-  const displayArticles = articles.length > 0 ? articles : mockArticles;
+const ArticleList: React.FC<ArticleListProps> = ({ 
+  articles, 
+  categoryId, 
+  loading, 
+  hasMore, 
+  onLoadMore 
+}) => {
+  // 加载状态的骨架屏组件
+  const ArticleSkeleton = () => (
+    <div className="bg-white rounded-lg shadow-md p-6 animate-pulse">
+      <div className="h-6 bg-gray-200 rounded mb-3 w-3/4"></div>
+      <div className="h-4 bg-gray-200 rounded mb-2 w-full"></div>
+      <div className="h-4 bg-gray-200 rounded mb-4 w-2/3"></div>
+      <div className="flex items-center space-x-4 text-sm">
+        <div className="flex items-center space-x-2">
+          <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
+          <div className="h-4 bg-gray-200 rounded w-16"></div>
+        </div>
+        <div className="h-4 bg-gray-200 rounded w-20"></div>
+        <div className="h-4 bg-gray-200 rounded w-16"></div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="text-center mb-12">
-        <p className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-2">
-          {categoryId.toUpperCase()} ARTICLES
-        </p>
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          共找到 {displayArticles.length} 篇文章
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          文章列表
         </h2>
-        <p className="text-xl text-gray-600">
-          探索 {categoryId} 分类下的精彩内容
+        <p className="text-gray-600">
+          {loading && articles.length === 0 ? (
+            '正在加载文章...'
+          ) : (
+            `共找到 ${articles.length} 篇文章`
+          )}
         </p>
       </div>
 
-      <div className="space-y-12">
-        {displayArticles.map((article, index) => (
+      <div className="space-y-6">
+        {/* 显示文章列表 */}
+        {articles.map((article, index) => (
           <motion.article
             key={article.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="max-w-4xl mx-auto border-b border-gray-100 pb-12 last:border-b-0"
+            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200"
           >
-            <div className="mb-6">
+            <div>
               <Link 
                 to={`/article/${article.id}`}
-                className="block group mb-4"
+                className="block group mb-3"
               >
-                <h2 className="text-4xl font-bold text-gray-900 mb-4 leading-tight group-hover:text-gray-700 transition-colors duration-200">
+                <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
                   {article.title}
-                </h2>
+                </h3>
               </Link>
               
-              <p className="text-xl text-gray-600 mb-6 leading-relaxed">
-                {article.excerpt}
+              <p className="text-gray-600 mb-4 line-clamp-3">
+                {article.summary}
               </p>
               
               {/* 标签 */}
-              <div className="flex flex-wrap gap-3 mb-6">
-                {article.tags.map((tag, tagIndex) => (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {article.tags && article.tags.slice(0, 3).map((tag, tagIndex) => (
                   <span
-                    key={tagIndex}
-                    className="inline-block px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    key={tag.id || tagIndex}
+                    className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded"
                   >
-                    {tag}
+                    {tag.name}
                   </span>
                 ))}
+                {article.tags && article.tags.length > 3 && (
+                  <span className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
+                    +{article.tags.length - 3}
+                  </span>
+                )}
               </div>
               
               {/* 文章元信息 */}
-              <div className="flex items-center justify-between text-gray-500 mb-6">
-                <div className="flex items-center space-x-6 text-sm">
-                  <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                    {article.author}
-                  </span>
-                  <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                    </svg>
-                    {article.publishDate}
-                  </span>
-                  <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                    </svg>
-                    {article.readTime}
-                  </span>
-                  <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                    </svg>
-                    {article.views} 次浏览
-                  </span>
+              <div className="flex items-center justify-between text-gray-500 text-sm">
+                <div className="flex items-center space-x-4">
+                  {article.author && (
+                    <div className="flex items-center space-x-1">
+                      <FaUser className="w-3 h-3" />
+                      <span>{article.author.username}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center space-x-1">
+                    <FaCalendar className="w-3 h-3" />
+                    <span>{new Date(article.published_at).toLocaleDateString()}</span>
+                  </div>
+                  {article.views !== undefined && (
+                    <div className="flex items-center space-x-1">
+                      <FaEye className="w-3 h-3" />
+                      <span>{article.views}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              <Link 
-                to={`/article/${article.id}`}
-                className="text-gray-900 font-semibold text-lg hover:text-gray-700 transition-colors duration-200"
-              >
-                阅读文章
-              </Link>
             </div>
           </motion.article>
         ))}
-      </div>
-
-      {/* 分页组件占位 */}
-      <div className="mt-16 flex justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 text-lg">
-            分页组件将在这里实现
-          </p>
-        </div>
+        
+        {/* 加载状态 */}
+        {loading && (
+          <>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <ArticleSkeleton key={`skeleton-${index}`} />
+            ))}
+          </>
+        )}
+        
+        {/* 空状态 */}
+        {!loading && articles.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-6xl mb-4">📝</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              暂无文章
+            </h3>
+            <p className="text-gray-600">
+              该分类下还没有发布的文章
+            </p>
+          </div>
+        )}
+        
+        {/* 加载更多按钮 */}
+        {!loading && hasMore && articles.length > 0 && (
+          <div className="text-center py-8">
+            <button
+              onClick={onLoadMore}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+            >
+              加载更多文章
+            </button>
+          </div>
+        )}
+        
+        {/* 没有更多文章提示 */}
+        {!loading && !hasMore && articles.length > 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              已显示全部文章
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

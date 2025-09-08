@@ -1,7 +1,7 @@
 // MilkdownEditor.tsx
 import React from 'react';
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react';
-import { Editor, rootCtx, defaultValueCtx } from '@milkdown/kit/core';
+import { Editor, rootCtx, defaultValueCtx, editorViewCtx, parserCtx } from '@milkdown/kit/core';
 import { commonmark } from '@milkdown/kit/preset/commonmark';
 import { nord } from '@milkdown/theme-nord';
 import { listener, listenerCtx } from '@milkdown/kit/plugin/listener';
@@ -37,14 +37,20 @@ interface MilkdownEditorProps {
 
 export const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange, className = '' }) => {
   const pluginViewFactory = usePluginViewFactory();
+  const currentValueRef = React.useRef(value);
+  const isUpdatingRef = React.useRef(false);
   
-  useEditor((root) =>
+  const { get } = useEditor((root) =>
     Editor.make()
       .config(nord)
       .config((ctx) => {
         ctx.set(rootCtx, root);
+        ctx.set(defaultValueCtx, value);
         ctx.get(listenerCtx).markdownUpdated((_, markdown) => {
-          onChange(markdown);
+          if (!isUpdatingRef.current && markdown !== currentValueRef.current) {
+            currentValueRef.current = markdown;
+            onChange(markdown);
+          }
         });
       })
       .use(commonmark)
@@ -109,9 +115,36 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange,
       })
       .use(imageInlineComponent)
   );
+  
+  // 当value变化时，更新编辑器内容
+  React.useEffect(() => {
+    if (get && value !== currentValueRef.current) {
+      const editor = get();
+      if (editor) {
+        // 使用setTimeout避免在React渲染期间同步更新
+        setTimeout(() => {
+          isUpdatingRef.current = true;
+          editor.action((ctx) => {
+            const view = ctx.get(editorViewCtx);
+            const parser = ctx.get(parserCtx);
+            const doc = parser(value);
+            if (doc) {
+              const tr = view.state.tr.replaceWith(0, view.state.doc.content.size, doc.content);
+              view.dispatch(tr);
+              currentValueRef.current = value;
+            }
+          });
+          // 延迟重置标志，确保编辑器更新完成
+          setTimeout(() => {
+            isUpdatingRef.current = false;
+          }, 10);
+        }, 0);
+      }
+    }
+  }, [value, get]);
 
   return (
-    <div className={className}>
+    <div className={`h-full w-full ${className}`}>
       <Milkdown />
     </div>
   );

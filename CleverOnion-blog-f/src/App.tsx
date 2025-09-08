@@ -1,23 +1,48 @@
-import { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
-import { useAuthStore } from './store/authStore';
-import ToastManager from './components/common/ToastManager';
+import { useEffect } from 'react';
+
+import { LoadingProvider } from './contexts/LoadingContext';
+import { ToastProvider, ToastContainer, useToast } from './components/ui/Toast';
+import GlobalLoading from './components/ui/GlobalLoading';
 import './App.css';
 
-function App() {
-  const { initializeAuth } = useAuthStore();
+// 全局事件监听器组件
+function GlobalEventListener() {
+  const { error } = useToast();
 
   useEffect(() => {
-    // 应用启动时初始化认证状态
-    initializeAuth();
-  }, [initializeAuth]);
+    // 监听登录toast事件
+    const handleLoginToast = (event: CustomEvent) => {
+      const { message } = event.detail;
+      error(message, {
+        title: '需要登录',
+        duration: 5000
+      });
+    };
+
+    window.addEventListener('show-login-toast', handleLoginToast as EventListener);
+
+    return () => {
+      window.removeEventListener('show-login-toast', handleLoginToast as EventListener);
+    };
+  }, [error]);
+
+  return null;
+}
+
+function App() {
 
   return (
-    <>
-      <RouterProvider router={router} />
-      <ToastManager />
-    </>
+    <LoadingProvider>
+      <ToastProvider>
+        <GlobalEventListener />
+        <RouterProvider router={router} />
+
+        <GlobalLoading />
+        <ToastContainer position="bottom-right" maxToasts={5} />
+      </ToastProvider>
+    </LoadingProvider>
   );
 }
 

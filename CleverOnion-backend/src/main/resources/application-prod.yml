@@ -1,0 +1,114 @@
+# 生产环境配置
+spring:
+  # 数据源配置
+  datasource:
+    url: jdbc:postgresql://pgm-bp169mgqz2i5772lwo.rwlb.rds.aliyuncs.com:5432/blog
+    username: blog_dev
+    password: Shicong666
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 生产环境只验证表结构
+    show-sql: false  # 生产环境不显示 SQL
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        use_sql_comments: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+
+  # Redis 配置
+  data:
+    redis:
+      host: ${REDIS_HOST:123.57.139.125}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          max-wait: -1ms
+        shutdown-timeout: 100ms
+
+# Sa-Token 配置
+sa-token:
+  # Redis 配置
+  alone-redis:
+    database: ${SA_TOKEN_REDIS_DATABASE:1}
+    host: ${REDIS_HOST:123.57.139.125}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 10s
+  # 生产环境安全配置
+  timeout: 7200  # 2小时
+  active-timeout: 1800  # 30分钟无操作自动冻结
+  is-concurrent: false  # 生产环境不允许多地登录
+  is-share: false  # 每次登录新建 token
+
+# 服务器配置
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+  # 生产环境压缩配置
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# 日志配置
+logging:
+  level:
+    com.cleveronion.blog: INFO
+    org.springframework.web: WARN
+    org.hibernate: WARN
+    root: WARN
+  file:
+    name: logs/cleveronion-blog-prod.log
+    max-size: 100MB
+    max-history: 30
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
+
+# GitHub OAuth2 配置（生产环境）
+github:
+  oauth2:
+    client-id: Ov23lidYpkQFTdG7UseL
+    client-secret: ab1bc714224d8425f4aeb0237a225746162b3ca2
+    redirect-uri: https://blog.cleveronion.cn/auth/callback
+    authorize-url: https://github.com/login/oauth/authorize
+    access-token-url: https://github.com/login/oauth/access_token
+    user-info-url: https://api.github.com/user
+
+# 前端配置
+frontend:
+  base-url: ${FRONTEND_BASE_URL:https://blog.cleveronion.cn}
+  auth:
+    callback-path: /auth/callback
+    error-path: /auth/error
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never

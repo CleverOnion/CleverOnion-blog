@@ -1,23 +1,52 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { FaCss3Alt, FaReact, FaJs, FaBriefcase } from 'react-icons/fa';
-import { MdAnimation, MdList } from 'react-icons/md';
+import { Category as CategoryType } from '../../api/categories';
+import * as Icons from 'react-icons/fa';
+import * as MdIcons from 'react-icons/md';
+import { MdList } from 'react-icons/md';
 
-const CategoryHero: React.FC = () => {
-  const { categoryId } = useParams();
+interface CategoryHeroProps {
+  category: CategoryType | null;
+  loading: boolean;
+}
 
-  // 分类图标映射
-  const categoryIcons: { [key: string]: { icon: React.ComponentType<any>, name: string, color: string } } = {
-    'css': { icon: FaCss3Alt, name: 'CSS', color: 'text-blue-500' },
-    'react': { icon: FaReact, name: 'React', color: 'text-cyan-500' },
-    'javascript': { icon: FaJs, name: 'JavaScript', color: 'text-yellow-500' },
-    'career': { icon: FaBriefcase, name: '职场', color: 'text-gray-600' },
-    'animation': { icon: MdAnimation, name: '动画', color: 'text-purple-500' },
-    'other': { icon: MdList, name: '其他', color: 'text-green-500' }
+const CategoryHero: React.FC<CategoryHeroProps> = ({ category, loading }) => {
+
+  // 获取图标组件
+  const getIconComponent = (iconName?: string) => {
+    if (!iconName) return MdList; // 默认图标
+    
+    // 尝试从 react-icons/fa 获取图标
+    const FaIcon = (Icons as any)[iconName];
+    if (FaIcon) return FaIcon;
+    
+    // 尝试从 react-icons/md 获取图标
+    const MdIcon = (MdIcons as any)[iconName];
+    if (MdIcon) return MdIcon;
+    
+    // 如果找不到图标，返回默认图标
+    return MdList;
   };
 
-  const currentCategory = categoryIcons[categoryId || 'other'] || categoryIcons['other'];
-  const IconComponent = currentCategory.icon;
+  const IconComponent = getIconComponent(category?.icon);
+  
+  // 根据分类名称生成颜色
+  const getCategoryColor = (categoryName?: string) => {
+    if (!categoryName) return 'text-gray-500';
+    
+    const colors = [
+      'text-blue-500', 'text-cyan-500', 'text-yellow-500', 
+      'text-green-500', 'text-purple-500', 'text-pink-500',
+      'text-indigo-500', 'text-red-500', 'text-orange-500'
+    ];
+    
+    // 基于分类名称生成一致的颜色
+    const hash = categoryName.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    return colors[Math.abs(hash) % colors.length];
+  };
 
   return (
     <section className="relative h-80 bg-gradient-to-br from-purple-400 via-pink-300 to-orange-200 overflow-hidden">
@@ -83,15 +112,42 @@ const CategoryHero: React.FC = () => {
       {/* 分类信息 */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center">
         <div className="bg-white rounded-2xl p-8 shadow-lg">
-          <div className="flex items-center justify-center mb-4">
-            <IconComponent className={`text-6xl ${currentCategory.color}`} />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            {currentCategory.name}
-          </h1>
-          <p className="text-gray-600 text-lg">
-            探索 {currentCategory.name} 相关的精彩文章
-          </p>
+          {loading ? (
+            // 加载状态
+            <div className="animate-pulse">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
+              </div>
+              <div className="h-8 bg-gray-200 rounded mb-2 w-32 mx-auto"></div>
+              <div className="h-5 bg-gray-200 rounded w-48 mx-auto"></div>
+            </div>
+          ) : category ? (
+            // 显示分类信息
+            <>
+              <div className="flex items-center justify-center mb-4">
+                <IconComponent className={`text-6xl ${getCategoryColor(category.name)}`} />
+              </div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                {category.name}
+              </h1>
+              <p className="text-gray-600 text-lg">
+                探索 {category.name} 相关的精彩文章
+              </p>
+            </>
+          ) : (
+            // 未找到分类
+            <>
+              <div className="flex items-center justify-center mb-4">
+                <MdList className="text-6xl text-gray-400" />
+              </div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                分类未找到
+              </h1>
+              <p className="text-gray-600 text-lg">
+                该分类可能已被删除或不存在
+              </p>
+            </>
+          )}
         </div>
       </div>
       

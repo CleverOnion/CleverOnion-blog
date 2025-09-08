@@ -28,6 +28,8 @@
     0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
 
   text-align: left;
+  width: 100% !important;
+  max-width: none !important;
 }
 
 /* Milkdown 列表样式 */
@@ -84,4 +86,103 @@
 
 .milkdown li[data-checked="true"]::before {
   content: '☑';
+}
+
+/* 编辑器内容区域样式 */
+.milkdown .ProseMirror {
+  width: 100% !important;
+  max-width: none !important;
+  padding: 2rem 3rem !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+  min-height: 100vh !important;
+  height: auto !important;
+  overflow-y: visible !important;
+}
+
+/* 移除任何可能的宽度限制 */
+.milkdown .milkdown-editor,
+.milkdown .editor,
+.milkdown [data-milkdown-root],
+.milkdown .crepe {
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 100% !important;
+}
+
+/* 确保编辑器容器占满宽度 */
+.milkdown {
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  overflow-y: auto !important;
+}
+
+/* 编辑器内的段落和内容 */
+.milkdown p,
+.milkdown h1,
+.milkdown h2,
+.milkdown h3,
+.milkdown h4,
+.milkdown h5,
+.milkdown h6,
+.milkdown ul,
+.milkdown ol,
+.milkdown blockquote,
+.milkdown pre {
+  width: 100%;
+  max-width: none;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* 确保所有文本元素都有适当的间距 */
+.milkdown .ProseMirror > * {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* 特别处理标题间距 */
+.milkdown h1,
+.milkdown h2,
+.milkdown h3,
+.milkdown h4,
+.milkdown h5,
+.milkdown h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* 第一个元素不需要上边距 */
+.milkdown .ProseMirror > *:first-child {
+  margin-top: 0 !important;
+}
+
+/* 修复滚动问题 */
+.milkdown-wrapper {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* 确保编辑器容器可以滚动 */
+.milkdown .ProseMirror {
+  outline: none;
+  border: none;
+}
+
+/* 代码块样式调整 */
+.milkdown pre {
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* 表格样式调整 */
+.milkdown table {
+  width: 100%;
+  max-width: none;
+  table-layout: auto;
 }

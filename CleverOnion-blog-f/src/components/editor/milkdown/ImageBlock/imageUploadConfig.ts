@@ -1,4 +1,4 @@
-import { api } from '../../../../api';
+import { api } from '../../../../api/index';
 
 /**
  * 图片上传处理函数

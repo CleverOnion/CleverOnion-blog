@@ -1,0 +1,87 @@
+# 测试环境配置
+spring:
+  # 数据源配置
+  datasource:
+    url: jdbc:postgresql://pgm-bp169mgqz2i5772lwo.rwlb.rds.aliyuncs.com:5432/blog
+    username: blog_dev
+    password: Shicong666
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # 测试环境每次重新创建表
+    show-sql: false  # 测试环境不显示 SQL
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        use_sql_comments: false
+    open-in-view: false
+
+  # Redis 配置
+  data:
+    redis:
+      host: localhost
+      port: 16379
+      password: 
+      database: 2  # 使用不同的数据库
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 4
+          max-idle: 4
+          min-idle: 0
+          max-wait: -1ms
+
+# Sa-Token 配置
+sa-token:
+  # token 临时有效期（单位：秒），30分钟无操作则过期，有操作则自动续签
+  active-timeout: 1800
+  # Redis 配置
+  alone-redis:
+    database: 3
+    host: localhost
+    port: 16379
+    password: 
+    timeout: 10s
+  # 测试环境 token 有效期较短
+  timeout: 3600  # 1小时
+
+# 服务器配置
+server:
+  port: 8081
+  servlet:
+    context-path: /api
+
+# 日志配置
+logging:
+  level:
+    com.cleveronion.blog: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: logs/cleveronion-blog-test.log
+
+# GitHub OAuth2 配置（测试环境）
+github:
+  oauth2:
+    client-id: your-test-client-id
+    client-secret: your-test-client-secret
+    redirect-uri: http://localhost:8081/api/auth/github/callback
+    authorize-url: https://github.com/login/oauth/authorize
+    access-token-url: https://github.com/login/oauth/access_token
+    user-info-url: https://api.github.com/user
+
+# 前端配置
+frontend:
+  base-url: http://localhost:3000
+  auth:
+    callback-path: /auth/callback
+    error-path: /auth/error

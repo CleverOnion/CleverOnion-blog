@@ -1,30 +1,33 @@
-import React from 'react';
-
-interface Tag {
-  id: number;
-  name: string;
-  count: number;
-}
+import React, { useState, useEffect } from 'react';
+import { tagApi, TagWithCount } from '../../api/tags';
 
 interface TagListProps {
-  tags?: Tag[];
   isVisible?: boolean;
 }
 
-const TagList: React.FC<TagListProps> = ({ tags = [], isVisible = true }) => {
-  // 模拟数据
-  const mockTags: Tag[] = [
-    { id: 1, name: "CSS", count: 15 },
-    { id: 2, name: "React", count: 12 },
-    { id: 3, name: "Animation", count: 8 },
-    { id: 4, name: "Career", count: 6 },
-    { id: 5, name: "JavaScript", count: 20 },
-    { id: 6, name: "SVG", count: 10 },
-    { id: 7, name: "Next.js", count: 5 },
-    { id: 8, name: "General", count: 7 }
-  ];
+const TagList: React.FC<TagListProps> = ({ isVisible = true }) => {
+  const [tags, setTags] = useState<TagWithCount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const displayTags = tags.length > 0 ? tags : mockTags;
+  // 加载热门标签
+  const loadPopularTags = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await tagApi.getTagsWithCount(0, 10);
+      setTags(response.tags);
+    } catch (error) {
+      console.error('加载热门标签失败:', error);
+      setError('加载标签失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPopularTags();
+  }, []);
 
   return (
     <div 
@@ -34,19 +37,46 @@ const TagList: React.FC<TagListProps> = ({ tags = [], isVisible = true }) => {
       style={{ display: isVisible ? 'block' : 'none' }}
     >
       <div className="text-center mb-8">
-        <h3 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">BROWSE BY TAGS</h3>
+        <h3 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">POPULAR TAGS</h3>
       </div>
       
-      <div className="flex flex-wrap gap-3 justify-center">
-        {displayTags.map((tag) => (
+      {loading ? (
+        <div className="flex flex-wrap gap-3 justify-center">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div
+              key={index}
+              className="px-6 py-3 rounded-full bg-gray-200 animate-pulse"
+              style={{ width: '80px', height: '44px' }}
+            />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="text-center py-4">
+          <p className="text-red-500 text-sm">{error}</p>
           <button
-            key={tag.id}
-            className="px-6 py-3 rounded-full text-gray-700 bg-sky-100 hover:bg-sky-200 transition-colors cursor-pointer font-medium"
+            onClick={loadPopularTags}
+            className="mt-2 px-4 py-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
           >
-            {tag.name}
+            重试
           </button>
-        ))}
-      </div>
+        </div>
+      ) : tags.length === 0 ? (
+        <div className="text-center py-4">
+          <p className="text-gray-500 text-sm">暂无热门标签</p>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-3 justify-center">
+          {tags.map((tag) => (
+            <button
+              key={tag.id}
+              className="px-6 py-3 rounded-full text-gray-700 bg-sky-100 hover:bg-sky-200 transition-colors cursor-pointer font-medium"
+              title={`${tag.articleCount} 篇文章`}
+            >
+              {tag.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

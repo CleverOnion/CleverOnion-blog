@@ -9,13 +9,11 @@ interface TOCItem {
 
 interface TableOfContentsProps {
   tableOfContents: TOCItem[];
-  activeSection: string;
   onSectionClick: (id: string) => void;
 }
 
 const TableOfContents: React.FC<TableOfContentsProps> = ({
   tableOfContents,
-  activeSection,
   onSectionClick
 }) => {
   return (
@@ -30,15 +28,11 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
         <nav className="space-y-2">
           {tableOfContents.map((item, index) => (
             <motion.button
-              key={item.id}
+              key={`toc-${item.id || index}-${index}`}
               onClick={() => onSectionClick(item.id)}
               className={`block w-full text-left py-2 px-3 rounded-md transition-all duration-200 ${
                 item.level === 3 ? 'ml-4 text-sm' : 'text-sm'
-              } ${
-                activeSection === item.id
-                  ? 'bg-sky-100/80 text-sky-700 font-medium border-l-3 border-sky-400'
-                  : 'text-gray-600 hover:bg-sky-50/50 hover:text-sky-600'
-              }`}
+              } text-gray-600 hover:bg-sky-50/50 hover:text-sky-600`}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ 

@@ -108,36 +108,36 @@ const Select: React.FC<SelectProps> = ({
         onKeyDown={handleKeyDown}
         disabled={disabled}
         className={`
-          w-full px-4 py-3.5 text-left bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl
-          transition-all duration-300 ease-out shadow-apple cursor-pointer
-          hover:bg-white hover:border-gray-300/70 hover:shadow-apple-lg hover:-translate-y-0.5
-          focus:outline-none focus:bg-white focus:border-blue-400/50 focus:shadow-apple-lg focus:-translate-y-0.5
-          disabled:bg-gray-50/50 disabled:text-gray-400 disabled:cursor-not-allowed
-          ${isOpen ? 'bg-white border-blue-400/50 shadow-apple-lg -translate-y-0.5 scale-[1.01]' : ''}
-          ${disabled ? 'opacity-50' : ''}
+          w-full px-4 py-3 text-left bg-white border border-gray-200 rounded-lg
+          transition-all duration-200 ease-out cursor-pointer
+          hover:border-gray-300 hover:shadow-sm
+          focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+          disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:border-gray-200
+          ${isOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : ''}
+          ${disabled ? 'opacity-60' : ''}
         `}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
         <div className="flex items-center justify-between">
-          <span className={`text-sm font-normal tracking-wide leading-relaxed ${
-            selectedOption ? 'text-gray-900' : 'text-gray-400'
+          <span className={`text-sm ${
+            selectedOption ? 'text-gray-900' : 'text-gray-500'
           }`}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
           <FiChevronDown 
-            className={`w-4 h-4 text-gray-400 transition-all duration-300 ease-out pointer-events-none ${
-              isOpen ? 'rotate-180 text-blue-500' : ''
+            className={`w-4 h-4 text-gray-400 transition-transform duration-200 pointer-events-none ${
+              isOpen ? 'rotate-180' : ''
             }`}
           />
         </div>
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-3 bg-white/95 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-apple-lg overflow-hidden slide-in-from-top-2 cursor-default">
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden animate-in slide-in-from-top-2 duration-200">
           <div 
             ref={optionsRef}
-            className="max-h-64 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+            className="max-h-60 overflow-y-auto py-1"
             role="listbox"
           >
             {options.map((option, index) => {
@@ -149,22 +149,22 @@ const Select: React.FC<SelectProps> = ({
                   key={option.value}
                   onClick={() => handleOptionClick(option.value)}
                   className={`
-                    px-4 py-3.5 cursor-pointer transition-all duration-200 ease-out select-none
+                    px-4 py-2.5 cursor-pointer transition-colors duration-150 select-none
                     flex items-center justify-between
-                    ${isFocused ? 'bg-blue-50/70 scale-[0.97] mx-2 rounded-xl shadow-sm' : ''}
-                    ${isSelected ? 'bg-blue-50/70 text-blue-600 mx-2 rounded-xl shadow-sm' : 'text-gray-700'}
-                    hover:bg-blue-50/50 hover:scale-[0.97] hover:mx-2 hover:rounded-xl hover:shadow-sm active:scale-[0.95]
+                    ${isFocused ? 'bg-gray-50' : ''}
+                    ${isSelected ? 'bg-blue-50 text-blue-600' : 'text-gray-700'}
+                    hover:bg-gray-50
                   `}
                   role="option"
                   aria-selected={isSelected}
                 >
-                  <span className={`text-sm font-normal tracking-wide leading-relaxed ${
+                  <span className={`text-sm ${
                     isSelected ? 'font-medium text-blue-600' : 'text-gray-700'
                   }`}>
                     {option.label}
                   </span>
                   {isSelected && (
-                    <FiCheck className="w-4 h-4 text-blue-500 zoom-in-50" />
+                    <FiCheck className="w-4 h-4 text-blue-500" />
                   )}
                 </div>
               );

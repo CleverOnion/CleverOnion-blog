@@ -1,12 +1,10 @@
 import React from 'react';
-import { FaClock, FaEye, FaUser, FaCalendarAlt } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt } from 'react-icons/fa';
 
 interface ArticleHeroProps {
   title: string;
   author: string;
   publishDate: string;
-  readTime: string;
-  views: number;
   tags: string[];
 }
 
@@ -14,8 +12,6 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({
   title,
   author,
   publishDate,
-  readTime,
-  views,
   tags
 }) => {
   return (
@@ -63,21 +59,14 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({
               <FaCalendarAlt className="text-lg" />
               <span className="text-lg">{publishDate}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <FaClock className="text-lg" />
-              <span className="text-lg">{readTime}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FaEye className="text-lg" />
-              <span className="text-lg">{views.toLocaleString()} 次阅读</span>
-            </div>
+
           </div>
           
           {/* 标签 */}
           <div className="flex flex-wrap justify-center gap-3">
             {tags.map((tag, index) => (
               <span
-                key={index}
+                key={`tag-${tag}-${index}`}
                 className="px-4 py-2 bg-white/30 backdrop-blur-sm text-black rounded-full text-sm font-medium border border-black/20 hover:bg-white/40 transition-colors duration-200"
               >
                 {tag}

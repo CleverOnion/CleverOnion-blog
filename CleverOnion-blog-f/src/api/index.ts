@@ -1,18 +1,15 @@
 import axios from 'axios';
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { playNotificationSound } from '../utils/audioUtils';
 
 // API 基础配置
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_PATH = import.meta.env.VITE_API_PATH || '/api';
 const REQUEST_TIMEOUT = 10000; // 10秒超时
-
-// 扩展 InternalAxiosRequestConfig 类型以支持 _retry 属性
-interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
-  _retry?: boolean;
-}
 
 // 创建 axios 实例
 const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}${API_PATH}`,
   timeout: REQUEST_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
@@ -22,13 +19,9 @@ const apiClient: AxiosInstance = axios.create({
 // 请求拦截器
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // 从 localStorage 获取 token
-    const token = localStorage.getItem('accessToken');
-    
-    // 排除OAuth相关路径，不添加Authorization头
-    const isOAuthRequest = config.url?.includes('/auth/github');
-    
-    if (token && config.headers && !isOAuthRequest) {
+    // 自动添加认证Token
+    const token = localStorage.getItem('access_token');
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
@@ -37,8 +30,9 @@ apiClient.interceptors.request.use(
       console.log('🚀 API Request:', {
         method: config.method?.toUpperCase(),
         url: config.url,
+        baseURL: config.baseURL,
+        headers: config.headers,
         data: config.data,
-        isOAuthRequest,
       });
     }
     
@@ -62,50 +56,33 @@ apiClient.interceptors.response.use(
       });
     }
     
-    return response;
-  },
-  async (error: AxiosError) => {
-    const originalRequest = error.config as ExtendedAxiosRequestConfig;
-    
-    // 排除OAuth回调的401重试，避免干扰GitHub OAuth流程
-    const isOAuthCallback = originalRequest?.url?.includes('/auth/github');
-    
-    // 处理 401 未授权错误（排除OAuth相关请求）
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isOAuthCallback) {
-      originalRequest._retry = true;
+    // 检查后端返回的统一响应格式
+    if (response.data && typeof response.data === 'object' && 'code' in response.data) {
+      const { code, message } = response.data;
       
-      try {
-        // 尝试刷新 token
-        const refreshToken = localStorage.getItem('refreshToken');
+      // 播放通知音效
+      playNotificationSound(code);
+      
+      // 处理401未授权错误
+      if (code === 401) {
+        // 通过事件方式处理toast显示
+        const event = new CustomEvent('show-login-toast', {
+          detail: { message: message || '请先登录' }
+        });
+        window.dispatchEvent(event);
         
-        if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-            refreshToken,
-          });
-          
-          const { accessToken } = response.data;
-          localStorage.setItem('accessToken', accessToken);
-          
-          // 重新发送原始请求
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          }
-          
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        // 刷新失败，清除本地存储并跳转到首页
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        // Token过期或无效，清除本地存储
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('token_expires_at');
+        localStorage.removeItem('user_info');
         
-        // 跳转到首页，用户可以重新进行GitHub登录
-        window.location.href = '/';
-        
-        return Promise.reject(refreshError);
+        return Promise.reject(new Error(message || '请先登录'));
       }
     }
     
+    return response;
+  },
+  (error: AxiosError) => {
     // 打印错误信息
     console.error('❌ API Error:', {
       status: error.response?.status,
@@ -114,19 +91,63 @@ apiClient.interceptors.response.use(
       data: error.response?.data,
     });
     
+    // 检查后端返回的统一响应格式
+    if (error.response?.data && typeof error.response.data === 'object' && 'code' in error.response.data) {
+      const { code, message } = error.response.data as { code: number; message: string };
+      
+      // 播放通知音效
+      playNotificationSound(code);
+      
+      // 处理401未授权错误
+      if (code === 401) {
+        // 通过事件方式处理toast显示
+        const event = new CustomEvent('show-login-toast', {
+          detail: { message: message || '请先登录' }
+        });
+        window.dispatchEvent(event);
+        
+        // Token过期或无效，清除本地存储
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('token_expires_at');
+        localStorage.removeItem('user_info');
+        
+        return Promise.reject(new Error(message || '请先登录'));
+      }
+    }
+    
+    // 处理HTTP状态码401（兼容旧的处理方式）
+    if (error.response?.status === 401) {
+      // Token过期或无效，清除本地存储
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('token_expires_at');
+      localStorage.removeItem('user_info');
+      
+      // 如果不是登录相关的接口，重定向到登录页
+      const currentPath = window.location.pathname;
+      if (!currentPath.includes('/auth/') && !currentPath.includes('/login')) {
+        console.warn('🔒 Token已过期，重定向到登录页');
+        window.location.href = '/login';
+      }
+    }
+    
     return Promise.reject(error);
   }
 );
 
-// 通用 API 响应类型
+// 通用 API 响应类型（符合后端统一响应格式）
 export interface ApiResponse<T = any> {
+  code: number;
+  message: string;
   data: T;
-  message?: string;
+  timestamp: number;
+  success: boolean;
 }
 
 export interface ApiError {
-  error: string;
-  message?: string;
+  code: number;
+  message: string;
+  data: null;
+  timestamp: number;
 }
 
 export interface PaginationResponse<T = any> {

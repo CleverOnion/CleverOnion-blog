@@ -1,28 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { FaCss3Alt, FaReact, FaJs, FaBriefcase } from 'react-icons/fa';
-import { MdAnimation, MdList } from 'react-icons/md';
+import React from 'react';
+import { Category as CategoryType } from '../../api/categories';
+import * as Icons from 'react-icons/fa';
+import * as MdIcons from 'react-icons/md';
+import { MdList } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface FloatingCategoryIndicatorProps {
   isVisible: boolean;
+  category: CategoryType | null;
 }
 
-const FloatingCategoryIndicator: React.FC<FloatingCategoryIndicatorProps> = ({ isVisible }) => {
-  const { categoryId } = useParams();
-
-  // 分类图标映射
-  const categoryIcons: { [key: string]: { icon: React.ComponentType<any>, name: string, color: string } } = {
-    'css': { icon: FaCss3Alt, name: 'CSS', color: 'text-blue-500' },
-    'react': { icon: FaReact, name: 'React', color: 'text-cyan-500' },
-    'javascript': { icon: FaJs, name: 'JavaScript', color: 'text-yellow-500' },
-    'career': { icon: FaBriefcase, name: '职场', color: 'text-gray-600' },
-    'animation': { icon: MdAnimation, name: '动画', color: 'text-purple-500' },
-    'other': { icon: MdList, name: '其他', color: 'text-green-500' }
+const FloatingCategoryIndicator: React.FC<FloatingCategoryIndicatorProps> = ({ isVisible, category }) => {
+  // 获取图标组件
+  const getIconComponent = (iconName?: string) => {
+    if (!iconName) return MdList; // 默认图标
+    
+    // 尝试从 react-icons/fa 获取图标
+    const FaIcon = (Icons as any)[iconName];
+    if (FaIcon) return FaIcon;
+    
+    // 尝试从 react-icons/md 获取图标
+    const MdIcon = (MdIcons as any)[iconName];
+    if (MdIcon) return MdIcon;
+    
+    // 如果找不到图标，返回默认图标
+    return MdList;
   };
 
-  const currentCategory = categoryIcons[categoryId || 'other'] || categoryIcons['other'];
-  const IconComponent = currentCategory.icon;
+  const IconComponent = getIconComponent(category?.icon);
+  
+  // 根据分类名称生成颜色
+  const getCategoryColor = (categoryName?: string) => {
+    if (!categoryName) return 'text-gray-500';
+    
+    const colors = [
+      'text-blue-500', 'text-cyan-500', 'text-yellow-500', 
+      'text-green-500', 'text-purple-500', 'text-pink-500',
+      'text-indigo-500', 'text-red-500', 'text-orange-500'
+    ];
+    
+    // 基于分类名称生成一致的颜色
+    const hash = categoryName.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    return colors[Math.abs(hash) % colors.length];
+  };
 
   return (
     <AnimatePresence>
@@ -35,9 +59,11 @@ const FloatingCategoryIndicator: React.FC<FloatingCategoryIndicatorProps> = ({ i
           className="fixed top-4 right-4 z-50"
         >
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 px-6 py-4 flex items-center space-x-4 backdrop-blur-sm bg-white/95">
-            <IconComponent className={`text-3xl ${currentCategory.color}`} />
+            <IconComponent className={`text-3xl ${getCategoryColor(category?.name)}`} />
             <div>
-              <p className="text-base font-semibold text-gray-900">{currentCategory.name}</p>
+              <p className="text-base font-semibold text-gray-900">
+                {category?.name || '未知分类'}
+              </p>
               <p className="text-sm text-gray-500">当前分类</p>
             </div>
           </div>
