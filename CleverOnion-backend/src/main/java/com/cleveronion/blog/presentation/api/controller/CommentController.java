@@ -55,10 +55,9 @@ public class CommentController {
     @PostMapping
     @SaCheckLogin
     public Result<CommentResponse> createComment(@Valid @RequestBody CreateCommentRequest request) {
-        logger.info("用户 {} 开始发表评论，文章ID: {}", StpUtil.getLoginId(), request.getArticleId());
-        
         // 获取当前登录用户ID
         Long userId = StpUtil.getLoginIdAsLong();
+        logger.info("用户 {} 开始发表评论，文章ID: {}", userId, request.getArticleId());
         
         // 构建创建评论命令
         Long articleId = Long.parseLong(request.getArticleId());
@@ -91,10 +90,9 @@ public class CommentController {
     @DeleteMapping("/{commentId}")
     @SaCheckLogin
     public Result<Void> deleteComment(@PathVariable Long commentId) {
-        logger.info("用户 {} 开始删除评论，评论ID: {}", StpUtil.getLoginId(), commentId);
-        
         // 获取当前登录用户ID
         Long userId = StpUtil.getLoginIdAsLong();
+        logger.info("用户 {} 开始删除评论，评论ID: {}", userId, commentId);
         
         // 构建删除评论命令
         DeleteCommentCommand command = new DeleteCommentCommand(commentId, userId);

@@ -51,16 +51,6 @@ public class ArticleController {
     
     private static final Logger logger = LoggerFactory.getLogger(ArticleController.class);
     
-    /**
-     * 获取当前用户ID
-     * 
-     * @return 当前用户ID
-     */
-    private Long getCurrentUserId() {
-        // 临时返回固定值，实际应该从认证上下文获取
-        return StpUtil.getLoginIdAsLong();
-    }
-    
     private final ArticleApplicationService articleApplicationService;
     private final CategoryApplicationService categoryApplicationService;
     private final TagApplicationService tagApplicationService;
@@ -102,9 +92,9 @@ public class ArticleController {
             request.getSummary()
         );
         
-        // 构建分类ID和作者ID值对象
+        // 构建作者ID值对象
+        AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
         CategoryId categoryId = new CategoryId(request.getCategoryId());
-        AuthorId authorId = new AuthorId(getCurrentUserId());
         
         // 创建文章草稿
         ArticleAggregate article = articleApplicationService.createDraft(content, categoryId, authorId);
@@ -153,7 +143,7 @@ public class ArticleController {
         
         // 构建分类ID和作者ID值对象
         CategoryId categoryId = new CategoryId(request.getCategoryId());
-        AuthorId authorId = new AuthorId(getCurrentUserId());
+        AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
         
         // 直接创建并发布文章
         ArticleAggregate article = articleApplicationService.createAndPublishArticle(content, categoryId, authorId);
@@ -198,7 +188,7 @@ public class ArticleController {
         
         try {
             ArticleId articleId = new ArticleId(id.toString());
-            AuthorId authorId = new AuthorId(getCurrentUserId());
+            AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
             
             // 查找文章
             Optional<ArticleAggregate> articleOpt = articleApplicationService.findById(articleId);
@@ -278,7 +268,7 @@ public class ArticleController {
         
         try {
             ArticleId articleId = new ArticleId(id.toString());
-            AuthorId authorId = new AuthorId(getCurrentUserId());
+            AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
             
             ArticleAggregate article = articleApplicationService.publishArticle(articleId, authorId);
             ArticleResponse response = buildArticleResponseWithEntities(article);
@@ -321,7 +311,7 @@ public class ArticleController {
         
         try {
             ArticleId articleId = new ArticleId(id.toString());
-            AuthorId authorId = new AuthorId(getCurrentUserId());
+            AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
             
             ArticleAggregate article = articleApplicationService.archiveArticle(articleId, authorId);
             ArticleResponse response = buildArticleResponseWithEntities(article);
@@ -364,7 +354,7 @@ public class ArticleController {
         
         try {
             ArticleId articleId = new ArticleId(id.toString());
-            AuthorId authorId = new AuthorId(getCurrentUserId());
+            AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
             
             ArticleAggregate article = articleApplicationService.revertToDraft(articleId, authorId);
             ArticleResponse response = buildArticleResponseWithEntities(article);
@@ -404,7 +394,7 @@ public class ArticleController {
         
         try {
             ArticleId articleId = new ArticleId(id.toString());
-            AuthorId authorId = new AuthorId(getCurrentUserId());
+            AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
             
             articleApplicationService.deleteArticle(articleId, authorId);
             
