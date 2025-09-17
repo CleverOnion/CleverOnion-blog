@@ -63,22 +63,13 @@ public class UserController {
         
         logger.debug("接收到分页获取用户列表请求，页码: {}, 每页大小: {}", page, size);
         
-        try {
-            // 调用应用服务获取分页用户列表
-            UserListResponse response = userApplicationService.getUsersWithPagination(page, size);
-            
-            logger.debug("成功获取用户列表，总数: {}, 当前页: {}, 每页大小: {}", 
-                response.getTotalCount(), page, size);
-            
-            return Result.success("用户列表查询成功", response);
-            
-        } catch (IllegalArgumentException e) {
-            logger.warn("分页获取用户列表请求参数错误: {}", e.getMessage());
-            return Result.badRequest(e.getMessage());
-        } catch (Exception e) {
-            logger.error("分页获取用户列表过程中发生未知错误，页码: {}, 每页大小: {}", page, size, e);
-            return Result.error("获取用户列表失败，请稍后重试");
-        }
+        // 调用应用服务获取分页用户列表
+        UserListResponse response = userApplicationService.getUsersWithPagination(page, size);
+        
+        logger.debug("成功获取用户列表，总数: {}, 当前页: {}, 每页大小: {}", 
+            response.getTotalCount(), page, size);
+        
+        return Result.success("用户列表查询成功", response);
     }
     
     /**
@@ -99,25 +90,16 @@ public class UserController {
         
         logger.debug("接收到获取用户详情请求，用户ID: {}", id);
         
-        try {
-            UserId userId = UserId.of(id);
-            Optional<UserAggregate> userOpt = userApplicationService.findById(userId);
-            
-            if (userOpt.isPresent()) {
-                UserResponse response = UserResponse.from(userOpt.get());
-                logger.debug("成功获取用户详情，用户ID: {}, 用户名: {}", id, response.getUsername());
-                return Result.success("用户详情查询成功", response);
-            } else {
-                logger.warn("用户不存在，用户ID: {}", id);
-                return Result.notFound("用户不存在");
-            }
-            
-        } catch (IllegalArgumentException e) {
-            logger.warn("获取用户详情请求参数错误: {}", e.getMessage());
-            return Result.badRequest(e.getMessage());
-        } catch (Exception e) {
-            logger.error("获取用户详情过程中发生未知错误，用户ID: {}", id, e);
-            return Result.error("获取用户详情失败，请稍后重试");
+        UserId userId = UserId.of(id);
+        Optional<UserAggregate> userOpt = userApplicationService.findById(userId);
+        
+        if (userOpt.isPresent()) {
+            UserResponse response = UserResponse.from(userOpt.get());
+            logger.debug("成功获取用户详情，用户ID: {}, 用户名: {}", id, response.getUsername());
+            return Result.success("用户详情查询成功", response);
+        } else {
+            logger.warn("用户不存在，用户ID: {}", id);
+            return Result.notFound("用户不存在");
         }
     }
     
@@ -136,16 +118,10 @@ public class UserController {
         
         logger.debug("接收到获取用户总数请求");
         
-        try {
-            long count = userApplicationService.countUsers();
-            
-            logger.debug("成功获取用户总数: {}", count);
-            
-            return Result.success("用户总数统计成功", count);
-            
-        } catch (Exception e) {
-            logger.error("获取用户总数过程中发生未知错误", e);
-            return Result.error("获取用户总数失败，请稍后重试");
-        }
+        long count = userApplicationService.countUsers();
+        
+        logger.debug("成功获取用户总数: {}", count);
+        
+        return Result.success("用户总数统计成功", count);
     }
 }

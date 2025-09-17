@@ -64,15 +64,9 @@ public class AuthController {
         
         logger.info("收到获取GitHub OAuth2授权URL请求，状态参数: {}", state);
         
-        try {
-            String authUrl = authApplicationService.generateGitHubAuthUrl(state);
-            logger.info("成功生成GitHub OAuth2授权URL: {}", authUrl);
-            return Result.success("获取授权URL成功", authUrl);
-            
-        } catch (Exception e) {
-            logger.error("生成GitHub OAuth2授权URL过程中发生错误", e);
-            return Result.error("获取授权URL失败，请稍后重试");
-        }
+        String authUrl = authApplicationService.generateGitHubAuthUrl(state);
+        logger.info("成功生成GitHub OAuth2授权URL: {}", authUrl);
+        return Result.success("获取授权URL成功", authUrl);
     }
     
     /**
@@ -95,31 +89,19 @@ public class AuthController {
         
         logger.info("收到 GitHub OAuth2 回调处理请求: {}", request);
         
-        try {
-            // 转换为命令对象
-            GitHubLoginCommand command = new GitHubLoginCommand(request.getCode(), request.getState());
-            
-            // 执行登录流程
-            AuthResult authResult = authApplicationService.loginWithGitHub(command);
-            
-            // 转换为响应对象
-            LoginResponse response = new LoginResponse(authResult);
-            
-            logger.info("GitHub OAuth2 登录成功，用户ID: {}", 
-                authResult.getUserInfo() != null ? authResult.getUserInfo().getId() : "未知");
-            
-            return Result.success("登录成功", response);
-            
-        } catch (AuthApplicationService.AuthenticationException e) {
-            logger.warn("GitHub OAuth2 登录失败: {}", e.getMessage());
-            return Result.unauthorized(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            logger.warn("GitHub OAuth2 登录请求参数错误: {}", e.getMessage());
-            return Result.badRequest(e.getMessage());
-        } catch (Exception e) {
-            logger.error("GitHub OAuth2 登录过程中发生未知错误", e);
-            return Result.error("登录失败，请稍后重试");
-        }
+        // 转换为命令对象
+        GitHubLoginCommand command = new GitHubLoginCommand(request.getCode(), request.getState());
+        
+        // 执行登录流程
+        AuthResult authResult = authApplicationService.loginWithGitHub(command);
+        
+        // 转换为响应对象
+        LoginResponse response = new LoginResponse(authResult);
+        
+        logger.info("GitHub OAuth2 登录成功，用户ID: {}", 
+            authResult.getUserInfo() != null ? authResult.getUserInfo().getId() : "未知");
+        
+        return Result.success("登录成功", response);
     }
     
     /**
@@ -141,18 +123,9 @@ public class AuthController {
         
         logger.info("收到用户登出请求，用户ID: {}", userId);
         
-        try {
-            authApplicationService.logout(userId);
-            logger.info("用户登出成功，用户ID: {}", userId);
-            return Result.success("登出成功", null);
-            
-        } catch (IllegalArgumentException e) {
-            logger.warn("用户登出请求参数错误: {}", e.getMessage());
-            return Result.badRequest(e.getMessage());
-        } catch (Exception e) {
-            logger.error("用户登出过程中发生未知错误，用户ID: {}", userId, e);
-            return Result.error("登出失败，请稍后重试");
-        }
+        authApplicationService.logout(userId);
+        logger.info("用户登出成功，用户ID: {}", userId);
+        return Result.success("登出成功", null);
     }
     
     /**

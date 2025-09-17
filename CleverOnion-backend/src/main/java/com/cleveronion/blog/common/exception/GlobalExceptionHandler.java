@@ -424,6 +424,29 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * 处理非法状态异常
+     * 
+     * @param ex 非法状态异常
+     * @param request HTTP请求
+     * @return 错误响应
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Result<ErrorResponse>> handleIllegalStateException(
+            IllegalStateException ex, HttpServletRequest request) {
+        
+        logger.warn("非法状态: {}", ex.getMessage());
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+            "ILLEGAL_STATE",
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+        
+        return ResponseEntity.badRequest()
+            .body(Result.badRequest(ex.getMessage()));
+    }
+    
+    /**
      * 处理所有未捕获的异常
      * 
      * @param ex 异常
