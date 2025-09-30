@@ -6,6 +6,7 @@ import com.cleveronion.blog.domain.user.valueobject.UserId;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 用户仓储接口
@@ -30,6 +31,14 @@ public interface UserRepository {
      * @return 用户聚合的Optional包装
      */
     Optional<UserAggregate> findById(UserId userId);
+    
+    /**
+     * 根据用户ID集合批量查找用户聚合
+     * 
+     * @param userIds 用户ID集合
+     * @return 用户聚合列表
+     */
+    List<UserAggregate> findByIds(Set<UserId> userIds);
     
     /**
      * 根据GitHub用户ID查找用户聚合

@@ -5,6 +5,7 @@ import com.cleveronion.blog.domain.article.valueobject.CategoryId;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 分类仓储接口
@@ -30,6 +31,14 @@ public interface CategoryRepository {
      * @return 分类聚合根的Optional包装
      */
     Optional<CategoryAggregate> findById(CategoryId id);
+    
+    /**
+     * 根据ID集合批量查找分类
+     * 
+     * @param ids 分类ID集合
+     * @return 分类聚合根列表
+     */
+    List<CategoryAggregate> findByIds(Set<CategoryId> ids);
     
     /**
      * 根据名称查找分类

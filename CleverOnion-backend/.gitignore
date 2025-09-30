@@ -46,6 +46,46 @@ logs/
 *.log
 *.log.*
 
+### Test Files ###
+# Test reports and coverage
+target/surefire-reports/
+target/failsafe-reports/
+target/site/jacoco/
+*.exec
+*.ser
+
+# Test temporary files
+**/test-output/
+**/test-results/
+**/build/test-results/
+**/build/reports/
+
+# Test data files
+**/test-data/
+**/testdata/
+**/*test*.db
+**/*test*.h2.db
+**/*test*.mv.db
+**/*test*.trace.db
+
+# Unit and integration test outputs
+**/*Test.class
+**/*Tests.class
+**/*IT.class
+**/TEST-*.xml
+**/TESTS-*.xml
+
+# Mock and test configuration
+**/mockito-extensions/
+**/wiremock/
+**/__files/
+**/mappings/
+
+# Test logs
+**/logs/test/
+**/*test*.log
+**/*Test*.log
+
 # 数据库文件
 *.db
 *.sqlite

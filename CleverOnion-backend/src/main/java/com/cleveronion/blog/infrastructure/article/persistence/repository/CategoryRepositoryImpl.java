@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +40,22 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     public Optional<CategoryAggregate> findById(CategoryId id) {
         Optional<CategoryPO> categoryPOOpt = categoryJpaRepository.findById(id.getValue());
         return categoryPOOpt.map(CategoryConverter::toCategoryAggregate);
+    }
+    
+    @Override
+    public List<CategoryAggregate> findByIds(Set<CategoryId> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        
+        Set<Long> categoryIds = ids.stream()
+                .map(CategoryId::getValue)
+                .collect(Collectors.toSet());
+        
+        return categoryJpaRepository.findAllById(categoryIds)
+                .stream()
+                .map(CategoryConverter::toCategoryAggregate)
+                .collect(Collectors.toList());
     }
     
     @Override

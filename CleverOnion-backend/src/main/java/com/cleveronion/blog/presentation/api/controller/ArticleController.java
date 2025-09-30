@@ -32,8 +32,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -409,10 +411,8 @@ public class ArticleController {
             totalCount = articleApplicationService.countAllArticles();
         }
         
-        // 构造响应对象，包含完整的实体信息
-        List<ArticleResponse> articleResponses = articles.stream()
-            .map(this::buildArticleResponseWithEntities)
-            .collect(Collectors.toList());
+        // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
+        List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);
         
         ArticleListResponse response = new ArticleListResponse(articleResponses, totalCount, page, size);
         
@@ -489,6 +489,93 @@ public class ArticleController {
     }
     
     /**
+     * 批量构建包含完整实体信息的ArticleResponse列表
+     * 优化N+1查询问题，一次性获取所有关联数据
+     * 
+     * @param articles 文章聚合根列表
+     * @return 包含完整实体信息的ArticleResponse列表
+     */
+    private List<ArticleResponse> buildArticleResponsesWithEntitiesBatch(List<ArticleAggregate> articles) {
+        if (articles == null || articles.isEmpty()) {
+            return List.of();
+        }
+        
+        logger.debug("开始批量构建文章响应，文章数量: {}", articles.size());
+        
+        // 收集所有需要查询的ID
+        Set<CategoryId> categoryIds = articles.stream()
+            .map(ArticleAggregate::getCategoryId)
+            .filter(id -> id != null)
+            .collect(Collectors.toSet());
+            
+        Set<UserId> userIds = articles.stream()
+            .map(ArticleAggregate::getAuthorId)
+            .filter(authorId -> authorId != null)
+            .map(authorId -> UserId.of(authorId.getValue()))
+            .collect(Collectors.toSet());
+            
+        Set<TagId> allTagIds = articles.stream()
+            .filter(article -> article.getTagIds() != null)
+            .flatMap(article -> article.getTagIds().stream())
+            .collect(Collectors.toSet());
+        
+        // 批量查询关联数据
+        Map<CategoryId, CategoryAggregate> categoryMap = categoryIds.isEmpty() ? 
+            Map.of() : 
+            categoryApplicationService.findByIds(categoryIds).stream()
+                .collect(Collectors.toMap(CategoryAggregate::getId, Function.identity()));
+                
+        Map<UserId, UserAggregate> userMap = userIds.isEmpty() ? 
+            Map.of() : 
+            userApplicationService.findByIds(userIds).stream()
+                .collect(Collectors.toMap(UserAggregate::getId, Function.identity()));
+                
+        Map<TagId, TagAggregate> tagMap = allTagIds.isEmpty() ? 
+            Map.of() : 
+            tagApplicationService.findByIds(allTagIds).stream()
+                .collect(Collectors.toMap(TagAggregate::getId, Function.identity()));
+        
+        logger.debug("批量查询完成，分类数量: {}, 用户数量: {}, 标签数量: {}", 
+            categoryMap.size(), userMap.size(), tagMap.size());
+        
+        // 构建响应列表
+        return articles.stream()
+            .map(article -> {
+                // 获取分类信息
+                CategoryResponse categoryResponse = null;
+                if (article.getCategoryId() != null) {
+                    CategoryAggregate category = categoryMap.get(article.getCategoryId());
+                    if (category != null) {
+                        categoryResponse = new CategoryResponse(category);
+                    }
+                }
+                
+                // 获取作者信息
+                UserResponse authorResponse = null;
+                if (article.getAuthorId() != null) {
+                    UserId userId = UserId.of(article.getAuthorId().getValue());
+                    UserAggregate user = userMap.get(userId);
+                    if (user != null) {
+                        authorResponse = UserResponse.from(user);
+                    }
+                }
+                
+                // 获取标签信息
+                Set<TagResponse> tagResponses = new HashSet<>();
+                if (article.getTagIds() != null && !article.getTagIds().isEmpty()) {
+                    tagResponses = article.getTagIds().stream()
+                        .map(tagMap::get)
+                        .filter(tag -> tag != null)
+                        .map(TagResponse::from)
+                        .collect(Collectors.toSet());
+                }
+                
+                return new ArticleResponse(article, categoryResponse, authorResponse, tagResponses);
+            })
+            .collect(Collectors.toList());
+    }
+    
+    /**
      * 查询已发布的文章列表（分页，支持可选过滤）
      * 
      * @param page 页码（从0开始）
@@ -554,13 +641,11 @@ public class ArticleController {
             totalCount = articleApplicationService.countAllArticles();
         }
         
-        // 构造响应对象，包含完整的实体信息
-        List<ArticleResponse> articleResponses = articles.stream()
-            .map(this::buildArticleResponseWithEntities)
-            .collect(Collectors.toList());
-        
+        // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
+        List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);
+
         ArticleListResponse response = new ArticleListResponse(articleResponses, totalCount, page, size);
-        
+
         return Result.success(response);
     }
     
@@ -592,13 +677,11 @@ public class ArticleController {
         // 获取总数
         long totalCount = articleApplicationService.countByAuthorId(authorIdVO);
         
-        // 构造响应对象，包含完整的实体信息
-        List<ArticleResponse> articleResponses = articles.stream()
-            .map(this::buildArticleResponseWithEntities)
-            .collect(Collectors.toList());
-        
+        // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
+        List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);
+
         ArticleListResponse response = new ArticleListResponse(articleResponses, totalCount, page, size);
-        
+
         return Result.success(response);
     }
     
@@ -626,13 +709,11 @@ public class ArticleController {
         // 获取总数
         long totalCount = articleApplicationService.countByCategoryId(categoryIdVO);
         
-        // 构造响应对象，包含完整的实体信息
-        List<ArticleResponse> articleResponses = articles.stream()
-            .map(this::buildArticleResponseWithEntities)
-            .collect(Collectors.toList());
-        
+        // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
+        List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);
+
         ArticleListResponse response = new ArticleListResponse(articleResponses, totalCount, 0, articles.size());
-        
+
         return Result.success(response);
     }
     
@@ -658,13 +739,11 @@ public class ArticleController {
         
         List<ArticleAggregate> articles = articleApplicationService.searchByTitle(keyword);
         
-        // 构造响应对象，包含完整的实体信息
-        List<ArticleResponse> articleResponses = articles.stream()
-            .map(this::buildArticleResponseWithEntities)
-            .collect(Collectors.toList());
-        
+        // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
+        List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);
+
         ArticleListResponse response = new ArticleListResponse(articleResponses, (long) articles.size(), 0, articles.size());
-        
+
         return Result.success(response);
     }
     
@@ -688,13 +767,11 @@ public class ArticleController {
         
         List<ArticleAggregate> articles = articleApplicationService.findRecentlyPublished(limit);
         
-        // 构造响应对象，包含完整的实体信息
-        List<ArticleResponse> articleResponses = articles.stream()
-            .map(this::buildArticleResponseWithEntities)
-            .collect(Collectors.toList());
-        
+        // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
+        List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);
+
         ArticleListResponse response = new ArticleListResponse(articleResponses, (long) articles.size(), 0, articles.size());
-        
+
         return Result.success(response);
     }
     
@@ -718,13 +795,11 @@ public class ArticleController {
         
         List<ArticleAggregate> articles = articleApplicationService.findPopularArticles(limit);
         
-        // 构造响应对象，包含完整的实体信息
-        List<ArticleResponse> articleResponses = articles.stream()
-            .map(this::buildArticleResponseWithEntities)
-            .collect(Collectors.toList());
-        
+        // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
+        List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);
+
         ArticleListResponse response = new ArticleListResponse(articleResponses, (long) articles.size(), 0, articles.size());
-        
+
         return Result.success(response);
     }
 }

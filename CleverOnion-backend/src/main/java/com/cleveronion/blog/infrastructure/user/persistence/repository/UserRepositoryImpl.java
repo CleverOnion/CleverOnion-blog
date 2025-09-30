@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -62,6 +63,22 @@ public class UserRepositoryImpl implements UserRepository {
         
         return userJpaRepository.findById(userId.getValue())
                 .map(UserConverter::toUserAggregate);
+    }
+    
+    @Override
+    public List<UserAggregate> findByIds(Set<UserId> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        
+        Set<Long> ids = userIds.stream()
+                .map(UserId::getValue)
+                .collect(Collectors.toSet());
+        
+        return userJpaRepository.findAllById(ids)
+                .stream()
+                .map(UserConverter::toUserAggregate)
+                .collect(Collectors.toList());
     }
     
     @Override

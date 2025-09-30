@@ -2,8 +2,8 @@
 spring:
   # 数据源配置
   datasource:
-    url: jdbc:postgresql://pgm-bp169mgqz2i5772lwo.rwlb.rds.aliyuncs.com:5432/blog
-    username: blog_dev
+    url: jdbc:postgresql://localhost:5432/blog
+    username: postgres
     password: Shicong666
     driver-class-name: org.postgresql.Driver
     hikari:

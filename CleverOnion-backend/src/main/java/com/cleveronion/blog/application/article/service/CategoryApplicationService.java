@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 分类应用服务
@@ -244,6 +245,27 @@ public class CategoryApplicationService {
         }
         
         return categoryRepository.findById(categoryId);
+    }
+    
+    /**
+     * 根据ID集合批量查找分类
+     * 
+     * @param categoryIds 分类ID集合
+     * @return 分类聚合列表
+     */
+    @Transactional(readOnly = true)
+    public List<CategoryAggregate> findByIds(Set<CategoryId> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            throw new IllegalArgumentException("分类ID集合不能为空");
+        }
+        
+        logger.debug("开始批量查找分类，ID数量: {}", categoryIds.size());
+        
+        List<CategoryAggregate> categories = categoryRepository.findByIds(categoryIds);
+        
+        logger.debug("批量查找分类完成，找到数量: {}", categories.size());
+        
+        return categories;
     }
     
     /**

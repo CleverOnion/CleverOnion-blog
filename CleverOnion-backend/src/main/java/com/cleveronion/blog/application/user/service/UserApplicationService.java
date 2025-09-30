@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -110,6 +111,28 @@ public class UserApplicationService {
         }
         
         return userRepository.findById(userId);
+    }
+    
+    /**
+     * 根据用户ID集合批量查找用户
+     * 
+     * @param userIds 用户ID集合
+     * @return 用户聚合列表
+     */
+    @Transactional(readOnly = true)
+    public List<UserAggregate> findByIds(Set<UserId> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            logger.debug("用户ID集合为空，返回空列表");
+            return List.of();
+        }
+        
+        logger.debug("开始批量查询用户，用户ID数量: {}", userIds.size());
+        
+        List<UserAggregate> users = userRepository.findByIds(userIds);
+        
+        logger.debug("批量查询用户完成，找到用户数量: {}", users.size());
+        
+        return users;
     }
     
     /**
