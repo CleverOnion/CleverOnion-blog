@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useBlocker } from "react-router-dom";
 
 /**
@@ -10,6 +10,7 @@ export function useUnsavedChanges(
   message: string = "您有未保存的更改，确定要离开吗？"
 ) {
   const messageRef = useRef(message);
+  const [isBlocking, setIsBlocking] = useState(true);
 
   // 更新消息引用
   useEffect(() => {
@@ -41,21 +42,34 @@ export function useUnsavedChanges(
    * 处理路由切换事件
    * 使用 react-router-dom 的 useBlocker 拦截路由变化
    */
-  const blocker = useBlocker(
-    useCallback(
-      ({ currentLocation, nextLocation }) => {
-        // 只在有未保存更改且路由真的要改变时拦截
-        return (
-          hasUnsavedChanges &&
-          currentLocation.pathname !== nextLocation.pathname
-        );
-      },
-      [hasUnsavedChanges]
-    )
-  );
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+    // 只在有未保存更改且路由真的要改变且拦截开启时才拦截
+    return (
+      isBlocking &&
+      hasUnsavedChanges &&
+      currentLocation.pathname !== nextLocation.pathname
+    );
+  });
+
+  /**
+   * 临时禁用拦截器
+   * 用于在保存/发布操作后安全导航
+   */
+  const disableBlocking = useCallback(() => {
+    setIsBlocking(false);
+  }, []);
+
+  /**
+   * 重新启用拦截器
+   */
+  const enableBlocking = useCallback(() => {
+    setIsBlocking(true);
+  }, []);
 
   return {
     blocker,
     hasUnsavedChanges,
+    disableBlocking,
+    enableBlocking,
   };
 }

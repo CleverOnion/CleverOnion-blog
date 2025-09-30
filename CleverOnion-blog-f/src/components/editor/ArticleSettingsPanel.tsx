@@ -137,9 +137,9 @@ const ArticleSettingsPanel: React.FC<ArticleSettingsPanelProps> = ({
               setSummary(e.target.value);
               onSummaryChange(e.target.value);
             }}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            placeholder="输入文章摘要（可选）"
-            rows={3}
+            className="w-full px-3 py-3 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y min-h-[120px]"
+            placeholder="输入文章摘要（可选）&#10;&#10;摘要将显示在文章列表中，帮助读者快速了解文章内容。建议：简洁明了，突出重点。"
+            rows={6}
             maxLength={500}
             aria-label="文章摘要"
             aria-describedby="summary-char-count"

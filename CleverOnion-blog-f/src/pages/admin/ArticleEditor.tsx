@@ -76,7 +76,7 @@ const ArticleEditor = () => {
   }, [article, originalArticle]);
 
   // 未保存更改警告
-  const { blocker } = useUnsavedChanges(
+  const { blocker, disableBlocking } = useUnsavedChanges(
     hasUnsavedChanges,
     "您有未保存的更改。如果离开此页面，您的更改将会丢失。"
   );
@@ -243,10 +243,12 @@ const ArticleEditor = () => {
         setOriginalArticle({ ...article, ...articleData, status: "PUBLISHED" });
       }
 
-      // 延迟导航，确保状态已更新
+      // 禁用拦截器后再导航
+      disableBlocking();
+      // 延迟导航，确保状态完全同步
       setTimeout(() => {
         navigate("/admin/articles");
-      }, 0);
+      }, 100);
     } catch (error) {
       console.error("发布文章失败:", error);
       toast.error("发布失败，请重试");
