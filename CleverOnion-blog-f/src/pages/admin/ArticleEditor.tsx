@@ -10,6 +10,7 @@ import { useToast } from "../../components/ui/Toast";
 import { useFormValidation } from "../../hooks/useFormValidation";
 import { articleValidationRules } from "../../utils/validation";
 import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import Modal from "../../components/ui/Modal";
 
 interface Article {
@@ -76,6 +77,34 @@ const ArticleEditor = () => {
     hasUnsavedChanges,
     "您有未保存的更改。如果离开此页面，您的更改将会丢失。"
   );
+
+  // 键盘快捷键
+  useKeyboardShortcuts([
+    {
+      key: "s",
+      ctrlOrCmd: true,
+      handler: () => {
+        if (!saving) {
+          handleSaveDraft();
+        }
+      },
+      description: "保存草稿",
+    },
+    {
+      key: "Enter",
+      ctrlOrCmd: true,
+      handler: () => {
+        if (!saving) {
+          if (article.status === "PUBLISHED") {
+            handleUpdate();
+          } else {
+            handlePublish();
+          }
+        }
+      },
+      description: "发布/更新文章",
+    },
+  ]);
 
   // 加载分类数据
   const loadCategories = async () => {
@@ -288,6 +317,21 @@ const ArticleEditor = () => {
     }
   }, [articleId, isEdit]);
 
+  // 页面加载后自动聚焦到标题输入框
+  useEffect(() => {
+    // 延迟聚焦，确保组件完全渲染
+    const timer = setTimeout(() => {
+      const titleInput = document.querySelector<HTMLInputElement>(
+        'input[aria-label="文章标题"]'
+      );
+      if (titleInput) {
+        titleInput.focus();
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   // 处理字段变化和验证
   const handleTitleChange = (title: string) => {
     setArticle((prev) => ({ ...prev, title }));
@@ -296,6 +340,23 @@ const ArticleEditor = () => {
 
   const handleTitleBlur = () => {
     markFieldAsTouched("title");
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // 按 Enter 键时聚焦到编辑器
+    if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      // 查找 Milkdown 编辑器并聚焦
+      const editorContainer = document.querySelector(".milkdown");
+      if (editorContainer) {
+        const editableElement = editorContainer.querySelector<HTMLElement>(
+          '[contenteditable="true"]'
+        );
+        if (editableElement) {
+          editableElement.focus();
+        }
+      }
+    }
   };
 
   const handleCategoryChange = (categoryId: number) => {
@@ -315,6 +376,7 @@ const ArticleEditor = () => {
           isNewArticle={!isEdit}
           onTitleChange={handleTitleChange}
           onTitleBlur={handleTitleBlur}
+          onTitleKeyDown={handleTitleKeyDown}
           onBack={() => navigate("/admin/articles")}
           onSaveDraft={handleSaveDraft}
           onPublish={handlePublish}

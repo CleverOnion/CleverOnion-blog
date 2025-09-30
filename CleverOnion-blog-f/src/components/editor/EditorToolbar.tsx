@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import FormErrorMessage from "../ui/FormErrorMessage";
 import UnsavedChangesIndicator from "../ui/UnsavedChangesIndicator";
+import KeyboardShortcutsHelp from "../ui/KeyboardShortcutsHelp";
 
 interface EditorToolbarProps {
   title: string;
@@ -15,6 +16,7 @@ interface EditorToolbarProps {
   isNewArticle: boolean;
   onTitleChange: (title: string) => void;
   onTitleBlur?: () => void;
+  onTitleKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onBack: () => void;
   onSaveDraft: () => void;
   onPublish: () => void;
@@ -32,6 +34,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   articleStatus,
   onTitleChange,
   onTitleBlur,
+  onTitleKeyDown,
   onBack,
   onSaveDraft,
   onPublish,
@@ -143,6 +146,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
               onBlur={onTitleBlur}
+              onKeyDown={onTitleKeyDown}
               className={`w-full text-lg font-semibold text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-0 bg-transparent ${
                 showTitleError && titleError ? "text-red-600" : ""
               }`}
@@ -159,6 +163,17 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
         <div className="flex items-center space-x-3 ml-4">
           <UnsavedChangesIndicator hasUnsavedChanges={hasUnsavedChanges} />
+          <KeyboardShortcutsHelp
+            shortcuts={[
+              { keys: ["Ctrl", "S"], description: "保存草稿" },
+              {
+                keys: ["Ctrl", "Enter"],
+                description:
+                  articleStatus === "PUBLISHED" ? "更新文章" : "发布文章",
+              },
+              { keys: ["Enter"], description: "标题 → 编辑器" },
+            ]}
+          />
           {renderActionButtons()}
         </div>
       </div>
