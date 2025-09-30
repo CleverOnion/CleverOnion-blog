@@ -13,6 +13,7 @@ import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import Modal from "../../components/ui/Modal";
 import SkipToContent from "../../components/ui/SkipToContent";
+import EditorSkeleton from "../../components/editor/EditorSkeleton";
 
 interface Article {
   id?: string;
@@ -44,6 +45,7 @@ const ArticleEditor = () => {
   const [loading, setLocalLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [originalArticle, setOriginalArticle] = useState<Article | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // 表单验证
   const {
@@ -116,6 +118,7 @@ const ArticleEditor = () => {
     } catch (error) {
       console.error("加载分类失败:", error);
       setCategories([]); // 设置为空数组以防止undefined错误
+      toast.error("加载分类失败，请刷新页面重试");
     } finally {
       setLocalLoading(false);
     }
@@ -141,6 +144,7 @@ const ArticleEditor = () => {
       setOriginalArticle(loadedArticle);
     } catch (error) {
       console.error("加载文章失败:", error);
+      toast.error("加载文章失败，请返回重试");
     } finally {
       setLoading(false);
     }
@@ -207,6 +211,8 @@ const ArticleEditor = () => {
         if (article.status === "DRAFT") {
           await articleApi.publishArticle(articleId);
           toast.success("文章发布成功！");
+          // 更新原始数据，防止触发未保存警告
+          setOriginalArticle({ ...article, status: "PUBLISHED" });
         } else {
           // 如果是新文章，调用创建并发布接口
           const articleData = {
@@ -219,6 +225,8 @@ const ArticleEditor = () => {
           };
           await articleApi.updateArticle(articleId, articleData);
           toast.success("文章发布成功！");
+          // 更新原始数据，防止触发未保存警告
+          setOriginalArticle({ ...article, ...articleData });
         }
       } else {
         // 新文章直接发布
@@ -231,9 +239,14 @@ const ArticleEditor = () => {
         };
         await articleApi.publishArticleDirectly(articleData);
         toast.success("文章发布成功！");
+        // 更新原始数据，防止触发未保存警告
+        setOriginalArticle({ ...article, ...articleData, status: "PUBLISHED" });
       }
 
-      navigate("/admin/articles");
+      // 延迟导航，确保状态已更新
+      setTimeout(() => {
+        navigate("/admin/articles");
+      }, 0);
     } catch (error) {
       console.error("发布文章失败:", error);
       toast.error("发布失败，请重试");
@@ -251,6 +264,10 @@ const ArticleEditor = () => {
       await articleApi.unpublishArticle(articleId);
       setArticle((prev) => ({ ...prev, status: "DRAFT" }));
       toast.success("文章已转为草稿！");
+      // 更新原始数据，防止触发未保存警告
+      setOriginalArticle((prev) =>
+        prev ? { ...prev, status: "DRAFT" } : null
+      );
     } catch (error) {
       console.error("转为草稿失败:", error);
       toast.error("操作失败，请重试");
@@ -285,6 +302,8 @@ const ArticleEditor = () => {
 
       await articleApi.updateArticle(articleId, articleData);
       toast.success("文章更新成功！");
+      // 更新原始数据，防止触发未保存警告
+      setOriginalArticle({ ...article, ...articleData });
     } catch (error) {
       console.error("更新文章失败:", error);
       toast.error("更新失败，请重试");
@@ -309,29 +328,40 @@ const ArticleEditor = () => {
 
   // 初始化数据
   useEffect(() => {
-    loadCategories();
-    if (isEdit && articleId) {
-      loadArticle(articleId);
-    } else {
-      // 新文章，设置初始原始状态
-      setOriginalArticle(article);
-    }
+    const initialize = async () => {
+      setIsInitializing(true);
+
+      // 并行加载分类和文章数据
+      if (isEdit && articleId) {
+        await Promise.all([loadCategories(), loadArticle(articleId)]);
+      } else {
+        await loadCategories();
+        // 新文章，设置初始原始状态
+        setOriginalArticle(article);
+      }
+
+      setIsInitializing(false);
+    };
+
+    initialize();
   }, [articleId, isEdit]);
 
   // 页面加载后自动聚焦到标题输入框
   useEffect(() => {
-    // 延迟聚焦，确保组件完全渲染
-    const timer = setTimeout(() => {
-      const titleInput = document.querySelector<HTMLInputElement>(
-        'input[aria-label="文章标题"]'
-      );
-      if (titleInput) {
-        titleInput.focus();
-      }
-    }, 200);
+    // 只在初始化完成后聚焦
+    if (!isInitializing) {
+      const timer = setTimeout(() => {
+        const titleInput = document.querySelector<HTMLInputElement>(
+          'input[aria-label="文章标题"]'
+        );
+        if (titleInput) {
+          titleInput.focus();
+        }
+      }, 200);
 
-    return () => clearTimeout(timer);
-  }, []);
+      return () => clearTimeout(timer);
+    }
+  }, [isInitializing]);
 
   // 处理字段变化和验证
   const handleTitleChange = (title: string) => {
@@ -367,6 +397,11 @@ const ArticleEditor = () => {
       touched: true,
     });
   };
+
+  // 显示骨架屏
+  if (isInitializing) {
+    return <EditorSkeleton />;
+  }
 
   return (
     <>

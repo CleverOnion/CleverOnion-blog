@@ -50,10 +50,11 @@ export const articleValidationRules = {
       };
     }
 
-    if (trimmedValue.length < 10) {
+    // 降低最小长度要求，允许更短的测试内容
+    if (trimmedValue.length < 2) {
       return {
         isValid: false,
-        message: "文章内容至少需要 10 个字符",
+        message: "文章内容至少需要 2 个字符",
       };
     }
 
