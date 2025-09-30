@@ -12,6 +12,7 @@ import { articleValidationRules } from "../../utils/validation";
 import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import Modal from "../../components/ui/Modal";
+import SkipToContent from "../../components/ui/SkipToContent";
 
 interface Article {
   id?: string;
@@ -369,6 +370,7 @@ const ArticleEditor = () => {
 
   return (
     <>
+      <SkipToContent targetId="editor-main-content" label="跳转到编辑器内容" />
       <div className="fixed inset-0 bg-white flex flex-col">
         <EditorToolbar
           title={article.title}

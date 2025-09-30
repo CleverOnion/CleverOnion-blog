@@ -127,7 +127,11 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   };
 
   return (
-    <div className="flex flex-col border-b border-gray-200 bg-white flex-shrink-0">
+    <header
+      className="flex flex-col border-b border-gray-200 bg-white flex-shrink-0"
+      role="banner"
+      aria-label="文章编辑工具栏"
+    >
       <div className="flex items-center justify-between px-6 py-3">
         <div className="flex items-center space-x-4 flex-1 min-w-0">
           <button
@@ -188,7 +192,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
           />
         </div>
       )}
-    </div>
+    </header>
   );
 };
 

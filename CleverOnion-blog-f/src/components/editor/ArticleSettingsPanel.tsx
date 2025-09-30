@@ -55,14 +55,21 @@ const ArticleSettingsPanel: React.FC<ArticleSettingsPanelProps> = ({
   }, [registerCategoryRef]);
 
   return (
-    <div className="w-80 border-l border-gray-200 bg-gray-50 overflow-y-auto flex-shrink-0">
+    <aside
+      className="w-80 border-l border-gray-200 bg-gray-50 overflow-y-auto flex-shrink-0"
+      role="complementary"
+      aria-label="文章设置面板"
+    >
       <div className="p-4 space-y-4">
         {/* 分类选择 */}
         <div
           ref={categoryContainerRef}
           className="bg-white rounded-lg p-4 shadow-sm"
         >
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">
+          <h3
+            id="category-label"
+            className="text-sm font-semibold text-gray-900 mb-3"
+          >
             分类
             <span className="text-red-500 ml-1" aria-label="必填">
               *
@@ -116,8 +123,15 @@ const ArticleSettingsPanel: React.FC<ArticleSettingsPanelProps> = ({
 
         {/* 文章摘要 */}
         <div className="bg-white rounded-lg p-4 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">文章摘要</h3>
+          <label
+            htmlFor="article-summary"
+            className="block text-sm font-semibold text-gray-900 mb-3"
+          >
+            文章摘要
+          </label>
           <textarea
+            id="article-summary"
+            name="summary"
             value={summary}
             onChange={(e) => {
               setSummary(e.target.value);
@@ -127,8 +141,15 @@ const ArticleSettingsPanel: React.FC<ArticleSettingsPanelProps> = ({
             placeholder="输入文章摘要（可选）"
             rows={3}
             maxLength={500}
+            aria-label="文章摘要"
+            aria-describedby="summary-char-count"
           />
-          <div className="text-xs text-gray-500 mt-1">
+          <div
+            id="summary-char-count"
+            className="text-xs text-gray-500 mt-1"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             {summary.length}/500 字符
           </div>
         </div>
@@ -140,7 +161,7 @@ const ArticleSettingsPanel: React.FC<ArticleSettingsPanelProps> = ({
           onRemoveTag={onRemoveTag}
         />
       </div>
-    </div>
+    </aside>
   );
 };
 
