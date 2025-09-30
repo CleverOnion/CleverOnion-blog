@@ -176,25 +176,27 @@ const Article: React.FC = () => {
         backgroundColor={randomBackground}
       />
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex gap-8">
-          <ArticleContent ref={articleRef} content={article.content} />
+      <main id="main-content" tabIndex={-1} className="focus:outline-none">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="flex gap-8">
+            <ArticleContent ref={articleRef} content={article.content} />
 
-          <TableOfContents
-            tableOfContents={tableOfContents}
-            onSectionClick={scrollToSection}
-          />
+            <TableOfContents
+              tableOfContents={tableOfContents}
+              onSectionClick={scrollToSection}
+            />
+          </div>
         </div>
-      </div>
 
-      {/* 评论区分隔线 */}
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="border-t border-gray-200 my-12"></div>
-      </div>
+        {/* 评论区分隔线 */}
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="border-t border-gray-200 my-12"></div>
+        </div>
 
-      <div className="max-w-7xl mx-auto px-4 pb-12">
-        <CommentSection articleId={id || ""} />
-      </div>
+        <div className="max-w-7xl mx-auto px-4 pb-12">
+          <CommentSection articleId={id || ""} />
+        </div>
+      </main>
     </div>
   );
 };

@@ -1,29 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
-import LatestArticles from './LatestArticles';
-import TagList from './TagList';
-import PopularArticles from './PopularArticles';
+import React, { useState, useEffect, useRef } from "react";
+import LatestArticles from "./LatestArticles";
+import TagList from "./TagList";
+import PopularArticles from "./PopularArticles";
+import { useThrottle } from "../../hooks/useThrottle";
 
 const MainContent: React.FC = () => {
   const [isTagListVisible, setIsTagListVisible] = useState(true);
   const tagListRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleWindowScroll = () => {
-      if (tagListRef.current) {
-        const tagListRect = tagListRef.current.getBoundingClientRect();
-        const tagListBottom = tagListRect.bottom;
-        
-        // 当标签列表完全滚动出视口顶部时隐藏
-        setIsTagListVisible(tagListBottom > 0);
-      }
-    };
+  // 创建节流的滚动处理函数
+  const handleWindowScroll = useThrottle(() => {
+    if (tagListRef.current) {
+      const tagListRect = tagListRef.current.getBoundingClientRect();
+      const tagListBottom = tagListRect.bottom;
 
-    window.addEventListener('scroll', handleWindowScroll);
-    
+      // 当标签列表完全滚动出视口顶部时隐藏
+      setIsTagListVisible(tagListBottom > 0);
+    }
+  }, 100); // 每100ms最多执行一次
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleWindowScroll);
+
     return () => {
-      window.removeEventListener('scroll', handleWindowScroll);
+      window.removeEventListener("scroll", handleWindowScroll);
     };
-  }, []);
+  }, [handleWindowScroll]);
 
   return (
     <div className="container mx-auto px-50 py-8">
@@ -32,14 +34,14 @@ const MainContent: React.FC = () => {
         <div className="lg:col-span-2">
           <LatestArticles />
         </div>
-        
+
         {/* 右列 - 标签列表和热门文章 */}
         <div className="lg:col-span-1 space-y-6">
           {/* 标签列表 - 可隐藏 */}
           <div ref={tagListRef}>
             <TagList isVisible={isTagListVisible} />
           </div>
-          
+
           {/* 热门文章列表 - 固定显示 */}
           <PopularArticles />
         </div>

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { tagApi, TagWithCount } from '../../api/tags';
+import React, { useState, useEffect } from "react";
+import { tagApi, TagWithCount } from "../../api/tags";
 
 interface TagListProps {
   isVisible?: boolean;
 }
 
-const TagList: React.FC<TagListProps> = ({ isVisible = true }) => {
+const TagList: React.FC<TagListProps> = React.memo(({ isVisible = true }) => {
   const [tags, setTags] = useState<TagWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,8 +18,8 @@ const TagList: React.FC<TagListProps> = ({ isVisible = true }) => {
       const response = await tagApi.getTagsWithCount(0, 10);
       setTags(response.tags);
     } catch (error) {
-      console.error('加载热门标签失败:', error);
-      setError('加载标签失败');
+      console.error("加载热门标签失败:", error);
+      setError("加载标签失败");
     } finally {
       setLoading(false);
     }
@@ -30,23 +30,27 @@ const TagList: React.FC<TagListProps> = ({ isVisible = true }) => {
   }, []);
 
   return (
-    <div 
+    <div
       className={`transition-all duration-300 ${
-        isVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-4'
+        isVisible
+          ? "opacity-100 transform translate-y-0"
+          : "opacity-0 transform -translate-y-4"
       }`}
-      style={{ display: isVisible ? 'block' : 'none' }}
+      style={{ display: isVisible ? "block" : "none" }}
     >
       <div className="text-center mb-8">
-        <h3 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">POPULAR TAGS</h3>
+        <h2 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">
+          热门标签
+        </h2>
       </div>
-      
+
       {loading ? (
         <div className="flex flex-wrap gap-3 justify-center">
           {Array.from({ length: 8 }).map((_, index) => (
             <div
               key={index}
               className="px-6 py-3 rounded-full bg-gray-200 animate-pulse"
-              style={{ width: '80px', height: '44px' }}
+              style={{ width: "80px", height: "44px" }}
             />
           ))}
         </div>
@@ -79,6 +83,8 @@ const TagList: React.FC<TagListProps> = ({ isVisible = true }) => {
       )}
     </div>
   );
-};
+});
+
+TagList.displayName = "TagList";
 
 export default TagList;

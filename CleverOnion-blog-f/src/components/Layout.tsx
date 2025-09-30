@@ -1,8 +1,8 @@
-import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'motion/react';
-import Header from './Header';
-import Footer from './Footer';
+import React from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "motion/react";
+import Header from "./Header";
+import Footer from "./Footer";
 
 const Layout: React.FC = () => {
   const location = useLocation();
@@ -21,7 +21,7 @@ const Layout: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.3,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
           >
             <Outlet />

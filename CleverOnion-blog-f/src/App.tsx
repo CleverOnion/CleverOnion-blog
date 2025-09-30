@@ -1,11 +1,12 @@
-import { RouterProvider } from 'react-router-dom';
-import { router } from './router';
-import { useEffect } from 'react';
+import { RouterProvider } from "react-router-dom";
+import { router } from "./router";
+import { useEffect } from "react";
 
-import { LoadingProvider } from './contexts/LoadingContext';
-import { ToastProvider, ToastContainer, useToast } from './components/ui/Toast';
-import GlobalLoading from './components/ui/GlobalLoading';
-import './App.css';
+import { LoadingProvider } from "./contexts/LoadingContext";
+import { ToastProvider, ToastContainer, useToast } from "./components/ui/Toast";
+import GlobalLoading from "./components/ui/GlobalLoading";
+import SkipToContent from "./components/ui/SkipToContent";
+import "./App.css";
 
 // 全局事件监听器组件
 function GlobalEventListener() {
@@ -16,15 +17,21 @@ function GlobalEventListener() {
     const handleLoginToast = (event: CustomEvent) => {
       const { message } = event.detail;
       error(message, {
-        title: '需要登录',
-        duration: 5000
+        title: "需要登录",
+        duration: 5000,
       });
     };
 
-    window.addEventListener('show-login-toast', handleLoginToast as EventListener);
+    window.addEventListener(
+      "show-login-toast",
+      handleLoginToast as EventListener
+    );
 
     return () => {
-      window.removeEventListener('show-login-toast', handleLoginToast as EventListener);
+      window.removeEventListener(
+        "show-login-toast",
+        handleLoginToast as EventListener
+      );
     };
   }, [error]);
 
@@ -32,10 +39,10 @@ function GlobalEventListener() {
 }
 
 function App() {
-
   return (
     <LoadingProvider>
       <ToastProvider>
+        <SkipToContent />
         <GlobalEventListener />
         <RouterProvider router={router} />
 
@@ -46,4 +53,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

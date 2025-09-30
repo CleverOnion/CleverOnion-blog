@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { FiHome, FiArrowLeft, FiCloud, FiSearch } from 'react-icons/fi';
+import React from "react";
+import { Link } from "react-router-dom";
+import { motion } from "motion/react";
+import { FiHome, FiArrowLeft, FiCloud, FiSearch } from "react-icons/fi";
 
 /**
  * 404页面组件
@@ -10,18 +10,20 @@ import { FiHome, FiArrowLeft, FiCloud, FiSearch } from 'react-icons/fi';
 const NotFound: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-300 to-white overflow-hidden relative">
-
-
       {/* 主要内容 */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-6">
-        <motion.div 
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="relative z-10 flex items-center justify-center min-h-screen px-6 focus:outline-none"
+      >
+        <motion.div
           className="text-center max-w-2xl mx-auto"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           {/* 404数字 */}
-          <motion.div 
+          <motion.div
             className="mb-8"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
@@ -30,16 +32,16 @@ const NotFound: React.FC = () => {
             <h1 className="text-8xl md:text-9xl font-bold text-white drop-shadow-lg mb-4">
               404
             </h1>
-            <motion.div 
+            <motion.div
               className="flex justify-center mb-6"
-              animate={{ 
+              animate={{
                 y: [0, -10, 0],
-                rotate: [0, 5, -5, 0]
+                rotate: [0, 5, -5, 0],
               }}
-              transition={{ 
+              transition={{
                 duration: 3,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
               }}
             >
               <FiCloud className="text-6xl text-white drop-shadow-md" />
@@ -47,7 +49,7 @@ const NotFound: React.FC = () => {
           </motion.div>
 
           {/* 错误信息 */}
-          <motion.div 
+          <motion.div
             className="mb-12"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -64,21 +66,21 @@ const NotFound: React.FC = () => {
           </motion.div>
 
           {/* 操作按钮 */}
-          <motion.div 
+          <motion.div
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <Link 
+            <Link
               to="/"
               className="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-2 border-blue-100 hover:border-blue-300"
             >
               <FiHome className="mr-2" />
               回到首页
             </Link>
-            
-            <button 
+
+            <button
               onClick={() => window.history.back()}
               className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:bg-blue-700 transform hover:scale-105 transition-all duration-300"
             >
@@ -86,12 +88,8 @@ const NotFound: React.FC = () => {
               返回上页
             </button>
           </motion.div>
-
-
         </motion.div>
-      </div>
-
-
+      </main>
     </div>
   );
 };
