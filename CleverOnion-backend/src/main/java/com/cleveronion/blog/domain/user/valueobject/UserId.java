@@ -10,6 +10,11 @@ public class UserId {
     
     private final Long value;
     
+    /**
+     * 私有构造函数
+     * 
+     * @param value 用户ID值
+     */
     private UserId(Long value) {
         this.value = value;
     }

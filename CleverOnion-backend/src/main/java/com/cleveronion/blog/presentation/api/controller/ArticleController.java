@@ -10,7 +10,9 @@ import com.cleveronion.blog.application.category.service.CategoryQueryService;
 import com.cleveronion.blog.application.tag.command.FindOrCreateTagsCommand;
 import com.cleveronion.blog.application.tag.service.TagCommandService;
 import com.cleveronion.blog.application.tag.service.TagQueryService;
-import com.cleveronion.blog.application.user.service.UserApplicationService;
+import com.cleveronion.blog.application.user.command.SyncGitHubUserCommand;
+import com.cleveronion.blog.application.user.service.UserCommandService;
+import com.cleveronion.blog.application.user.service.UserQueryService;
 import com.cleveronion.blog.domain.article.aggregate.ArticleAggregate;
 import com.cleveronion.blog.domain.article.aggregate.CategoryAggregate;
 import com.cleveronion.blog.domain.article.aggregate.TagAggregate;
@@ -65,20 +67,20 @@ public class ArticleController {
     private final CategoryQueryService categoryQueryService;    // CQRS查询服务
     private final TagCommandService tagCommandService;          // CQRS命令服务
     private final TagQueryService tagQueryService;              // CQRS查询服务
-    private final UserApplicationService userApplicationService;
+    private final UserQueryService userQueryService;            // CQRS查询服务
     
     public ArticleController(ArticleCommandService articleCommandService,
                            ArticleQueryService articleQueryService,
                            CategoryQueryService categoryQueryService,
                            TagCommandService tagCommandService,
                            TagQueryService tagQueryService,
-                           UserApplicationService userApplicationService) {
+                           UserQueryService userQueryService) {
         this.articleCommandService = articleCommandService;
         this.articleQueryService = articleQueryService;
         this.categoryQueryService = categoryQueryService;
         this.tagCommandService = tagCommandService;
         this.tagQueryService = tagQueryService;
-        this.userApplicationService = userApplicationService;
+        this.userQueryService = userQueryService;
     }
     
     /**
@@ -515,7 +517,7 @@ public class ArticleController {
         if (article.getAuthorId() != null) {
             // 将AuthorId转换为UserId
             UserId userId = UserId.of(article.getAuthorId().getValue());
-            Optional<UserAggregate> userOpt = userApplicationService.findById(userId);
+            Optional<UserAggregate> userOpt = userQueryService.findById(userId);
             if (userOpt.isPresent()) {
                 authorResponse = UserResponse.from(userOpt.get());
             }
@@ -573,7 +575,7 @@ public class ArticleController {
                 
         Map<UserId, UserAggregate> userMap = userIds.isEmpty() ? 
             Map.of() : 
-            userApplicationService.findByIds(userIds).stream()
+            userQueryService.findByIds(userIds).stream()
                 .collect(Collectors.toMap(UserAggregate::getId, Function.identity()));
                 
         Map<TagId, TagAggregate> tagMap = allTagIds.isEmpty() ? 

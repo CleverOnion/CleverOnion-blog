@@ -6,7 +6,6 @@ import com.cleveronion.blog.domain.article.repository.CategoryRepository;
 import com.cleveronion.blog.domain.article.valueobject.CategoryId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +43,6 @@ public class CategoryQueryService {
      * @param categoryId 分类ID
      * @return 分类聚合（如果存在）
      */
-    @Cacheable(value = "categories", key = "#categoryId.value")
     public Optional<CategoryAggregate> findById(CategoryId categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
@@ -60,7 +58,6 @@ public class CategoryQueryService {
      * @param categoryIds 分类ID集合
      * @return 分类聚合列表
      */
-    @Cacheable(value = "categories", key = "#categoryIds.toString()")
     public List<CategoryAggregate> findByIds(Set<CategoryId> categoryIds) {
         if (categoryIds == null || categoryIds.isEmpty()) {
             throw new IllegalArgumentException("分类ID集合不能为空");
@@ -76,7 +73,6 @@ public class CategoryQueryService {
      * @param name 分类名称
      * @return 分类聚合（如果存在）
      */
-    @Cacheable(value = "categories", key = "'name:' + #name")
     public Optional<CategoryAggregate> findByName(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("分类名称不能为空");
@@ -91,7 +87,6 @@ public class CategoryQueryService {
      * 
      * @return 分类列表
      */
-    @Cacheable(value = "category-lists", key = "'all'")
     public List<CategoryAggregate> findAll() {
         logger.debug("查询所有分类");
         return categoryRepository.findAll();
@@ -103,7 +98,6 @@ public class CategoryQueryService {
      * @param ascending 是否升序排列
      * @return 分类列表
      */
-    @Cacheable(value = "category-lists", key = "'sorted-name:' + #ascending")
     public List<CategoryAggregate> findAllOrderByName(boolean ascending) {
         logger.debug("按名称排序查询所有分类，升序: {}", ascending);
         return categoryRepository.findAllOrderByName(ascending);
@@ -115,7 +109,6 @@ public class CategoryQueryService {
      * @param ascending 是否升序排列
      * @return 分类列表
      */
-    @Cacheable(value = "category-lists", key = "'sorted-time:' + #ascending")
     public List<CategoryAggregate> findAllOrderByCreatedAt(boolean ascending) {
         logger.debug("按创建时间排序查询所有分类，升序: {}", ascending);
         return categoryRepository.findAllOrderByCreatedAt(ascending);
@@ -128,7 +121,6 @@ public class CategoryQueryService {
      * @param size 每页大小
      * @return 分类列表
      */
-    @Cacheable(value = "category-lists", key = "'page:' + #page + ':' + #size")
     public List<CategoryAggregate> findWithPagination(int page, int size) {
         if (page < 0) {
             throw new IllegalArgumentException("页码不能小于0");
@@ -147,7 +139,6 @@ public class CategoryQueryService {
      * @param keyword 关键词
      * @return 分类列表
      */
-    @Cacheable(value = "category-lists", key = "'search:' + #keyword")
     public List<CategoryAggregate> searchByName(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             throw new IllegalArgumentException("搜索关键词不能为空");
@@ -162,7 +153,6 @@ public class CategoryQueryService {
      * 
      * @return 分类总数
      */
-    @Cacheable(value = "category-stats", key = "'count'")
     public long countAll() {
         logger.debug("统计分类总数");
         return categoryRepository.count();
@@ -174,7 +164,6 @@ public class CategoryQueryService {
      * @param limit 限制数量
      * @return 分类列表
      */
-    @Cacheable(value = "category-lists", key = "'recent:' + #limit")
     public List<CategoryAggregate> findRecentlyCreated(int limit) {
         if (limit <= 0) {
             throw new IllegalArgumentException("限制数量必须大于0");
@@ -190,7 +179,6 @@ public class CategoryQueryService {
      * @param categoryId 分类ID
      * @return 如果存在返回true，否则返回false
      */
-    @Cacheable(value = "category-stats", key = "'exists:' + #categoryId.value")
     public boolean existsById(CategoryId categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
@@ -206,7 +194,6 @@ public class CategoryQueryService {
      * @param name 分类名称
      * @return 如果存在返回true，否则返回false
      */
-    @Cacheable(value = "category-stats", key = "'exists-name:' + #name")
     public boolean existsByName(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("分类名称不能为空");
@@ -222,7 +209,6 @@ public class CategoryQueryService {
      * @param categoryId 分类ID
      * @return 使用该分类的文章数量
      */
-    @Cacheable(value = "category-stats", key = "'usage:' + #categoryId.value")
     public long getCategoryUsageCount(CategoryId categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
@@ -239,7 +225,6 @@ public class CategoryQueryService {
      * @param size 每页大小
      * @return 分类及文章数量的列表
      */
-    @Cacheable(value = "category-lists", key = "'with-count:' + #page + ':' + #size")
     public List<CategoryRepository.CategoryWithArticleCount> findWithArticleCount(int page, int size) {
         if (page < 0) {
             throw new IllegalArgumentException("页码不能小于0");

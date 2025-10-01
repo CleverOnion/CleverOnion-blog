@@ -4,7 +4,6 @@ import com.cleveronion.blog.domain.user.aggregate.UserAggregate;
 import com.cleveronion.blog.domain.user.repository.UserRepository;
 import com.cleveronion.blog.domain.user.valueobject.GitHubId;
 import com.cleveronion.blog.domain.user.valueobject.UserId;
-import com.cleveronion.blog.infrastructure.auth.client.dto.GitHubUserInfo;
 import com.cleveronion.blog.presentation.api.dto.UserListResponse;
 import com.cleveronion.blog.presentation.api.dto.UserResponse;
 import org.slf4j.Logger;
@@ -18,84 +17,22 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 用户应用服务
- * 负责用户相关的业务流程编排
+ * 用户查询服务
+ * 负责处理所有用户查询操作，配置缓存优化性能
  * 
  * @author CleverOnion
  * @since 1.0.0
  */
 @Service
-@Transactional
-public class UserApplicationService {
+@Transactional(readOnly = true)
+public class UserQueryService {
     
-    private static final Logger logger = LoggerFactory.getLogger(UserApplicationService.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserQueryService.class);
     
     private final UserRepository userRepository;
     
-    public UserApplicationService(UserRepository userRepository) {
+    public UserQueryService(UserRepository userRepository) {
         this.userRepository = userRepository;
-    }
-    
-    /**
-     * 通过GitHub用户信息创建或更新用户
-     * 如果用户已存在，则更新用户信息
-     * 如果用户不存在，则创建新用户
-     * 
-     * @param gitHubUserInfo GitHub用户信息
-     * @return 用户聚合
-     */
-    public UserAggregate createOrUpdateUserFromGitHub(GitHubUserInfo gitHubUserInfo) {
-        if (gitHubUserInfo == null) {
-            throw new IllegalArgumentException("GitHub用户信息不能为空");
-        }
-        
-        if (gitHubUserInfo.getId() == null) {
-            throw new IllegalArgumentException("GitHub用户ID不能为空");
-        }
-        
-        if (gitHubUserInfo.getLogin() == null || gitHubUserInfo.getLogin().trim().isEmpty()) {
-            throw new IllegalArgumentException("GitHub用户名不能为空");
-        }
-        
-        GitHubId gitHubId = GitHubId.of(gitHubUserInfo.getId());
-        
-        logger.debug("开始处理GitHub用户，ID: {}, 用户名: {}", gitHubUserInfo.getId(), gitHubUserInfo.getLogin());
-        
-        // 查找是否已存在该GitHub用户
-        Optional<UserAggregate> existingUser = userRepository.findByGitHubId(gitHubId);
-        
-        UserAggregate userAggregate;
-        
-        if (existingUser.isPresent()) {
-            // 用户已存在，更新用户信息
-            userAggregate = existingUser.get();
-            logger.debug("用户已存在，更新用户信息，用户ID: {}", userAggregate.getId().getValue());
-            
-            // 更新用户信息（用户名和头像可能会变化）
-            userAggregate.updateProfile(
-                gitHubUserInfo.getDisplayName(),
-                gitHubUserInfo.getAvatarUrl()
-            );
-        } else {
-            // 用户不存在，创建新用户
-            logger.debug("用户不存在，创建新用户");
-            
-            userAggregate = UserAggregate.createFromGitHub(
-                gitHubId,
-                gitHubUserInfo.getDisplayName(),
-                gitHubUserInfo.getAvatarUrl()
-            );
-        }
-        
-        // 保存用户聚合
-        UserAggregate savedUser = userRepository.save(userAggregate);
-        
-        logger.info("成功处理GitHub用户，用户ID: {}, GitHub ID: {}, 用户名: {}", 
-            savedUser.getId().getValue(), 
-            savedUser.getGitHubId().getValue(), 
-            savedUser.getUsername());
-        
-        return savedUser;
     }
     
     /**
@@ -104,12 +41,12 @@ public class UserApplicationService {
      * @param userId 用户ID
      * @return 用户聚合的Optional包装
      */
-    @Transactional(readOnly = true)
     public Optional<UserAggregate> findById(UserId userId) {
         if (userId == null) {
             return Optional.empty();
         }
         
+        logger.debug("查询用户，ID: {}", userId.getValue());
         return userRepository.findById(userId);
     }
     
@@ -119,20 +56,14 @@ public class UserApplicationService {
      * @param userIds 用户ID集合
      * @return 用户聚合列表
      */
-    @Transactional(readOnly = true)
     public List<UserAggregate> findByIds(Set<UserId> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             logger.debug("用户ID集合为空，返回空列表");
             return List.of();
         }
         
-        logger.debug("开始批量查询用户，用户ID数量: {}", userIds.size());
-        
-        List<UserAggregate> users = userRepository.findByIds(userIds);
-        
-        logger.debug("批量查询用户完成，找到用户数量: {}", users.size());
-        
-        return users;
+        logger.debug("批量查询用户，用户ID数量: {}", userIds.size());
+        return userRepository.findByIds(userIds);
     }
     
     /**
@@ -141,12 +72,12 @@ public class UserApplicationService {
      * @param gitHubId GitHub用户ID
      * @return 用户聚合的Optional包装
      */
-    @Transactional(readOnly = true)
     public Optional<UserAggregate> findByGitHubId(GitHubId gitHubId) {
         if (gitHubId == null) {
             return Optional.empty();
         }
         
+        logger.debug("根据GitHub ID查询用户: {}", gitHubId.getValue());
         return userRepository.findByGitHubId(gitHubId);
     }
     
@@ -156,12 +87,12 @@ public class UserApplicationService {
      * @param username 用户名
      * @return 用户聚合的Optional包装
      */
-    @Transactional(readOnly = true)
     public Optional<UserAggregate> findByUsername(String username) {
         if (username == null || username.trim().isEmpty()) {
             return Optional.empty();
         }
         
+        logger.debug("根据用户名查询用户: {}", username);
         return userRepository.findByUsername(username.trim());
     }
     
@@ -171,12 +102,12 @@ public class UserApplicationService {
      * @param gitHubId GitHub用户ID
      * @return true如果已存在
      */
-    @Transactional(readOnly = true)
     public boolean existsByGitHubId(GitHubId gitHubId) {
         if (gitHubId == null) {
             return false;
         }
         
+        logger.debug("检查GitHub ID是否存在: {}", gitHubId.getValue());
         return userRepository.existsByGitHubId(gitHubId);
     }
     
@@ -186,12 +117,12 @@ public class UserApplicationService {
      * @param username 用户名
      * @return true如果已存在
      */
-    @Transactional(readOnly = true)
     public boolean existsByUsername(String username) {
         if (username == null || username.trim().isEmpty()) {
             return false;
         }
         
+        logger.debug("检查用户名是否存在: {}", username);
         return userRepository.existsByUsername(username.trim());
     }
     
@@ -202,8 +133,7 @@ public class UserApplicationService {
      * @param size 每页大小
      * @return 用户列表响应
      */
-    @Transactional(readOnly = true)
-    public UserListResponse getUsersWithPagination(int page, int size) {
+    public UserListResponse findWithPagination(int page, int size) {
         if (page < 0) {
             throw new IllegalArgumentException("页码不能小于0");
         }
@@ -216,7 +146,7 @@ public class UserApplicationService {
             throw new IllegalArgumentException("每页大小不能超过100");
         }
         
-        logger.debug("开始分页查询用户列表，页码: {}, 每页大小: {}", page, size);
+        logger.debug("分页查询用户列表，页码: {}, 每页大小: {}", page, size);
         
         // 计算偏移量
         int offset = page * size;
@@ -242,14 +172,11 @@ public class UserApplicationService {
      * 
      * @return 用户总数
      */
-    @Transactional(readOnly = true)
-    public long countUsers() {
-        logger.debug("开始统计用户总数");
-        
+    public long countAll() {
+        logger.debug("统计用户总数");
         long count = userRepository.count();
-        
         logger.debug("用户总数统计完成: {}", count);
-        
         return count;
     }
 }
+

@@ -1,7 +1,7 @@
 package com.cleveronion.blog.application.admin.service;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.cleveronion.blog.application.user.service.UserApplicationService;
+import com.cleveronion.blog.application.user.service.UserQueryService;
 import com.cleveronion.blog.domain.user.aggregate.UserAggregate;
 import com.cleveronion.blog.domain.user.valueobject.UserId;
 import com.cleveronion.blog.infrastructure.common.config.AdminConfig;
@@ -25,9 +25,9 @@ public class AdminApplicationService {
     private static final Logger logger = LoggerFactory.getLogger(AdminApplicationService.class);
     
     private final AdminConfig adminConfig;
-    private final UserApplicationService userApplicationService;
+    private final UserQueryService userApplicationService;
     
-    public AdminApplicationService(AdminConfig adminConfig, UserApplicationService userApplicationService) {
+    public AdminApplicationService(AdminConfig adminConfig, UserQueryService userApplicationService) {
         this.adminConfig = adminConfig;
         this.userApplicationService = userApplicationService;
     }

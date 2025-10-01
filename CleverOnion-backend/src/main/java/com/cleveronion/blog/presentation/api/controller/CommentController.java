@@ -4,7 +4,7 @@ import com.cleveronion.blog.application.comment.service.CommentCommandService;
 import com.cleveronion.blog.application.comment.service.CommentQueryService;
 import com.cleveronion.blog.application.comment.command.CreateCommentCommand;
 import com.cleveronion.blog.application.comment.command.DeleteCommentCommand;
-import com.cleveronion.blog.application.user.service.UserApplicationService;
+import com.cleveronion.blog.application.user.service.UserQueryService;
 import com.cleveronion.blog.domain.article.valueobject.ArticleId;
 import com.cleveronion.blog.domain.comment.aggregate.CommentAggregate;
 import com.cleveronion.blog.domain.comment.valueobject.CommentId;
@@ -20,6 +20,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -44,14 +45,14 @@ public class CommentController {
     
     private final CommentCommandService commentCommandService;
     private final CommentQueryService commentQueryService;
-    private final UserApplicationService userApplicationService;
+    private final UserQueryService userQueryService;
     
     public CommentController(CommentCommandService commentCommandService,
                            CommentQueryService commentQueryService,
-                           UserApplicationService userApplicationService) {
+                           UserQueryService userQueryService) {
         this.commentCommandService = commentCommandService;
         this.commentQueryService = commentQueryService;
-        this.userApplicationService = userApplicationService;
+        this.userQueryService = userQueryService;
     }
     
     /**
@@ -122,6 +123,7 @@ public class CommentController {
      * @return 评论列表
      */
     @GetMapping
+    @Cacheable(value = "comment-list-responses", key = "#articleId + ':' + #page + ':' + #size")
     public Result<CommentListResponse> getComments(
             @RequestParam Long articleId,
             @RequestParam(defaultValue = "0") int page,
@@ -162,6 +164,7 @@ public class CommentController {
      * @return 顶级评论列表
      */
     @GetMapping("/top-level")
+    @Cacheable(value = "comment-top-responses", key = "#articleId + ':' + #page + ':' + #size")
     public Result<CommentListResponse> getTopLevelComments(
             @RequestParam Long articleId,
             @RequestParam(defaultValue = "0") int page,
@@ -242,7 +245,7 @@ public class CommentController {
     private CommentResponse convertToCommentResponse(CommentAggregate comment) {
         // 根据用户ID获取用户信息
         UserId userId = comment.getUserId();
-        Optional<UserAggregate> userOpt = userApplicationService.findById(userId);
+        Optional<UserAggregate> userOpt = userQueryService.findById(userId);
         
         UserResponse userResponse = null;
         if (userOpt.isPresent()) {

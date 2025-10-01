@@ -6,7 +6,6 @@ import com.cleveronion.blog.domain.comment.repository.CommentRepository;
 import com.cleveronion.blog.domain.comment.valueobject.CommentId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +37,6 @@ public class CommentQueryService {
      * @param commentId 评论ID
      * @return 评论聚合（如果存在）
      */
-    @Cacheable(value = "comments", key = "#commentId.value")
     public Optional<CommentAggregate> findById(CommentId commentId) {
         if (commentId == null) {
             throw new IllegalArgumentException("评论ID不能为空");
@@ -54,7 +52,6 @@ public class CommentQueryService {
      * @param articleId 文章ID
      * @return 评论列表
      */
-    @Cacheable(value = "comment-lists", key = "'article:' + #articleId.value")
     public List<CommentAggregate> findByArticleId(ArticleId articleId) {
         if (articleId == null) {
             throw new IllegalArgumentException("文章ID不能为空");
@@ -70,7 +67,6 @@ public class CommentQueryService {
      * @param articleId 文章ID
      * @return 顶级评论列表
      */
-    @Cacheable(value = "comment-lists", key = "'top:' + #articleId.value")
     public List<CommentAggregate> findTopLevelByArticleId(ArticleId articleId) {
         if (articleId == null) {
             throw new IllegalArgumentException("文章ID不能为空");
@@ -88,7 +84,6 @@ public class CommentQueryService {
      * @param size 每页大小
      * @return 顶级评论列表
      */
-    @Cacheable(value = "comment-lists", key = "'top:' + #articleId.value + ':' + #page + ':' + #size")
     public List<CommentAggregate> findTopLevelByArticleId(ArticleId articleId, int page, int size) {
         if (articleId == null) {
             throw new IllegalArgumentException("文章ID不能为空");
@@ -111,7 +106,6 @@ public class CommentQueryService {
      * @param parentId 父评论ID
      * @return 回复列表
      */
-    @Cacheable(value = "comment-lists", key = "'replies:' + #parentId.value")
     public List<CommentAggregate> findRepliesByParentId(CommentId parentId) {
         if (parentId == null) {
             throw new IllegalArgumentException("父评论ID不能为空");
@@ -129,7 +123,6 @@ public class CommentQueryService {
      * @param size 每页大小
      * @return 回复列表
      */
-    @Cacheable(value = "comment-lists", key = "'replies:' + #parentId.value + ':' + #page + ':' + #size")
     public List<CommentAggregate> findRepliesByParentId(CommentId parentId, int page, int size) {
         if (parentId == null) {
             throw new IllegalArgumentException("父评论ID不能为空");
@@ -152,7 +145,6 @@ public class CommentQueryService {
      * @param articleId 文章ID
      * @return 评论总数
      */
-    @Cacheable(value = "comment-stats", key = "'count:' + #articleId.value")
     public long countByArticleId(ArticleId articleId) {
         if (articleId == null) {
             throw new IllegalArgumentException("文章ID不能为空");
@@ -168,7 +160,6 @@ public class CommentQueryService {
      * @param articleId 文章ID
      * @return 顶级评论数
      */
-    @Cacheable(value = "comment-stats", key = "'count-top:' + #articleId.value")
     public long countTopLevelByArticleId(ArticleId articleId) {
         if (articleId == null) {
             throw new IllegalArgumentException("文章ID不能为空");
@@ -184,7 +175,6 @@ public class CommentQueryService {
      * @param parentId 父评论ID
      * @return 回复数
      */
-    @Cacheable(value = "comment-stats", key = "'count-replies:' + #parentId.value")
     public long countRepliesByParentId(CommentId parentId) {
         if (parentId == null) {
             throw new IllegalArgumentException("父评论ID不能为空");

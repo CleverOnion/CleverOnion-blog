@@ -1,6 +1,6 @@
 package com.cleveronion.blog.presentation.api.controller;
 
-import com.cleveronion.blog.application.user.service.UserApplicationService;
+import com.cleveronion.blog.application.user.service.UserQueryService;
 import com.cleveronion.blog.domain.user.aggregate.UserAggregate;
 import com.cleveronion.blog.domain.user.valueobject.UserId;
 import com.cleveronion.blog.presentation.api.dto.Result;
@@ -15,6 +15,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +26,11 @@ import java.util.stream.Collectors;
 /**
  * 用户控制器
  * 提供用户管理相关的 RESTful API 接口
+ * 使用CQRS模式，命令和查询分离
  * 
  * @author CleverOnion
  * @since 1.0.0
+ * @version 2.0.0 - 引入CQRS架构
  */
 @RestController
 @RequestMapping("/users")
@@ -37,10 +40,10 @@ public class UserController {
     
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     
-    private final UserApplicationService userApplicationService;
+    private final UserQueryService userQueryService;
     
-    public UserController(UserApplicationService userApplicationService) {
-        this.userApplicationService = userApplicationService;
+    public UserController(UserQueryService userQueryService) {
+        this.userQueryService = userQueryService;
     }
     
     /**
@@ -57,14 +60,15 @@ public class UserController {
         @ApiResponse(responseCode = "400", description = "请求参数错误"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
+    @Cacheable(value = "user-list-responses", key = "'page:' + #page + ':' + #size")
     public Result<UserListResponse> getUsers(
             @Parameter(description = "页码（从0开始）") @RequestParam(defaultValue = "0") @Min(0) Integer page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") @Min(1) Integer size) {
         
         logger.debug("接收到分页获取用户列表请求，页码: {}, 每页大小: {}", page, size);
         
-        // 调用应用服务获取分页用户列表
-        UserListResponse response = userApplicationService.getUsersWithPagination(page, size);
+        // 调用查询服务获取分页用户列表
+        UserListResponse response = userQueryService.findWithPagination(page, size);
         
         logger.debug("成功获取用户列表，总数: {}, 当前页: {}, 每页大小: {}", 
             response.getTotalCount(), page, size);
@@ -85,13 +89,14 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "用户不存在"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
+    @Cacheable(value = "user-responses", key = "#id")
     public Result<UserResponse> getUserById(
             @Parameter(description = "用户ID") @PathVariable @NotNull Long id) {
         
         logger.debug("接收到获取用户详情请求，用户ID: {}", id);
         
         UserId userId = UserId.of(id);
-        Optional<UserAggregate> userOpt = userApplicationService.findById(userId);
+        Optional<UserAggregate> userOpt = userQueryService.findById(userId);
         
         if (userOpt.isPresent()) {
             UserResponse response = UserResponse.from(userOpt.get());
@@ -118,7 +123,7 @@ public class UserController {
         
         logger.debug("接收到获取用户总数请求");
         
-        long count = userApplicationService.countUsers();
+        long count = userQueryService.countAll();
         
         logger.debug("成功获取用户总数: {}", count);
         

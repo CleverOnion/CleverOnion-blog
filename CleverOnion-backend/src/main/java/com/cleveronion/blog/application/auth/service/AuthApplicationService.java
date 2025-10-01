@@ -4,7 +4,9 @@ import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
 import com.cleveronion.blog.application.auth.command.GitHubLoginCommand;
 import com.cleveronion.blog.application.auth.dto.AuthResult;
-import com.cleveronion.blog.application.user.service.UserApplicationService;
+import com.cleveronion.blog.application.user.command.SyncGitHubUserCommand;
+import com.cleveronion.blog.application.user.service.UserCommandService;
+import com.cleveronion.blog.application.user.service.UserQueryService;
 import com.cleveronion.blog.domain.user.aggregate.UserAggregate;
 import com.cleveronion.blog.infrastructure.auth.client.GitHubOAuth2Client;
 import com.cleveronion.blog.infrastructure.auth.client.dto.GitHubAccessTokenResponse;
@@ -28,12 +30,12 @@ public class AuthApplicationService {
     private static final Logger logger = LoggerFactory.getLogger(AuthApplicationService.class);
     
     private final GitHubOAuth2Client gitHubOAuth2Client;
-    private final UserApplicationService userApplicationService;
+    private final UserCommandService userCommandService;
     
     public AuthApplicationService(GitHubOAuth2Client gitHubOAuth2Client,
-                                UserApplicationService userApplicationService) {
+                                UserCommandService userCommandService) {
         this.gitHubOAuth2Client = gitHubOAuth2Client;
-        this.userApplicationService = userApplicationService;
+        this.userCommandService = userCommandService;
     }
     
     /**
@@ -77,7 +79,9 @@ public class AuthApplicationService {
                 gitHubUserInfo.getId(), gitHubUserInfo.getLogin());
             
             // 3. 创建或更新本地用户
-            UserAggregate userAggregate = userApplicationService.createOrUpdateUserFromGitHub(gitHubUserInfo);
+            // 构建同步用户命令
+            SyncGitHubUserCommand syncCommand = SyncGitHubUserCommand.fromGitHubInfo(gitHubUserInfo);
+            UserAggregate userAggregate = userCommandService.syncUserFromGitHub(syncCommand);
             logger.debug("成功创建或更新本地用户，用户ID: {}", userAggregate.getId().getValue());
             
             // 4. 生成Sa-Token认证令牌

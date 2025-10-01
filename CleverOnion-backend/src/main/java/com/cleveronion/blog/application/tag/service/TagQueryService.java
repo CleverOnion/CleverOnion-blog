@@ -7,7 +7,6 @@ import com.cleveronion.blog.domain.article.repository.TagRepository;
 import com.cleveronion.blog.domain.article.valueobject.TagId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +43,6 @@ public class TagQueryService {
      * @param tagId 标签ID
      * @return 标签聚合（如果存在）
      */
-    @Cacheable(value = "tags", key = "#tagId.value")
     public Optional<TagAggregate> findById(TagId tagId) {
         if (tagId == null) {
             throw new IllegalArgumentException("标签ID不能为空");
@@ -60,7 +58,6 @@ public class TagQueryService {
      * @param tagIds 标签ID集合
      * @return 标签列表
      */
-    @Cacheable(value = "tags", key = "#tagIds.toString()")
     public List<TagAggregate> findByIds(Set<TagId> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {
             throw new IllegalArgumentException("标签ID集合不能为空");
@@ -76,7 +73,6 @@ public class TagQueryService {
      * @param name 标签名称
      * @return 标签聚合（如果存在）
      */
-    @Cacheable(value = "tags", key = "'name:' + #name")
     public Optional<TagAggregate> findByName(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("标签名称不能为空");
@@ -92,7 +88,6 @@ public class TagQueryService {
      * @param names 标签名称集合
      * @return 标签列表
      */
-    @Cacheable(value = "tags", key = "#names.toString()")
     public List<TagAggregate> findByNames(Set<String> names) {
         if (names == null || names.isEmpty()) {
             throw new IllegalArgumentException("标签名称集合不能为空");
@@ -107,7 +102,6 @@ public class TagQueryService {
      * 
      * @return 标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'all'")
     public List<TagAggregate> findAll() {
         logger.debug("查询所有标签");
         return tagRepository.findAll();
@@ -120,7 +114,6 @@ public class TagQueryService {
      * @param size 每页大小
      * @return 标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'page:' + #page + ':' + #size")
     public List<TagAggregate> findWithPagination(int page, int size) {
         if (page < 0) {
             throw new IllegalArgumentException("页码不能小于0");
@@ -141,7 +134,6 @@ public class TagQueryService {
      * @param ascending 是否升序排列
      * @return 标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'sorted-name:' + #ascending")
     public List<TagAggregate> findAllOrderByName(boolean ascending) {
         logger.debug("按名称排序查询所有标签，升序: {}", ascending);
         return tagRepository.findAllOrderByName(ascending);
@@ -153,7 +145,6 @@ public class TagQueryService {
      * @param ascending 是否升序排列
      * @return 标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'sorted-time:' + #ascending")
     public List<TagAggregate> findAllOrderByCreatedAt(boolean ascending) {
         logger.debug("按创建时间排序查询所有标签，升序: {}", ascending);
         return tagRepository.findAllOrderByCreatedAt(ascending);
@@ -167,7 +158,6 @@ public class TagQueryService {
      * @param keyword 关键词
      * @return 标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'search:' + #keyword")
     public List<TagAggregate> searchByName(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             throw new IllegalArgumentException("搜索关键词不能为空");
@@ -183,7 +173,6 @@ public class TagQueryService {
      * @param prefix 前缀
      * @return 标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'prefix:' + #prefix")
     public List<TagAggregate> searchByNamePrefix(String prefix) {
         if (prefix == null || prefix.trim().isEmpty()) {
             throw new IllegalArgumentException("搜索前缀不能为空");
@@ -200,7 +189,6 @@ public class TagQueryService {
      * 
      * @return 标签总数
      */
-    @Cacheable(value = "tag-stats", key = "'count'")
     public long countAll() {
         logger.debug("统计标签总数");
         return tagRepository.count();
@@ -212,7 +200,6 @@ public class TagQueryService {
      * @param tagId 标签ID
      * @return 如果存在返回true，否则返回false
      */
-    @Cacheable(value = "tag-stats", key = "'exists:' + #tagId.value")
     public boolean existsById(TagId tagId) {
         if (tagId == null) {
             throw new IllegalArgumentException("标签ID不能为空");
@@ -228,7 +215,6 @@ public class TagQueryService {
      * @param name 标签名称
      * @return 如果存在返回true，否则返回false
      */
-    @Cacheable(value = "tag-stats", key = "'exists-name:' + #name")
     public boolean existsByName(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("标签名称不能为空");
@@ -246,7 +232,6 @@ public class TagQueryService {
      * @param limit 限制数量
      * @return 标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'recent:' + #limit")
     public List<TagAggregate> findRecentlyCreated(int limit) {
         if (limit <= 0) {
             throw new IllegalArgumentException("限制数量必须大于0");
@@ -262,7 +247,6 @@ public class TagQueryService {
      * @param limit 限制数量
      * @return 标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'popular:' + #limit")
     public List<TagAggregate> findPopularTags(int limit) {
         if (limit <= 0) {
             throw new IllegalArgumentException("限制数量必须大于0");
@@ -277,7 +261,6 @@ public class TagQueryService {
      * 
      * @return 标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'unused'")
     public List<TagAggregate> findUnusedTags() {
         logger.debug("查询未使用的标签");
         return tagRepository.findUnusedTags();
@@ -290,7 +273,6 @@ public class TagQueryService {
      * @param size 每页大小
      * @return 标签及文章数量列表
      */
-    @Cacheable(value = "tag-lists", key = "'with-count:' + #page + ':' + #size")
     public List<TagRepository.TagWithArticleCount> findWithArticleCount(int page, int size) {
         if (page < 0) {
             throw new IllegalArgumentException("页码不能小于0");
@@ -311,7 +293,6 @@ public class TagQueryService {
      * @param tagId 标签ID
      * @return 使用该标签的文章数量
      */
-    @Cacheable(value = "tag-stats", key = "'usage:' + #tagId.value")
     public long getTagUsageCount(TagId tagId) {
         if (tagId == null) {
             throw new IllegalArgumentException("标签ID不能为空");
@@ -328,7 +309,6 @@ public class TagQueryService {
      * @param maxLength 最大长度
      * @return 短标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'short:' + #maxLength")
     public List<TagAggregate> findShortTags(int maxLength) {
         if (maxLength <= 0) {
             throw new IllegalArgumentException("最大长度必须大于0");
@@ -346,7 +326,6 @@ public class TagQueryService {
      * @param keyword 关键词
      * @return 包含关键词的标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'filter-kw:' + #keyword")
     public List<TagAggregate> filterByKeyword(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             throw new IllegalArgumentException("关键词不能为空");
@@ -364,7 +343,6 @@ public class TagQueryService {
      * @param prefix 前缀
      * @return 以指定前缀开始的标签列表
      */
-    @Cacheable(value = "tag-lists", key = "'filter-pfx:' + #prefix")
     public List<TagAggregate> filterByPrefix(String prefix) {
         if (prefix == null || prefix.trim().isEmpty()) {
             throw new IllegalArgumentException("前缀不能为空");
