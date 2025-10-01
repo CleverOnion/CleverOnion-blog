@@ -18,7 +18,12 @@ import java.util.Set;
  * 
  * @author CleverOnion
  * @since 1.0.0
+ * @deprecated 此服务已被CQRS架构替代，请使用：
+ *             命令操作 → {@link ArticleCommandService}
+ *             查询操作 → {@link ArticleQueryService}
+ *             预计在 v2.1.0 版本移除
  */
+@Deprecated
 @Service
 @Transactional
 public class ArticleApplicationService {

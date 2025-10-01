@@ -1,7 +1,12 @@
 package com.cleveronion.blog.presentation.api.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.cleveronion.blog.application.article.command.CreateArticleDraftCommand;
+import com.cleveronion.blog.application.article.command.PublishArticleCommand;
+import com.cleveronion.blog.application.article.command.UpdateArticleCommand;
 import com.cleveronion.blog.application.article.service.ArticleApplicationService;
+import com.cleveronion.blog.application.article.service.ArticleCommandService;
+import com.cleveronion.blog.application.article.service.ArticleQueryService;
 import com.cleveronion.blog.application.article.service.CategoryApplicationService;
 import com.cleveronion.blog.application.article.service.TagApplicationService;
 import com.cleveronion.blog.application.user.service.UserApplicationService;
@@ -53,16 +58,22 @@ public class ArticleController {
     
     private static final Logger logger = LoggerFactory.getLogger(ArticleController.class);
     
-    private final ArticleApplicationService articleApplicationService;
+    private final ArticleApplicationService articleApplicationService;  // 保留，逐步迁移
+    private final ArticleCommandService articleCommandService;  // 新增 - CQRS命令服务
+    private final ArticleQueryService articleQueryService;      // 新增 - CQRS查询服务
     private final CategoryApplicationService categoryApplicationService;
     private final TagApplicationService tagApplicationService;
     private final UserApplicationService userApplicationService;
     
     public ArticleController(ArticleApplicationService articleApplicationService,
+                           ArticleCommandService articleCommandService,
+                           ArticleQueryService articleQueryService,
                            CategoryApplicationService categoryApplicationService,
                            TagApplicationService tagApplicationService,
                            UserApplicationService userApplicationService) {
         this.articleApplicationService = articleApplicationService;
+        this.articleCommandService = articleCommandService;
+        this.articleQueryService = articleQueryService;
         this.categoryApplicationService = categoryApplicationService;
         this.tagApplicationService = tagApplicationService;
         this.userApplicationService = userApplicationService;
@@ -94,21 +105,29 @@ public class ArticleController {
             request.getSummary()
         );
         
-        // 构建作者ID值对象
+        // 构建作者ID和分类ID值对象
         AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
         CategoryId categoryId = new CategoryId(request.getCategoryId());
         
-        // 创建文章草稿
-        ArticleAggregate article = articleApplicationService.createDraft(content, categoryId, authorId);
-        
-        // 如果有标签，根据标签名查找或创建标签，然后添加到文章
+        // 处理标签：根据标签名查找或创建标签
+        Set<TagId> tagIds = null;
         if (request.getTagNames() != null && !request.getTagNames().isEmpty()) {
             List<TagAggregate> tags = tagApplicationService.findOrCreateByNames(request.getTagNames());
-            Set<TagId> tagIds = tags.stream()
+            tagIds = tags.stream()
                 .map(TagAggregate::getId)
                 .collect(Collectors.toSet());
-            article = articleApplicationService.addTags(article.getId(), tagIds, authorId);
         }
+        
+        // 构建命令对象
+        CreateArticleDraftCommand command = new CreateArticleDraftCommand(
+            content,
+            categoryId,
+            authorId,
+            tagIds
+        );
+        
+        // 执行命令 - 使用CQRS命令服务
+        ArticleAggregate article = articleCommandService.createDraft(command);
         
         ArticleResponse response = buildArticleResponseWithEntities(article);
         
@@ -147,17 +166,25 @@ public class ArticleController {
         CategoryId categoryId = new CategoryId(request.getCategoryId());
         AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
         
-        // 直接创建并发布文章
-        ArticleAggregate article = articleApplicationService.createAndPublishArticle(content, categoryId, authorId);
-        
-        // 如果有标签，根据标签名查找或创建标签，然后添加到文章
+        // 处理标签：根据标签名查找或创建标签
+        Set<TagId> tagIds = null;
         if (request.getTagNames() != null && !request.getTagNames().isEmpty()) {
             List<TagAggregate> tags = tagApplicationService.findOrCreateByNames(request.getTagNames());
-            Set<TagId> tagIds = tags.stream()
+            tagIds = tags.stream()
                 .map(TagAggregate::getId)
                 .collect(Collectors.toSet());
-            article = articleApplicationService.addTags(article.getId(), tagIds, authorId);
         }
+        
+        // 构建命令对象
+        PublishArticleCommand command = new PublishArticleCommand(
+            content,
+            categoryId,
+            authorId,
+            tagIds
+        );
+        
+        // 执行命令 - 使用CQRS命令服务
+        ArticleAggregate article = articleCommandService.createAndPublish(command);
         
         ArticleResponse response = buildArticleResponseWithEntities(article);
         
@@ -191,7 +218,7 @@ public class ArticleController {
         ArticleId articleId = new ArticleId(id.toString());
         AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
         
-        // 查找文章
+        // 查找文章（用于获取原始值）
         Optional<ArticleAggregate> articleOpt = articleApplicationService.findById(articleId);
         if (articleOpt.isEmpty()) {
             return Result.error("文章不存在");
@@ -199,38 +226,37 @@ public class ArticleController {
         
         ArticleAggregate article = articleOpt.get();
         
-        // 更新文章内容
-        if (request.hasUpdates()) {
-            ArticleContent newContent = new ArticleContent(
-                request.getTitle() != null ? request.getTitle() : article.getContent().getTitle(),
-                request.getContent() != null ? request.getContent() : article.getContent().getContent(),
-                request.getSummary() != null ? request.getSummary() : article.getContent().getSummary()
-            );
-            article = articleApplicationService.updateContent(articleId, newContent, authorId);
-        }
+        // 构建新的内容（合并原有值和新值）
+        ArticleContent newContent = new ArticleContent(
+            request.getTitle() != null ? request.getTitle() : article.getContent().getTitle(),
+            request.getContent() != null ? request.getContent() : article.getContent().getContent(),
+            request.getSummary() != null ? request.getSummary() : article.getContent().getSummary()
+        );
         
-        // 更新分类
-        if (request.getCategoryId() != null) {
-            CategoryId newCategoryId = new CategoryId(request.getCategoryId());
-            article = articleApplicationService.updateCategory(articleId, newCategoryId, authorId);
-        }
-        
-        // 更新标签
+        // 处理标签更新
+        Set<TagId> newTagIds = null;
         if (request.getTagNames() != null) {
-            // 先移除所有现有标签，再添加新标签
-            if (!article.getTagIds().isEmpty()) {
-                articleApplicationService.removeTags(articleId, article.getTagIds(), authorId);
-            }
-            
             if (!request.getTagNames().isEmpty()) {
-                // 根据标签名查找或创建标签
                 List<TagAggregate> tags = tagApplicationService.findOrCreateByNames(request.getTagNames());
-                Set<TagId> newTagIds = tags.stream()
+                newTagIds = tags.stream()
                     .map(TagAggregate::getId)
                     .collect(Collectors.toSet());
-                article = articleApplicationService.addTags(articleId, newTagIds, authorId);
+            } else {
+                newTagIds = Set.of(); // 空集合表示清空标签
             }
         }
+        
+        // 构建更新命令
+        UpdateArticleCommand command = new UpdateArticleCommand(
+            articleId,
+            newContent,
+            request.getCategoryId() != null ? new CategoryId(request.getCategoryId()) : null,
+            newTagIds,
+            authorId
+        );
+        
+        // 执行命令 - 使用CQRS命令服务
+        article = articleCommandService.updateContent(command);
         
         ArticleResponse response = buildArticleResponseWithEntities(article);
         
@@ -262,7 +288,8 @@ public class ArticleController {
         ArticleId articleId = new ArticleId(id.toString());
         AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
         
-        ArticleAggregate article = articleApplicationService.publishArticle(articleId, authorId);
+        // 执行命令 - 使用CQRS命令服务
+        ArticleAggregate article = articleCommandService.publish(articleId, authorId);
         ArticleResponse response = buildArticleResponseWithEntities(article);
         
         logger.info("成功发布文章，ID: {}", id);
@@ -291,7 +318,8 @@ public class ArticleController {
         ArticleId articleId = new ArticleId(id.toString());
         AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
         
-        ArticleAggregate article = articleApplicationService.archiveArticle(articleId, authorId);
+        // 执行命令 - 使用CQRS命令服务
+        ArticleAggregate article = articleCommandService.archive(articleId, authorId);
         ArticleResponse response = buildArticleResponseWithEntities(article);
         
         return Result.success(response);
@@ -339,8 +367,11 @@ public class ArticleController {
     public Result<Void> deleteArticle(
             @Parameter(description = "文章ID") @PathVariable @NotNull Long id) {
         
-        Long authorId = StpUtil.getLoginIdAsLong();
-        articleApplicationService.deleteArticle(ArticleId.of(id.toString()), AuthorId.of(authorId));
+        ArticleId articleId = new ArticleId(id.toString());
+        AuthorId authorId = new AuthorId(StpUtil.getLoginIdAsLong());
+        
+        // 执行命令 - 使用CQRS命令服务
+        articleCommandService.delete(articleId, authorId);
         return Result.success();
     }
     
@@ -379,36 +410,38 @@ public class ArticleController {
             statusEnum = ArticleStatus.valueOf(status.toUpperCase());
         }
         
-        // 根据过滤条件选择不同的查询方法
-        if (categoryId != null && tagId != null) {
-            // 同时按分类和标签过滤（支持状态筛选）
-            CategoryId categoryIdVO = new CategoryId(categoryId);
-            TagId tagIdVO = new TagId(tagId);
-            if (statusEnum != null) {
-                articles = articleApplicationService.findByCategoryAndTagAndStatus(categoryIdVO, tagIdVO, statusEnum, page, size);
-                totalCount = articleApplicationService.countByCategoryAndTagAndStatus(categoryIdVO, tagIdVO, statusEnum);
-            } else {
+        // 使用CQRS查询服务
+        if (statusEnum == null && categoryId == null && tagId == null) {
+            // 无过滤条件，查询所有文章
+            articles = articleQueryService.findAllArticles(page, size);
+            totalCount = articleQueryService.countAllArticles();
+        } else if (statusEnum != null && categoryId == null && tagId == null) {
+            // 仅按状态过滤
+            articles = articleQueryService.findByStatus(statusEnum, page, size);
+            totalCount = articleQueryService.countByStatus(statusEnum);
+        } else if (statusEnum == ArticleStatus.PUBLISHED && categoryId != null && tagId == null) {
+            // 按分类过滤已发布文章
+            articles = articleQueryService.findPublishedByCategoryId(new CategoryId(categoryId), page, size);
+            totalCount = articleQueryService.countByCategoryId(new CategoryId(categoryId));
+        } else if (statusEnum == ArticleStatus.PUBLISHED && tagId != null && categoryId == null) {
+            // 按标签过滤已发布文章
+            articles = articleQueryService.findPublishedByTagId(new TagId(tagId), page, size);
+            totalCount = articleQueryService.countByTagId(new TagId(tagId));
+        } else if (statusEnum == null || statusEnum == ArticleStatus.PUBLISHED) {
+            // 默认查询已发布文章
+            articles = articleQueryService.findPublishedArticles(page, size);
+            totalCount = articleQueryService.countPublishedArticles();
+        } else {
+            // 复杂过滤暂时使用旧服务（待优化）
+            CategoryId categoryIdVO = categoryId != null ? new CategoryId(categoryId) : null;
+            TagId tagIdVO = tagId != null ? new TagId(tagId) : null;
+            if (categoryIdVO != null && tagIdVO != null) {
                 articles = articleApplicationService.findByCategoryAndTag(categoryIdVO, tagIdVO, page, size);
                 totalCount = articleApplicationService.countByCategoryAndTagAllStatuses(categoryIdVO, tagIdVO);
+            } else {
+                articles = articleApplicationService.findAllArticles(page, size);
+                totalCount = articleApplicationService.countAllArticles();
             }
-        } else if (categoryId != null) {
-            // 按分类过滤（支持状态筛选）
-            CategoryId categoryIdVO = new CategoryId(categoryId);
-            articles = articleApplicationService.findByCategoryId(categoryIdVO, statusEnum, page, size);
-            totalCount = articleApplicationService.countByCategoryId(categoryIdVO, statusEnum);
-        } else if (tagId != null) {
-            // 按标签过滤（支持状态筛选）
-            TagId tagIdVO = new TagId(tagId);
-            articles = articleApplicationService.findByTagId(tagIdVO, statusEnum, page, size);
-            totalCount = articleApplicationService.countByTagId(tagIdVO, statusEnum);
-        } else if (statusEnum != null) {
-            // 仅按状态过滤
-            articles = articleApplicationService.findByStatus(statusEnum, page, size);
-            totalCount = articleApplicationService.countByStatus(statusEnum);
-        } else {
-            // 无过滤条件，查询所有文章
-            articles = articleApplicationService.findAllArticles(page, size);
-            totalCount = articleApplicationService.countAllArticles();
         }
         
         // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
@@ -438,7 +471,9 @@ public class ArticleController {
         logger.debug("接收到查询文章请求，文章ID: {}", id);
         
         ArticleId articleId = new ArticleId(id.toString());
-        Optional<ArticleAggregate> articleOpt = articleApplicationService.findById(articleId);
+        
+        // 使用CQRS查询服务
+        Optional<ArticleAggregate> articleOpt = articleQueryService.findById(articleId);
         
         if (articleOpt.isEmpty()) {
             return Result.error("文章不存在");
@@ -737,7 +772,8 @@ public class ArticleController {
         
         logger.debug("接收到搜索文章请求，关键词: {}", keyword);
         
-        List<ArticleAggregate> articles = articleApplicationService.searchByTitle(keyword);
+        // 使用CQRS查询服务
+        List<ArticleAggregate> articles = articleQueryService.searchByTitle(keyword);
         
         // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
         List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);
@@ -765,7 +801,8 @@ public class ArticleController {
         
         logger.debug("接收到查询最近发布文章请求，限制数量: {}", limit);
         
-        List<ArticleAggregate> articles = articleApplicationService.findRecentlyPublished(limit);
+        // 使用CQRS查询服务
+        List<ArticleAggregate> articles = articleQueryService.findRecentlyPublished(limit);
         
         // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
         List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);
@@ -793,7 +830,8 @@ public class ArticleController {
         
         logger.debug("接收到查询热门文章请求，限制数量: {}", limit);
         
-        List<ArticleAggregate> articles = articleApplicationService.findPopularArticles(limit);
+        // 使用CQRS查询服务
+        List<ArticleAggregate> articles = articleQueryService.findPopularArticles(limit);
         
         // 构造响应对象，包含完整的实体信息（使用批量查询优化N+1问题）
         List<ArticleResponse> articleResponses = buildArticleResponsesWithEntitiesBatch(articles);

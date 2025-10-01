@@ -2,19 +2,35 @@
 
 欢迎来到 CleverOnion 博客系统的技术文档中心！这里包含了项目的完整技术文档，帮助开发者快速了解和参与项目开发。
 
+📋 **[文档目录结构说明](./STRUCTURE.md)** - 了解文档组织方式
+
 ## 📚 文档目录
 
 ### 🏗️ 架构设计
+
 - **[系统架构文档](./architecture.md)** - 详细介绍系统的整体架构设计、技术栈选择、分层结构和核心设计理念
 
 ### 🚀 功能特性
-- **[功能说明文档](./features.md)** - 全面介绍系统的功能模块、API接口、数据模型和业务流程
+
+- **[功能说明文档](./features.md)** - 全面介绍系统的功能模块、API 接口、数据模型和业务流程
 
 ### 📋 开发规范
-- **[开发规范文档](./development-guidelines.md)** - 项目的编码规范、架构规范、API设计规范和最佳实践
+
+- **[开发规范文档](./development-guidelines.md)** - 项目的编码规范、架构规范、API 设计规范和最佳实践
+- **[开发规范与项目分析](./standards/)** - 完整的开发规范总结和深度问题分析（推荐）
+  - [后端开发规范总结](./standards/backend-development-standards.md) - 基于实际代码的全面规范总结
+  - [项目问题分析与改进建议](./standards/issues-and-improvements.md) - 深度问题分析和具体改进方案
 
 ### 🔍 问题分析
+
 - **[问题分析和优化建议](./issues-and-optimization.md)** - 当前代码中存在的问题分析和具体的优化建议
+
+### 🏗️ 架构设计
+
+- **[架构设计文档](./architecture/)** - 架构改进和设计方案
+  - **[CQRS 架构专题](./architecture/cqrs/)** - 命令查询职责分离完整方案
+    - [设计文档](./architecture/cqrs/design/) - 理论、方案、最佳实践
+    - [执行文档](./architecture/cqrs/execution/) - 任务清单、进度跟踪
 
 ## 🎯 项目概述
 
@@ -36,9 +52,9 @@ CleverOnion 是一个基于 Spring Boot 和领域驱动设计（DDD）的现代�
 - **数据库**: MySQL 8.0
 - **ORM**: Spring Data JPA + Hibernate
 - **认证授权**: Sa-Token
-- **API文档**: OpenAPI 3 (Swagger)
+- **API 文档**: OpenAPI 3 (Swagger)
 - **构建工具**: Maven
-- **Java版本**: JDK 17+
+- **Java 版本**: JDK 17+
 
 ## 🚀 快速开始
 
@@ -52,25 +68,29 @@ CleverOnion 是一个基于 Spring Boot 和领域驱动设计（DDD）的现代�
 ### 本地开发环境搭建
 
 1. **克隆项目**
+
    ```bash
    git clone <repository-url>
    cd CleverOnion-backend
    ```
 
 2. **配置数据库**
+
    ```sql
    CREATE DATABASE cleveronion_blog_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
 3. **配置应用**
+
    ```bash
    # 复制配置文件
    cp src/main/resources/application-dev.yml.example src/main/resources/application-dev.yml
-   
+
    # 修改数据库连接信息和 GitHub OAuth2 配置
    ```
 
 4. **启动应用**
+
    ```bash
    mvn spring-boot:run
    ```
@@ -84,16 +104,19 @@ CleverOnion 是一个基于 Spring Boot 和领域驱动设计（DDD）的现代�
 ### 新功能开发流程
 
 1. **创建功能分支**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 2. **遵循开发规范**
+
    - 参考 [开发规范文档](./development-guidelines.md)
    - 遵循 DDD 分层架构
    - 编写单元测试和集成测试
 
 3. **提交代码**
+
    ```bash
    git add .
    git commit -m "feat(module): 添加新功能描述"
@@ -151,11 +174,13 @@ mvn flyway:clean
 ### 常见问题
 
 1. **数据库连接失败**
+
    - 检查数据库服务是否启动
    - 验证连接配置是否正确
    - 确认数据库用户权限
 
 2. **OAuth2 登录失败**
+
    - 检查 GitHub OAuth2 应用配置
    - 验证 client-id 和 client-secret
    - 确认回调 URL 配置正确
