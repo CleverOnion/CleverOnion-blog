@@ -279,7 +279,29 @@ mvn sonar:sonar
 
 ### 已记录的问题
 
-_(暂无，开始执行后记录)_
+#### [2025-10-01] 缓存序列化问题
+
+**任务**：4.1.1  
+**问题**：Redis 缓存反序列化失败  
+**错误 1**：`LocalDateTime` not supported by default  
+**错误 2**：LinkedHashMap cannot be cast to ArticleAggregate  
+**根本原因**：
+
+1. Jackson 默认不支持 Java 8 日期时间 API
+2. 缺少类型信息导致反序列化为 Map
+
+**解决方案**：
+
+```java
+ObjectMapper objectMapper = new ObjectMapper();
+// 1. 注册JavaTimeModule支持LocalDateTime
+objectMapper.registerModule(new JavaTimeModule());
+// 2. 启用类型信息
+objectMapper.activateDefaultTyping(typeValidator, DefaultTyping.NON_FINAL);
+```
+
+**用时**：20 分钟  
+**经验教训**：缓存配置需要考虑序列化兼容性，特别是 Java 8 日期时间和多态类型
 
 ---
 

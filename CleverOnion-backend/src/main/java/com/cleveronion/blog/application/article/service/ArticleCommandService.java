@@ -47,7 +47,7 @@ public class ArticleCommandService {
      * @param command 创建文章草稿命令
      * @return 创建的文章聚合
      */
-    @CacheEvict(value = "article-lists", allEntries = true)
+    @CacheEvict(value = {"article-responses", "article-list-responses", "article-search-responses"}, allEntries = true)
     public ArticleAggregate createDraft(CreateArticleDraftCommand command) {
         logger.debug("执行创建文章草稿命令: authorId={}, categoryId={}, title={}", 
             command.getAuthorId().getValue(), 
@@ -85,7 +85,7 @@ public class ArticleCommandService {
      * @param command 发布文章命令
      * @return 发布的文章聚合
      */
-    @CacheEvict(value = {"articles", "article-lists"}, allEntries = true)
+    @CacheEvict(value = {"article-responses", "article-list-responses", "article-search-responses"}, allEntries = true)
     public ArticleAggregate createAndPublish(PublishArticleCommand command) {
         logger.debug("执行创建并发布文章命令: authorId={}, title={}", 
             command.getAuthorId().getValue(),
@@ -125,7 +125,7 @@ public class ArticleCommandService {
      * @param command 更新文章命令
      * @return 更新后的文章聚合
      */
-    @CacheEvict(value = {"articles", "article-lists"}, allEntries = true)
+    @CacheEvict(value = {"article-responses", "article-list-responses", "article-search-responses"}, allEntries = true)
     public ArticleAggregate updateContent(UpdateArticleCommand command) {
         logger.debug("执行更新文章命令: articleId={}", command.getArticleId().getValue());
         
@@ -168,7 +168,7 @@ public class ArticleCommandService {
      * @param authorId 作者ID
      * @return 更新后的文章聚合
      */
-    @CacheEvict(value = {"articles", "article-lists"}, allEntries = true)
+    @CacheEvict(value = {"article-responses", "article-list-responses", "article-search-responses"}, allEntries = true)
     public ArticleAggregate addTags(ArticleId articleId, Set<TagId> tagIds, AuthorId authorId) {
         if (tagIds == null || tagIds.isEmpty()) {
             throw new IllegalArgumentException("标签ID集合不能为空");
@@ -199,7 +199,7 @@ public class ArticleCommandService {
      * @param authorId 作者ID
      * @return 更新后的文章聚合
      */
-    @CacheEvict(value = {"articles", "article-lists"}, allEntries = true)
+    @CacheEvict(value = {"article-responses", "article-list-responses", "article-search-responses"}, allEntries = true)
     public ArticleAggregate removeTags(ArticleId articleId, Set<TagId> tagIds, AuthorId authorId) {
         if (tagIds == null || tagIds.isEmpty()) {
             throw new IllegalArgumentException("标签ID集合不能为空");
@@ -229,7 +229,7 @@ public class ArticleCommandService {
      * @param authorId 作者ID
      * @return 发布后的文章聚合
      */
-    @CacheEvict(value = {"articles", "article-lists"}, allEntries = true)
+    @CacheEvict(value = {"article-responses", "article-list-responses", "article-search-responses"}, allEntries = true)
     public ArticleAggregate publish(ArticleId articleId, AuthorId authorId) {
         logger.debug("执行发布文章命令: articleId={}", articleId.getValue());
         
@@ -253,7 +253,7 @@ public class ArticleCommandService {
      * @param authorId 作者ID
      * @return 归档后的文章聚合
      */
-    @CacheEvict(value = {"articles", "article-lists"}, allEntries = true)
+    @CacheEvict(value = {"article-responses", "article-list-responses", "article-search-responses"}, allEntries = true)
     public ArticleAggregate archive(ArticleId articleId, AuthorId authorId) {
         logger.debug("执行归档文章命令: articleId={}", articleId.getValue());
         
@@ -277,7 +277,7 @@ public class ArticleCommandService {
      * @param authorId 作者ID
      * @return 撤回后的文章聚合
      */
-    @CacheEvict(value = {"articles", "article-lists"}, allEntries = true)
+    @CacheEvict(value = {"article-responses", "article-list-responses", "article-search-responses"}, allEntries = true)
     public ArticleAggregate revertToDraft(ArticleId articleId, AuthorId authorId) {
         logger.debug("执行撤回文章到草稿命令: articleId={}", articleId.getValue());
         
@@ -300,7 +300,7 @@ public class ArticleCommandService {
      * @param articleId 文章ID
      * @param authorId 作者ID
      */
-    @CacheEvict(value = {"articles", "article-lists"}, allEntries = true)
+    @CacheEvict(value = {"article-responses", "article-list-responses", "article-search-responses"}, allEntries = true)
     public void delete(ArticleId articleId, AuthorId authorId) {
         logger.debug("执行删除文章命令: articleId={}", articleId.getValue());
         

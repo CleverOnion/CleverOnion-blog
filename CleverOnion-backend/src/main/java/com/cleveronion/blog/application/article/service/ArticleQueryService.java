@@ -5,7 +5,7 @@ import com.cleveronion.blog.domain.article.repository.ArticleRepository;
 import com.cleveronion.blog.domain.article.valueobject.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
+// import org.springframework.cache.annotation.Cacheable;  // 暂不在Service层缓存
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +39,7 @@ public class ArticleQueryService {
      * @param articleId 文章ID
      * @return 文章聚合（如果存在）
      */
-    @Cacheable(value = "articles", key = "#articleId.value")
+    // 注意：不在Service层缓存领域对象，建议在Controller层缓存DTO
     public Optional<ArticleAggregate> findById(ArticleId articleId) {
         if (articleId == null) {
             throw new IllegalArgumentException("文章ID不能为空");
@@ -103,7 +103,6 @@ public class ArticleQueryService {
      * @param size 每页大小
      * @return 文章列表
      */
-    @Cacheable(value = "article-lists", key = "'published:' + #page + ':' + #size")
     public List<ArticleAggregate> findPublishedArticles(int page, int size) {
         validatePageParams(page, size);
         
@@ -118,7 +117,6 @@ public class ArticleQueryService {
      * @param size 每页大小
      * @return 文章列表
      */
-    @Cacheable(value = "article-lists", key = "'all:' + #page + ':' + #size")
     public List<ArticleAggregate> findAllArticles(int page, int size) {
         validatePageParams(page, size);
         
@@ -134,7 +132,6 @@ public class ArticleQueryService {
      * @param size 每页大小
      * @return 文章列表
      */
-    @Cacheable(value = "article-lists", key = "'author:' + #authorId.value + ':' + #page + ':' + #size")
     public List<ArticleAggregate> findByAuthorId(AuthorId authorId, int page, int size) {
         if (authorId == null) {
             throw new IllegalArgumentException("作者ID不能为空");
@@ -153,7 +150,6 @@ public class ArticleQueryService {
      * @param size 每页大小
      * @return 文章列表
      */
-    @Cacheable(value = "article-lists", key = "'category:' + #categoryId.value + ':' + #page + ':' + #size")
     public List<ArticleAggregate> findPublishedByCategoryId(CategoryId categoryId, int page, int size) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
@@ -172,7 +168,6 @@ public class ArticleQueryService {
      * @param size 每页大小
      * @return 文章列表
      */
-    @Cacheable(value = "article-lists", key = "'tag:' + #tagId.value + ':' + #page + ':' + #size")
     public List<ArticleAggregate> findPublishedByTagId(TagId tagId, int page, int size) {
         if (tagId == null) {
             throw new IllegalArgumentException("标签ID不能为空");
@@ -191,7 +186,6 @@ public class ArticleQueryService {
      * @param size 每页大小
      * @return 文章列表
      */
-    @Cacheable(value = "article-lists", key = "'status:' + #status + ':' + #page + ':' + #size")
     public List<ArticleAggregate> findByStatus(ArticleStatus status, int page, int size) {
         if (status == null) {
             throw new IllegalArgumentException("文章状态不能为空");
@@ -205,7 +199,6 @@ public class ArticleQueryService {
     /**
      * 分页查找指定分类和标签的已发布文章
      */
-    @Cacheable(value = "article-lists", key = "'cat:' + #categoryId.value + ':tag:' + #tagId.value + ':' + #page + ':' + #size")
     public List<ArticleAggregate> findPublishedByCategoryAndTag(CategoryId categoryId, TagId tagId, int page, int size) {
         if (categoryId == null || tagId == null) {
             throw new IllegalArgumentException("分类ID和标签ID不能为空");
@@ -252,7 +245,6 @@ public class ArticleQueryService {
     /**
      * 统计已发布文章总数
      */
-    @Cacheable(value = "article-stats", key = "'published-count'")
     public long countPublishedArticles() {
         logger.debug("统计已发布文章数量");
         return articleRepository.countPublishedArticles();
@@ -261,7 +253,6 @@ public class ArticleQueryService {
     /**
      * 统计指定作者的文章数量
      */
-    @Cacheable(value = "article-stats", key = "'author-count:' + #authorId.value")
     public long countByAuthorId(AuthorId authorId) {
         if (authorId == null) {
             throw new IllegalArgumentException("作者ID不能为空");
@@ -273,7 +264,6 @@ public class ArticleQueryService {
     /**
      * 统计指定分类的文章数量
      */
-    @Cacheable(value = "article-stats", key = "'category-count:' + #categoryId.value")
     public long countByCategoryId(CategoryId categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
@@ -285,7 +275,6 @@ public class ArticleQueryService {
     /**
      * 统计指定标签的文章数量
      */
-    @Cacheable(value = "article-stats", key = "'tag-count:' + #tagId.value")
     public long countByTagId(TagId tagId) {
         if (tagId == null) {
             throw new IllegalArgumentException("标签ID不能为空");
@@ -297,7 +286,6 @@ public class ArticleQueryService {
     /**
      * 统计所有文章数量
      */
-    @Cacheable(value = "article-stats", key = "'all-count'")
     public long countAllArticles() {
         return articleRepository.countAllArticles();
     }
@@ -305,7 +293,6 @@ public class ArticleQueryService {
     /**
      * 统计指定状态的文章数量
      */
-    @Cacheable(value = "article-stats", key = "'status-count:' + #status")
     public long countByStatus(ArticleStatus status) {
         if (status == null) {
             throw new IllegalArgumentException("文章状态不能为空");
@@ -322,7 +309,6 @@ public class ArticleQueryService {
      * @param limit 限制数量
      * @return 文章列表
      */
-    @Cacheable(value = "article-lists", key = "'recent:' + #limit")
     public List<ArticleAggregate> findRecentlyPublished(int limit) {
         if (limit <= 0) {
             throw new IllegalArgumentException("限制数量必须大于0");
@@ -338,7 +324,6 @@ public class ArticleQueryService {
      * @param limit 限制数量
      * @return 文章列表
      */
-    @Cacheable(value = "article-lists", key = "'popular:' + #limit")
     public List<ArticleAggregate> findPopularArticles(int limit) {
         if (limit <= 0) {
             throw new IllegalArgumentException("限制数量必须大于0");

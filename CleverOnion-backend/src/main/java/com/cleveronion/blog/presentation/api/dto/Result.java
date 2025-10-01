@@ -1,5 +1,6 @@
 package com.cleveronion.blog.presentation.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @since 1.0.0
  */
 @Schema(description = "统一响应结果")
+@JsonIgnoreProperties(ignoreUnknown = true)  // 忽略未知字段
 public class Result<T> {
     
     /**
