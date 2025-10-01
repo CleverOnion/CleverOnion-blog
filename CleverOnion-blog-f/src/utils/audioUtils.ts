@@ -1,12 +1,24 @@
 /**
  * 音效播放工具函数
  * 根据后端返回的code值播放对应的音效
+ *
+ * @deprecated 此文件已弃用，请使用新的音效系统：
+ * import { soundManager } from '@/utils/sound';
+ * soundManager.play('api.success.post');
+ *
+ * 新音效系统提供：
+ * - 智能节流机制
+ * - 优先级系统
+ * - 用户自定义配置
+ * - 更好的性能
+ *
+ * 详见文档：docs/sound-system/README.md
  */
 
 // 音效文件路径
 const AUDIO_FILES = {
-  success: '/src/assets/mp3/success.mp3',
-  fail: '/src/assets/mp3/fail.mp3'
+  success: "/src/assets/mp3/success.mp3",
+  fail: "/src/assets/mp3/fail.mp3",
 } as const;
 
 /**
@@ -17,18 +29,18 @@ export const playNotificationSound = (code: number): void => {
   try {
     // 根据code值选择音效文件
     const audioFile = code === 200 ? AUDIO_FILES.success : AUDIO_FILES.fail;
-    
+
     // 创建Audio对象并播放
     const audio = new Audio(audioFile);
     audio.volume = 0.5; // 设置音量为50%
-    
+
     // 播放音效
     audio.play().catch((error) => {
-      console.warn('音效播放失败:', error);
+      console.warn("音效播放失败:", error);
       // 音效播放失败不应该影响正常功能，只记录警告
     });
   } catch (error) {
-    console.warn('音效播放出错:', error);
+    console.warn("音效播放出错:", error);
     // 音效播放出错不应该影响正常功能，只记录警告
   }
 };
@@ -52,7 +64,7 @@ export const playFailSound = (): void => {
  * @returns 是否支持音频播放
  */
 export const isAudioSupported = (): boolean => {
-  return typeof Audio !== 'undefined';
+  return typeof Audio !== "undefined";
 };
 
 /**
@@ -67,12 +79,12 @@ export const preloadAudioFiles = (): void => {
   try {
     // 预加载成功音效
     const successAudio = new Audio(AUDIO_FILES.success);
-    successAudio.preload = 'auto';
-    
+    successAudio.preload = "auto";
+
     // 预加载失败音效
     const failAudio = new Audio(AUDIO_FILES.fail);
-    failAudio.preload = 'auto';
+    failAudio.preload = "auto";
   } catch (error) {
-    console.warn('音效文件预加载失败:', error);
+    console.warn("音效文件预加载失败:", error);
   }
 };

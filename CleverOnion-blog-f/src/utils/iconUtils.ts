@@ -1,8 +1,8 @@
-import React from 'react';
-import { 
-  FaCss3Alt, 
-  FaReact, 
-  FaJs, 
+import React from "react";
+import {
+  FaCss3Alt,
+  FaReact,
+  FaJs,
   FaBriefcase,
   FaCode,
   FaDatabase,
@@ -30,11 +30,11 @@ import {
   FaAndroid,
   FaGithub,
   FaGitlab,
-  FaBitbucket
-} from 'react-icons/fa';
+  FaBitbucket,
+} from "react-icons/fa";
 
-import { 
-  MdAnimation, 
+import {
+  MdAnimation,
   MdList,
   MdWeb,
   MdPhoneAndroid,
@@ -47,8 +47,8 @@ import {
   MdSettings,
   MdBuild,
   MdCode,
-  MdDesignServices
-} from 'react-icons/md';
+  MdDesignServices,
+} from "react-icons/md";
 
 import {
   SiTypescript,
@@ -68,11 +68,14 @@ import {
   SiStorybook,
   SiFigma,
   SiSketch,
-  SiAdobexd
-} from 'react-icons/si';
+  SiAdobexd,
+} from "react-icons/si";
+
+// 图标属性类型
+type IconProps = { className?: string; size?: number | string };
 
 // 图标映射表
-export const iconMap: { [key: string]: React.ComponentType<any> } = {
+export const iconMap: Record<string, React.ComponentType<IconProps>> = {
   // Font Awesome Icons
   FaCss3Alt,
   FaReact,
@@ -105,7 +108,7 @@ export const iconMap: { [key: string]: React.ComponentType<any> } = {
   FaGithub,
   FaGitlab,
   FaBitbucket,
-  
+
   // Material Design Icons
   MdAnimation,
   MdList,
@@ -121,7 +124,7 @@ export const iconMap: { [key: string]: React.ComponentType<any> } = {
   MdBuild,
   MdCode,
   MdDesignServices,
-  
+
   // Simple Icons
   SiTypescript,
   SiNextdotjs,
@@ -140,7 +143,7 @@ export const iconMap: { [key: string]: React.ComponentType<any> } = {
   SiStorybook,
   SiFigma,
   SiSketch,
-  SiAdobexd
+  SiAdobexd,
 };
 
 /**
@@ -148,7 +151,9 @@ export const iconMap: { [key: string]: React.ComponentType<any> } = {
  * @param iconName 图标名称，如 'FaReact', 'MdAnimation'
  * @returns React图标组件或默认图标
  */
-export const getIconComponent = (iconName?: string): React.ComponentType<any> => {
+export const getIconComponent = (
+  iconName?: string
+): React.ComponentType<IconProps> => {
   if (!iconName || !iconMap[iconName]) {
     return MdList; // 默认图标
   }
@@ -163,15 +168,15 @@ export const getIconComponent = (iconName?: string): React.ComponentType<any> =>
  * @returns JSX元素
  */
 export const renderIcon = (
-  iconName?: string, 
-  className?: string, 
+  iconName?: string,
+  className?: string,
   size?: number | string
 ): React.ReactElement => {
   const IconComponent = getIconComponent(iconName);
-  return React.createElement(IconComponent, { 
-    className, 
+  return React.createElement(IconComponent, {
+    className,
     size,
-    'aria-hidden': true 
+    "aria-hidden": true,
   });
 };
 
@@ -189,28 +194,55 @@ export const getAvailableIcons = (): string[] => {
 export const getIconsByCategory = () => {
   return {
     frontend: [
-      'FaReact', 'FaVuejs', 'FaAngular', 'FaHtml5', 'FaCss3Alt', 'FaJs', 
-      'SiTypescript', 'SiNextdotjs', 'SiTailwindcss', 'FaBootstrap', 'FaSass', 'FaLess'
+      "FaReact",
+      "FaVuejs",
+      "FaAngular",
+      "FaHtml5",
+      "FaCss3Alt",
+      "FaJs",
+      "SiTypescript",
+      "SiNextdotjs",
+      "SiTailwindcss",
+      "FaBootstrap",
+      "FaSass",
+      "FaLess",
     ],
     backend: [
-      'FaNodeJs', 'FaPython', 'FaJava', 'FaPhp', 'FaServer', 'FaDatabase',
-      'SiMongodb', 'SiMysql', 'SiPostgresql', 'SiRedis', 'SiGraphql'
+      "FaNodeJs",
+      "FaPython",
+      "FaJava",
+      "FaPhp",
+      "FaServer",
+      "FaDatabase",
+      "SiMongodb",
+      "SiMysql",
+      "SiPostgresql",
+      "SiRedis",
+      "SiGraphql",
     ],
-    mobile: [
-      'FaMobile', 'FaAndroid', 'FaApple', 'MdPhoneAndroid'
-    ],
+    mobile: ["FaMobile", "FaAndroid", "FaApple", "MdPhoneAndroid"],
     tools: [
-      'FaGitAlt', 'FaGithub', 'FaGitlab', 'FaBitbucket', 'FaDocker',
-      'SiWebpack', 'SiVite', 'SiEslint', 'SiPrettier', 'SiJest', 'SiCypress'
+      "FaGitAlt",
+      "FaGithub",
+      "FaGitlab",
+      "FaBitbucket",
+      "FaDocker",
+      "SiWebpack",
+      "SiVite",
+      "SiEslint",
+      "SiPrettier",
+      "SiJest",
+      "SiCypress",
     ],
-    design: [
-      'SiFigma', 'SiSketch', 'SiAdobexd', 'MdDesignServices'
-    ],
-    business: [
-      'FaBriefcase', 'MdBusiness', 'MdTrendingUp', 'MdSchool'
-    ],
+    design: ["SiFigma", "SiSketch", "SiAdobexd", "MdDesignServices"],
+    business: ["FaBriefcase", "MdBusiness", "MdTrendingUp", "MdSchool"],
     general: [
-      'MdList', 'MdCode', 'MdWeb', 'MdAnimation', 'MdSettings', 'MdBuild'
-    ]
+      "MdList",
+      "MdCode",
+      "MdWeb",
+      "MdAnimation",
+      "MdSettings",
+      "MdBuild",
+    ],
   };
 };

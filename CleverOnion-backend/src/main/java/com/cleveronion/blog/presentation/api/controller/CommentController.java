@@ -20,6 +20,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,6 +64,7 @@ public class CommentController {
      */
     @PostMapping
     @SaCheckLogin
+    @CacheEvict(value = {"comment-list-responses", "comment-top-responses"}, allEntries = true)
     public Result<CommentResponse> createComment(@Valid @RequestBody CreateCommentRequest request) {
         // 获取当前登录用户ID
         Long userId = StpUtil.getLoginIdAsLong();
@@ -98,6 +100,7 @@ public class CommentController {
      */
     @DeleteMapping("/{commentId}")
     @SaCheckLogin
+    @CacheEvict(value = {"comment-list-responses", "comment-top-responses"}, allEntries = true)
     public Result<Void> deleteComment(@PathVariable Long commentId) {
         // 获取当前登录用户ID
         Long userId = StpUtil.getLoginIdAsLong();
