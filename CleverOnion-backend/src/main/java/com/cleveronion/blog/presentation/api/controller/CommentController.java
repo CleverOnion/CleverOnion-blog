@@ -1,11 +1,13 @@
 package com.cleveronion.blog.presentation.api.controller;
 
-import com.cleveronion.blog.application.comment.service.CommentApplicationService;
+import com.cleveronion.blog.application.comment.service.CommentCommandService;
+import com.cleveronion.blog.application.comment.service.CommentQueryService;
 import com.cleveronion.blog.application.comment.command.CreateCommentCommand;
 import com.cleveronion.blog.application.comment.command.DeleteCommentCommand;
-import com.cleveronion.blog.application.comment.command.GetCommentsQuery;
 import com.cleveronion.blog.application.user.service.UserApplicationService;
+import com.cleveronion.blog.domain.article.valueobject.ArticleId;
 import com.cleveronion.blog.domain.comment.aggregate.CommentAggregate;
+import com.cleveronion.blog.domain.comment.valueobject.CommentId;
 import com.cleveronion.blog.domain.user.aggregate.UserAggregate;
 import com.cleveronion.blog.domain.user.valueobject.UserId;
 import com.cleveronion.blog.presentation.api.dto.comment.CreateCommentRequest;
@@ -28,8 +30,11 @@ import java.util.stream.Collectors;
 /**
  * 评论控制器
  * 提供评论相关的RESTful API接口
+ * 使用CQRS模式，命令和查询分离
  * 
  * @author CleverOnion
+ * @since 1.0.0
+ * @version 2.0.0 - 引入CQRS架构
  */
 @RestController
 @RequestMapping("/comments")
@@ -37,12 +42,15 @@ public class CommentController {
     
     private static final Logger logger = LoggerFactory.getLogger(CommentController.class);
     
-    private final CommentApplicationService commentApplicationService;
+    private final CommentCommandService commentCommandService;
+    private final CommentQueryService commentQueryService;
     private final UserApplicationService userApplicationService;
     
-    public CommentController(CommentApplicationService commentApplicationService,
+    public CommentController(CommentCommandService commentCommandService,
+                           CommentQueryService commentQueryService,
                            UserApplicationService userApplicationService) {
-        this.commentApplicationService = commentApplicationService;
+        this.commentCommandService = commentCommandService;
+        this.commentQueryService = commentQueryService;
         this.userApplicationService = userApplicationService;
     }
     
@@ -71,7 +79,7 @@ public class CommentController {
         );
         
         // 执行创建评论业务逻辑
-        CommentAggregate comment = commentApplicationService.createComment(command);
+        CommentAggregate comment = commentCommandService.createComment(command);
         
         // 转换为响应DTO
         CommentResponse response = convertToCommentResponse(comment);
@@ -98,7 +106,7 @@ public class CommentController {
         DeleteCommentCommand command = new DeleteCommentCommand(commentId, userId);
         
         // 执行删除评论业务逻辑
-        commentApplicationService.deleteComment(command);
+        commentCommandService.deleteComment(command);
         
         logger.info("用户 {} 成功删除评论，评论ID: {}", userId, commentId);
         
@@ -121,11 +129,9 @@ public class CommentController {
         
         logger.debug("查询文章评论，文章ID: {}, 页码: {}, 每页大小: {}", articleId, page, size);
         
-        // 构建查询评论命令
-        GetCommentsQuery query = new GetCommentsQuery(articleId, null, page, size);
-        
         // 执行查询评论业务逻辑
-        List<CommentAggregate> comments = commentApplicationService.getComments(query);
+        ArticleId articleIdVO = new ArticleId(articleId.toString());
+        List<CommentAggregate> comments = commentQueryService.findTopLevelByArticleId(articleIdVO, page, size);
         
         // 转换为响应DTO
         List<CommentResponse> commentResponses = comments.stream()
@@ -133,7 +139,7 @@ public class CommentController {
             .collect(Collectors.toList());
         
         // 获取评论总数
-        long totalComments = commentApplicationService.countCommentsByArticleId(articleId);
+        long totalComments = commentQueryService.countByArticleId(articleIdVO);
         
         CommentListResponse response = new CommentListResponse(
             commentResponses,
@@ -164,7 +170,8 @@ public class CommentController {
         logger.debug("查询文章顶级评论，文章ID: {}, 页码: {}, 每页大小: {}", articleId, page, size);
         
         // 执行查询顶级评论业务逻辑
-        List<CommentAggregate> comments = commentApplicationService.getTopLevelComments(articleId, page, size);
+        ArticleId articleIdVO = new ArticleId(articleId.toString());
+        List<CommentAggregate> comments = commentQueryService.findTopLevelByArticleId(articleIdVO, page, size);
         
         // 转换为响应DTO
         List<CommentResponse> commentResponses = comments.stream()
@@ -172,7 +179,7 @@ public class CommentController {
             .collect(Collectors.toList());
         
         // 获取顶级评论总数
-        long totalComments = commentApplicationService.countTopLevelCommentsByArticleId(articleId);
+        long totalComments = commentQueryService.countTopLevelByArticleId(articleIdVO);
         
         CommentListResponse response = new CommentListResponse(
             commentResponses,
@@ -203,7 +210,8 @@ public class CommentController {
         logger.debug("查询评论回复，父评论ID: {}, 页码: {}, 每页大小: {}", parentId, page, size);
         
         // 执行查询回复业务逻辑
-        List<CommentAggregate> replies = commentApplicationService.getReplies(parentId, page, size);
+        CommentId parentIdVO = new CommentId(parentId);
+        List<CommentAggregate> replies = commentQueryService.findRepliesByParentId(parentIdVO, page, size);
         
         // 转换为响应DTO
         List<CommentResponse> replyResponses = replies.stream()
@@ -211,7 +219,7 @@ public class CommentController {
             .collect(Collectors.toList());
         
         // 获取回复总数
-        long totalReplies = commentApplicationService.countRepliesByParentId(parentId);
+        long totalReplies = commentQueryService.countRepliesByParentId(parentIdVO);
         
         CommentListResponse response = new CommentListResponse(
             replyResponses,
