@@ -6,53 +6,46 @@ import com.cleveronion.blog.domain.common.event.DomainEvent;
 import java.util.Objects;
 
 /**
- * 标签删除领域事件
- * 当标签被删除时发布此事件，用于通知其他组件进行相关的清理工作
+ * 标签更新事件
+ * 当标签信息被更新时发布此事件
  * 
  * @author CleverOnion
  * @since 1.0.0
  */
-public class TagDeletedEvent extends DomainEvent {
+public class TagUpdatedEvent extends DomainEvent {
     
     private final TagId tagId;
-    private final String tagName;
+    private final String oldName;
+    private final String newName;
     
-    /**
-     * 构造函数
-     * 
-     * @param source 事件源对象
-     * @param tagId 被删除的标签ID
-     * @param tagName 标签名称
-     */
-    public TagDeletedEvent(Object source, TagId tagId, String tagName) {
+    public TagUpdatedEvent(Object source, TagId tagId, String oldName, String newName) {
         super(source, String.valueOf(tagId.getValue()));
         this.tagId = Objects.requireNonNull(tagId, "标签ID不能为空");
-        this.tagName = Objects.requireNonNull(tagName, "标签名称不能为空");
+        this.oldName = oldName;
+        this.newName = Objects.requireNonNull(newName, "新名称不能为空");
     }
     
-    /**
-     * 获取被删除的标签ID
-     * 
-     * @return 标签ID
-     */
     public TagId getTagId() {
         return tagId;
     }
     
-    /**
-     * 获取标签名称
-     * 
-     * @return 标签名称
-     */
-    public String getTagName() {
-        return tagName;
+    public String getOldName() {
+        return oldName;
+    }
+    
+    public String getNewName() {
+        return newName;
+    }
+    
+    public boolean isNameChanged() {
+        return !Objects.equals(oldName, newName);
     }
     
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TagDeletedEvent that = (TagDeletedEvent) o;
+        TagUpdatedEvent that = (TagUpdatedEvent) o;
         return Objects.equals(getEventId(), that.getEventId());
     }
     
@@ -63,11 +56,13 @@ public class TagDeletedEvent extends DomainEvent {
     
     @Override
     public String toString() {
-        return "TagDeletedEvent{" +
+        return "TagUpdatedEvent{" +
                 "eventId='" + getEventId() + '\'' +
                 ", occurredOn=" + getOccurredOn() +
                 ", tagId=" + tagId.getValue() +
-                ", tagName='" + tagName + '\'' +
+                ", oldName='" + oldName + '\'' +
+                ", newName='" + newName + '\'' +
                 '}';
     }
 }
+

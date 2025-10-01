@@ -1,6 +1,10 @@
 package com.cleveronion.blog.presentation.api.controller;
 
-import com.cleveronion.blog.application.article.service.TagApplicationService;
+import com.cleveronion.blog.application.tag.command.CreateTagCommand;
+import com.cleveronion.blog.application.tag.command.DeleteTagCommand;
+import com.cleveronion.blog.application.tag.command.UpdateTagCommand;
+import com.cleveronion.blog.application.tag.service.TagCommandService;
+import com.cleveronion.blog.application.tag.service.TagQueryService;
 import com.cleveronion.blog.domain.article.aggregate.TagAggregate;
 import com.cleveronion.blog.domain.article.valueobject.TagId;
 import com.cleveronion.blog.presentation.api.dto.CreateTagRequest;
@@ -28,18 +32,23 @@ import java.util.stream.Collectors;
 /**
  * 标签管理控制器
  * 提供标签的CRUD操作API接口
+ * 使用CQRS模式，命令和查询分离
  * 
  * @author CleverOnion
+ * @since 1.0.0
+ * @version 2.0.0 - 引入CQRS架构
  */
 @RestController
 @RequestMapping("/tags")
 @Tag(name = "标签管理", description = "标签的增删改查操作")
 public class TagController {
     
-    private final TagApplicationService tagApplicationService;
+    private final TagCommandService tagCommandService;
+    private final TagQueryService tagQueryService;
     
-    public TagController(TagApplicationService tagApplicationService) {
-        this.tagApplicationService = tagApplicationService;
+    public TagController(TagCommandService tagCommandService, TagQueryService tagQueryService) {
+        this.tagCommandService = tagCommandService;
+        this.tagQueryService = tagQueryService;
     }
     
     /**
@@ -58,7 +67,11 @@ public class TagController {
     public Result<TagResponse> createTag(
             @Valid @RequestBody CreateTagRequest request) {
         
-        TagAggregate tag = tagApplicationService.createTag(request.getName());
+        // 构建命令对象
+        CreateTagCommand command = CreateTagCommand.of(request.getName());
+        
+        // 执行命令
+        TagAggregate tag = tagCommandService.createTag(command);
         TagResponse response = TagResponse.from(tag);
         
         return Result.success(response);
@@ -84,7 +97,12 @@ public class TagController {
             @Valid @RequestBody UpdateTagRequest request) {
         
         TagId tagId = TagId.of(id);
-        TagAggregate tag = tagApplicationService.updateTagName(tagId, request.getName());
+        
+        // 构建命令对象
+        UpdateTagCommand command = UpdateTagCommand.of(tagId, request.getName());
+        
+        // 执行命令
+        TagAggregate tag = tagCommandService.updateTagName(command);
         TagResponse response = TagResponse.from(tag);
         
         return Result.success(response);
@@ -106,7 +124,12 @@ public class TagController {
             @Parameter(description = "标签ID", required = true) @PathVariable Long id) {
         
         TagId tagId = TagId.of(id);
-        tagApplicationService.deleteTag(tagId);
+        
+        // 构建命令对象
+        DeleteTagCommand command = DeleteTagCommand.of(tagId);
+        
+        // 执行命令
+        tagCommandService.deleteTag(command);
         
         return Result.success();
     }
@@ -127,7 +150,7 @@ public class TagController {
             @Parameter(description = "标签ID", required = true) @PathVariable Long id) {
         
         TagId tagId = TagId.of(id);
-        Optional<TagAggregate> tagOpt = tagApplicationService.findById(tagId);
+        Optional<TagAggregate> tagOpt = tagQueryService.findById(tagId);
         
         if (tagOpt.isEmpty()) {
             return Result.notFound("标签不存在");
@@ -147,7 +170,7 @@ public class TagController {
     @ApiResponse(responseCode = "200", description = "查询成功")
     public Result<TagListResponse> getAllTags() {
         
-        List<TagAggregate> tags = tagApplicationService.findAllTags();
+        List<TagAggregate> tags = tagQueryService.findAll();
         List<TagResponse> tagResponses = tags.stream()
                 .map(TagResponse::from)
                 .collect(Collectors.toList());
@@ -171,8 +194,8 @@ public class TagController {
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size) {
         
 
-        List<TagAggregate> tags = tagApplicationService.findTags(page, size);
-        long total = tagApplicationService.countTags();
+        List<TagAggregate> tags = tagQueryService.findWithPagination(page, size);
+        long total = tagQueryService.countAll();
         
         List<TagResponse> tagResponses = tags.stream()
                 .map(TagResponse::from)
@@ -194,7 +217,7 @@ public class TagController {
     public Result<TagListResponse> searchTags(
             @Parameter(description = "搜索关键词", required = true) @RequestParam String keyword) {
         
-        List<TagAggregate> tags = tagApplicationService.searchByName(keyword);
+        List<TagAggregate> tags = tagQueryService.searchByName(keyword);
         List<TagResponse> tagResponses = tags.stream()
                 .map(TagResponse::from)
                 .collect(Collectors.toList());
@@ -215,7 +238,7 @@ public class TagController {
     public Result<TagListResponse> getRecentTags(
             @Parameter(description = "限制数量") @RequestParam(defaultValue = "10") int limit) {
         
-        List<TagAggregate> tags = tagApplicationService.findRecentlyCreated(limit);
+        List<TagAggregate> tags = tagQueryService.findRecentlyCreated(limit);
         List<TagResponse> tagResponses = tags.stream()
                 .map(TagResponse::from)
                 .collect(Collectors.toList());
@@ -234,7 +257,7 @@ public class TagController {
     @ApiResponse(responseCode = "200", description = "统计成功")
     public Result<Long> getTagCount() {
         
-        long count = tagApplicationService.countTags();
+        long count = tagQueryService.countAll();
         return Result.success(count);
     }
     
@@ -252,8 +275,8 @@ public class TagController {
             @Parameter(description = "页码（从0开始）") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size) {
         
-        List<TagRepository.TagWithArticleCount> tagsWithCount = tagApplicationService.findTagsWithArticleCount(page, size);
-        long total = tagApplicationService.countTags();
+        List<TagRepository.TagWithArticleCount> tagsWithCount = tagQueryService.findWithArticleCount(page, size);
+        long total = tagQueryService.countAll();
         
         List<TagWithCountResponse> tagResponses = tagsWithCount.stream()
                 .map(tagWithCount -> TagWithCountResponse.from(tagWithCount.getTag(), tagWithCount.getArticleCount()))

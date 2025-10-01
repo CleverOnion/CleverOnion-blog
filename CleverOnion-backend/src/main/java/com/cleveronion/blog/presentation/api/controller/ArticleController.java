@@ -6,8 +6,10 @@ import com.cleveronion.blog.application.article.command.PublishArticleCommand;
 import com.cleveronion.blog.application.article.command.UpdateArticleCommand;
 import com.cleveronion.blog.application.article.service.ArticleCommandService;
 import com.cleveronion.blog.application.article.service.ArticleQueryService;
-import com.cleveronion.blog.application.article.service.CategoryApplicationService;
-import com.cleveronion.blog.application.article.service.TagApplicationService;
+import com.cleveronion.blog.application.category.service.CategoryQueryService;
+import com.cleveronion.blog.application.tag.command.FindOrCreateTagsCommand;
+import com.cleveronion.blog.application.tag.service.TagCommandService;
+import com.cleveronion.blog.application.tag.service.TagQueryService;
 import com.cleveronion.blog.application.user.service.UserApplicationService;
 import com.cleveronion.blog.domain.article.aggregate.ArticleAggregate;
 import com.cleveronion.blog.domain.article.aggregate.CategoryAggregate;
@@ -60,19 +62,22 @@ public class ArticleController {
     
     private final ArticleCommandService articleCommandService;  // CQRS命令服务
     private final ArticleQueryService articleQueryService;      // CQRS查询服务
-    private final CategoryApplicationService categoryApplicationService;
-    private final TagApplicationService tagApplicationService;
+    private final CategoryQueryService categoryQueryService;    // CQRS查询服务
+    private final TagCommandService tagCommandService;          // CQRS命令服务
+    private final TagQueryService tagQueryService;              // CQRS查询服务
     private final UserApplicationService userApplicationService;
     
     public ArticleController(ArticleCommandService articleCommandService,
                            ArticleQueryService articleQueryService,
-                           CategoryApplicationService categoryApplicationService,
-                           TagApplicationService tagApplicationService,
+                           CategoryQueryService categoryQueryService,
+                           TagCommandService tagCommandService,
+                           TagQueryService tagQueryService,
                            UserApplicationService userApplicationService) {
         this.articleCommandService = articleCommandService;
         this.articleQueryService = articleQueryService;
-        this.categoryApplicationService = categoryApplicationService;
-        this.tagApplicationService = tagApplicationService;
+        this.categoryQueryService = categoryQueryService;
+        this.tagCommandService = tagCommandService;
+        this.tagQueryService = tagQueryService;
         this.userApplicationService = userApplicationService;
     }
     
@@ -109,7 +114,8 @@ public class ArticleController {
         // 处理标签：根据标签名查找或创建标签
         Set<TagId> tagIds = null;
         if (request.getTagNames() != null && !request.getTagNames().isEmpty()) {
-            List<TagAggregate> tags = tagApplicationService.findOrCreateByNames(request.getTagNames());
+            FindOrCreateTagsCommand tagCommand = FindOrCreateTagsCommand.of(request.getTagNames());
+            List<TagAggregate> tags = tagCommandService.findOrCreateByNames(tagCommand);
             tagIds = tags.stream()
                 .map(TagAggregate::getId)
                 .collect(Collectors.toSet());
@@ -166,7 +172,8 @@ public class ArticleController {
         // 处理标签：根据标签名查找或创建标签
         Set<TagId> tagIds = null;
         if (request.getTagNames() != null && !request.getTagNames().isEmpty()) {
-            List<TagAggregate> tags = tagApplicationService.findOrCreateByNames(request.getTagNames());
+            FindOrCreateTagsCommand tagCommand = FindOrCreateTagsCommand.of(request.getTagNames());
+            List<TagAggregate> tags = tagCommandService.findOrCreateByNames(tagCommand);
             tagIds = tags.stream()
                 .map(TagAggregate::getId)
                 .collect(Collectors.toSet());
@@ -234,7 +241,8 @@ public class ArticleController {
         Set<TagId> newTagIds = null;
         if (request.getTagNames() != null) {
             if (!request.getTagNames().isEmpty()) {
-                List<TagAggregate> tags = tagApplicationService.findOrCreateByNames(request.getTagNames());
+                FindOrCreateTagsCommand tagCommand = FindOrCreateTagsCommand.of(request.getTagNames());
+            List<TagAggregate> tags = tagCommandService.findOrCreateByNames(tagCommand);
                 newTagIds = tags.stream()
                     .map(TagAggregate::getId)
                     .collect(Collectors.toSet());
@@ -496,7 +504,7 @@ public class ArticleController {
         // 获取分类信息
         CategoryResponse categoryResponse = null;
         if (article.getCategoryId() != null) {
-            Optional<CategoryAggregate> categoryOpt = categoryApplicationService.findById(article.getCategoryId());
+            Optional<CategoryAggregate> categoryOpt = categoryQueryService.findById(article.getCategoryId());
             if (categoryOpt.isPresent()) {
                 categoryResponse = new CategoryResponse(categoryOpt.get());
             }
@@ -516,7 +524,7 @@ public class ArticleController {
         // 获取标签信息
         Set<TagResponse> tagResponses = new HashSet<>();
         if (article.getTagIds() != null && !article.getTagIds().isEmpty()) {
-            List<TagAggregate> tags = tagApplicationService.findByIds(article.getTagIds());
+            List<TagAggregate> tags = tagQueryService.findByIds(article.getTagIds());
             tagResponses = tags.stream()
                 .map(TagResponse::from)
                 .collect(Collectors.toSet());
@@ -560,7 +568,7 @@ public class ArticleController {
         // 批量查询关联数据
         Map<CategoryId, CategoryAggregate> categoryMap = categoryIds.isEmpty() ? 
             Map.of() : 
-            categoryApplicationService.findByIds(categoryIds).stream()
+            categoryQueryService.findByIds(categoryIds).stream()
                 .collect(Collectors.toMap(CategoryAggregate::getId, Function.identity()));
                 
         Map<UserId, UserAggregate> userMap = userIds.isEmpty() ? 
@@ -570,7 +578,7 @@ public class ArticleController {
                 
         Map<TagId, TagAggregate> tagMap = allTagIds.isEmpty() ? 
             Map.of() : 
-            tagApplicationService.findByIds(allTagIds).stream()
+            tagQueryService.findByIds(allTagIds).stream()
                 .collect(Collectors.toMap(TagAggregate::getId, Function.identity()));
         
         logger.debug("批量查询完成，分类数量: {}, 用户数量: {}, 标签数量: {}", 

@@ -179,6 +179,7 @@
 ### 如果您要执行 CQRS 重构
 
 **Article 模块（已完成）**：
+
 ```
 1. 查看任务清单（15分钟）
    └─ execution/cqrs-implementation-tasks.md
@@ -191,6 +192,7 @@
 ```
 
 **其他模块（待实施）**：
+
 ```
 1. 查看设计文档（40分钟）✨ 新增
    └─ design/modules-cqrs-implementation-guide.md

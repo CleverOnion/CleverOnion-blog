@@ -6,13 +6,13 @@
 
 ## 📋 任务总览
 
-| 模块 | 总任务数 | 预计用时 | 优先级 | 状态 |
-|------|---------|---------|--------|------|
-| **Category** | 25 个任务 | 1-1.5 天 | P1-高 | ⬜ 待开始 |
-| **Tag** | 30 个任务 | 1.5-2 天 | P1-高 | ⬜ 待开始 |
-| **Comment** | 18 个任务 | 1 天 | P2-中 | ⬜ 待开始 |
-| **User** | 16 个任务 | 0.5-1 天 | P3-低 | ⬜ 待开始 |
-| **总计** | **89 个任务** | **4-5.5 天** | - | **0/89 完成** |
+| 模块         | 总任务数         | 预计用时     | 优先级 | 状态                 |
+| ------------ | ---------------- | ------------ | ------ | -------------------- |
+| **Category** | 25 个任务        | 1-1.5 天     | P1-高  | ✅ 已完成            |
+| **Tag**      | 33 个任务 ✨     | 1.5-2 天     | P1-高  | ⬜ 待开始            |
+| **Comment**  | 19 个任务 ✨     | 1 天         | P2-中  | ⬜ 待开始            |
+| **User**     | 18 个任务 ✨     | 0.5-1 天     | P3-低  | ⬜ 待开始            |
+| **总计**     | **95 个任务** ✨ | **4-5.5 天** | -      | **25/95 完成 (26%)** |
 
 ---
 
@@ -25,12 +25,14 @@
 **描述**：创建 Category 模块的 CQRS 包结构
 
 **具体操作**：
+
 1. 创建 `application/category/` 包
 2. 创建 `application/category/command/` 包
 3. 创建 `application/category/service/` 包
 4. 创建 `domain/article/event/` 包（如果不存在）
 
 **验证标准**：
+
 - [ ] 包结构创建完成
 - [ ] 包路径符合项目规范
 
@@ -47,6 +49,7 @@
 **描述**：创建不可变的创建分类命令对象
 
 **具体操作**：
+
 1. 创建 `CreateCategoryCommand.java`
 2. 定义不可变字段：`name`, `icon`
 3. 实现私有构造函数
@@ -55,33 +58,35 @@
 6. 只提供 getter 方法
 
 **代码示例**：
+
 ```java
 public final class CreateCategoryCommand {
     private final String name;
     private final String icon;
-    
+
     private CreateCategoryCommand(String name, String icon) {
         this.name = validateName(name);
         this.icon = icon;
     }
-    
+
     public static CreateCategoryCommand of(String name, String icon) {
         return new CreateCategoryCommand(name, icon);
     }
-    
+
     private String validateName(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("分类名称不能为空");
         }
         return name.trim();
     }
-    
+
     public String getName() { return name; }
     public String getIcon() { return icon; }
 }
 ```
 
 **验证标准**：
+
 - [ ] 命令对象不可变（final class，final fields）
 - [ ] 包含参数验证
 - [ ] 编译通过
@@ -99,11 +104,13 @@ public final class CreateCategoryCommand {
 **描述**：创建更新分类命令对象
 
 **具体操作**：
+
 1. 创建 `UpdateCategoryCommand.java`
 2. 定义字段：`categoryId`, `name`, `icon`
 3. 实现验证和工厂方法
 
 **验证标准**：
+
 - [ ] 命令对象不可变
 - [ ] 包含 ID 验证
 - [ ] 编译通过
@@ -121,11 +128,13 @@ public final class CreateCategoryCommand {
 **描述**：创建删除分类命令对象
 
 **具体操作**：
+
 1. 创建 `DeleteCategoryCommand.java`
 2. 定义字段：`categoryId`
 3. 实现验证和工厂方法
 
 **验证标准**：
+
 - [ ] 命令对象不可变
 - [ ] 编译通过
 
@@ -142,11 +151,13 @@ public final class CreateCategoryCommand {
 **描述**：创建分类创建领域事件
 
 **具体操作**：
+
 1. 创建 `CategoryCreatedEvent.java`
 2. 定义字段：`categoryId`, `categoryName`, `occurredAt`
 3. 实现构造函数和 getter
 
 **验证标准**：
+
 - [ ] 事件类定义完整
 - [ ] 包含时间戳
 - [ ] 编译通过
@@ -164,10 +175,12 @@ public final class CreateCategoryCommand {
 **描述**：创建分类更新领域事件
 
 **具体操作**：
+
 1. 创建 `CategoryUpdatedEvent.java`
 2. 定义字段：`categoryId`, `oldName`, `newName`, `occurredAt`
 
 **验证标准**：
+
 - [ ] 事件类定义完整
 - [ ] 编译通过
 
@@ -184,10 +197,12 @@ public final class CreateCategoryCommand {
 **描述**：创建分类删除领域事件
 
 **具体操作**：
+
 1. 创建 `CategoryDeletedEvent.java`
 2. 定义字段：`categoryId`, `categoryName`, `occurredAt`
 
 **验证标准**：
+
 - [ ] 事件类定义完整
 - [ ] 编译通过
 
@@ -204,6 +219,7 @@ public final class CreateCategoryCommand {
 **描述**：为所有命令对象创建单元测试
 
 **具体操作**：
+
 1. 创建 `CreateCategoryCommandTest.java`
 2. 创建 `UpdateCategoryCommandTest.java`
 3. 创建 `DeleteCategoryCommandTest.java`
@@ -211,6 +227,7 @@ public final class CreateCategoryCommand {
 5. 测试不可变性
 
 **验证标准**：
+
 - [ ] 每个命令对象都有测试
 - [ ] 测试覆盖率 > 90%
 - [ ] 所有测试通过
@@ -228,11 +245,13 @@ public final class CreateCategoryCommand {
 **描述**：验证阶段 1 所有任务完成
 
 **具体操作**：
+
 1. 检查所有文件编译通过
 2. 检查所有测试通过
 3. 检查代码符合规范
 
 **验证标准**：
+
 - [ ] 所有命令对象创建完成
 - [ ] 所有事件类创建完成
 - [ ] 测试覆盖率 > 90%
@@ -253,12 +272,14 @@ public final class CreateCategoryCommand {
 **描述**：创建分类命令服务类框架
 
 **具体操作**：
+
 1. 创建 `CategoryCommandService.java`
 2. 添加 `@Service` 和 `@Transactional` 注解
 3. 注入依赖：`CategoryRepository`, `ArticleRepository`, `DomainEventPublisher`
 4. 添加 Logger
 
 **验证标准**：
+
 - [ ] 服务类创建完成
 - [ ] 依赖注入正确
 - [ ] 编译通过
@@ -276,12 +297,14 @@ public final class CreateCategoryCommand {
 **描述**：实现创建分类命令方法
 
 **具体操作**：
+
 1. 实现方法签名：`createCategory(CreateCategoryCommand command)`
 2. 添加 `@CacheEvict` 注解
 3. 实现业务逻辑：检查名称、创建聚合、保存、发布事件
 4. 添加日志
 
 **验证标准**：
+
 - [ ] 方法实现完整
 - [ ] 缓存失效配置正确
 - [ ] 事件发布正确
@@ -300,12 +323,14 @@ public final class CreateCategoryCommand {
 **描述**：实现更新分类命令方法
 
 **具体操作**：
+
 1. 实现方法签名
 2. 添加缓存失效注解
 3. 实现更新逻辑
 4. 发布更新事件
 
 **验证标准**：
+
 - [ ] 方法实现完整
 - [ ] 事件发布正确
 
@@ -322,12 +347,14 @@ public final class CreateCategoryCommand {
 **描述**：实现删除分类命令方法
 
 **具体操作**：
+
 1. 实现方法签名
 2. 检查分类下是否有文章
 3. 实现删除逻辑
 4. 发布删除事件
 
 **验证标准**：
+
 - [ ] 方法实现完整
 - [ ] 业务规则验证正确
 
@@ -344,11 +371,13 @@ public final class CreateCategoryCommand {
 **描述**：实现批量创建分类方法
 
 **具体操作**：
+
 1. 实现批量创建逻辑
 2. 添加缓存失效
 3. 批量发布事件
 
 **验证标准**：
+
 - [ ] 批量操作正确
 - [ ] 事务处理正确
 
@@ -365,12 +394,14 @@ public final class CreateCategoryCommand {
 **描述**：创建命令服务单元测试
 
 **具体操作**：
+
 1. 创建测试类
 2. Mock 依赖
 3. 测试每个命令方法
 4. 测试异常情况
 
 **验证标准**：
+
 - [ ] 测试覆盖所有方法
 - [ ] 测试覆盖率 > 85%
 - [ ] 所有测试通过
@@ -388,11 +419,13 @@ public final class CreateCategoryCommand {
 **描述**：验证领域事件发布正确
 
 **具体操作**：
+
 1. 编写事件监听器测试
 2. 验证事件内容正确
 3. 验证事件顺序
 
 **验证标准**：
+
 - [ ] 事件发布验证通过
 - [ ] 事件内容正确
 
@@ -409,6 +442,7 @@ public final class CreateCategoryCommand {
 **描述**：验证阶段 2 所有任务完成
 
 **验证标准**：
+
 - [ ] 所有命令方法实现完成
 - [ ] 事件发布正确
 - [ ] 缓存失效正确
@@ -430,11 +464,13 @@ public final class CreateCategoryCommand {
 **描述**：创建分类查询服务类框架
 
 **具体操作**：
+
 1. 创建服务类
 2. 添加 `@Service` 和 `@Transactional(readOnly = true)` 注解
 3. 注入依赖
 
 **验证标准**：
+
 - [ ] 服务类创建完成
 - [ ] 只读事务配置正确
 
@@ -451,6 +487,7 @@ public final class CreateCategoryCommand {
 **描述**：实现基础查询方法并配置缓存
 
 **方法列表**：
+
 - `findById(CategoryId id)`
 - `findByIds(Set<CategoryId> ids)`
 - `findByName(String name)`
@@ -458,11 +495,13 @@ public final class CreateCategoryCommand {
 - `findWithPagination(int page, int size)`
 
 **具体操作**：
+
 1. 实现每个查询方法
 2. 添加 `@Cacheable` 注解
 3. 配置缓存 key 和 TTL
 
 **验证标准**：
+
 - [ ] 所有方法实现完成
 - [ ] 缓存配置正确
 - [ ] 参数验证完整
@@ -480,10 +519,12 @@ public final class CreateCategoryCommand {
 **描述**：实现排序查询方法
 
 **方法列表**：
+
 - `findAllOrderByName(boolean ascending)`
 - `findAllOrderByCreatedAt(boolean ascending)`
 
 **验证标准**：
+
 - [ ] 排序逻辑正确
 - [ ] 缓存配置正确
 
@@ -500,6 +541,7 @@ public final class CreateCategoryCommand {
 **描述**：实现搜索和统计方法
 
 **方法列表**：
+
 - `searchByName(String keyword)`
 - `countAll()`
 - `existsById(CategoryId id)`
@@ -507,6 +549,7 @@ public final class CreateCategoryCommand {
 - `findRecentlyCreated(int limit)`
 
 **验证标准**：
+
 - [ ] 搜索功能正确
 - [ ] 统计准确
 - [ ] 缓存 TTL 配置合理（统计类 30 分钟）
@@ -524,10 +567,12 @@ public final class CreateCategoryCommand {
 **描述**：实现业务相关查询方法
 
 **方法列表**：
+
 - `getCategoryUsageCount(CategoryId id)`
 - `findWithArticleCount(int page, int size)`
 
 **验证标准**：
+
 - [ ] 业务逻辑正确
 - [ ] 关联查询正确
 
@@ -544,11 +589,13 @@ public final class CreateCategoryCommand {
 **描述**：创建查询服务单元测试
 
 **具体操作**：
+
 1. 创建测试类
 2. 测试所有查询方法
 3. 验证缓存配置
 
 **验证标准**：
+
 - [ ] 测试覆盖所有方法
 - [ ] 测试覆盖率 > 85%
 - [ ] 缓存测试通过
@@ -568,6 +615,7 @@ public final class CreateCategoryCommand {
 **描述**：更新控制器以使用新的 Command 和 Query 服务
 
 **具体操作**：
+
 1. 注入 `CategoryCommandService`
 2. 注入 `CategoryQueryService`
 3. 更新所有 API 方法
@@ -575,6 +623,7 @@ public final class CreateCategoryCommand {
 5. 编写集成测试
 
 **API 方法列表**：
+
 - POST /categories - 创建分类
 - PUT /categories/{id} - 更新分类
 - DELETE /categories/{id} - 删除分类
@@ -582,6 +631,7 @@ public final class CreateCategoryCommand {
 - GET /categories - 查询列表
 
 **验证标准**：
+
 - [ ] 所有 API 功能正常
 - [ ] 集成测试通过
 - [ ] API 响应正确
@@ -601,6 +651,7 @@ public final class CreateCategoryCommand {
 **描述**：清理旧代码，更新相关文档
 
 **具体操作**：
+
 1. 删除旧的 CategoryApplicationService
 2. 删除相关的旧测试
 3. 更新 API 文档
@@ -608,6 +659,7 @@ public final class CreateCategoryCommand {
 5. 代码 Review
 
 **验证标准**：
+
 - [ ] 旧代码已删除
 - [ ] 无编译错误
 - [ ] 所有测试通过
@@ -621,9 +673,9 @@ public final class CreateCategoryCommand {
 
 ---
 
-## 🏷️ Tag 模块任务清单（30 个任务）
+## 🏷️ Tag 模块任务清单（33 个任务）✨ **已修正和详细展开**
 
-### 阶段 1：准备工作（12 个任务，3-4 小时）
+### 阶段 1：准备工作（13 个任务，3.5-4.5 小时）
 
 #### 任务 1.1：创建包结构
 
@@ -631,7 +683,7 @@ public final class CreateCategoryCommand {
 
 ---
 
-#### 任务 1.2-1.8：创建命令对象（7 个）
+#### 任务 1.2-1.9：创建命令对象（8 个）
 
 - `CreateTagCommand`
 - `UpdateTagCommand`
@@ -640,12 +692,13 @@ public final class CreateCategoryCommand {
 - `SaveTagsCommand`
 - `DeleteTagsCommand`
 - `CleanupUnusedTagsCommand`
+- `FindOrCreateTagsCommand` ✨ **补充**
 
-**预计时间**：120 分钟 | **依赖**：1.1 | **状态**：⬜ 待开始
+**预计时间**：140 分钟 | **依赖**：1.1 | **状态**：⬜ 待开始
 
 ---
 
-#### 任务 1.9-1.10：创建领域事件（2 个）
+#### 任务 1.10-1.11：创建领域事件（2 个）
 
 - `TagCreatedEvent`
 - `TagUpdatedEvent`
@@ -655,15 +708,15 @@ public final class CreateCategoryCommand {
 
 ---
 
-#### 任务 1.11：创建命令对象单元测试
+#### 任务 1.12：创建命令对象单元测试
 
-**预计时间**：60 分钟 | **依赖**：1.2-1.10 | **状态**：⬜ 待开始
+**预计时间**：70 分钟 | **依赖**：1.2-1.11 | **状态**：⬜ 待开始
 
 ---
 
-#### 任务 1.12：阶段 1 验收
+#### 任务 1.13：阶段 1 验收
 
-**预计时间**：10 分钟 | **依赖**：1.1-1.11 | **状态**：⬜ 待开始
+**预计时间**：10 分钟 | **依赖**：1.1-1.12 | **状态**：⬜ 待开始
 
 ---
 
@@ -696,28 +749,203 @@ public final class CreateCategoryCommand {
 
 ---
 
-### 阶段 3：查询服务实施（6 个任务，4-5 小时）
+### 阶段 3：查询服务实施（8 个任务，4-5 小时）✨ **已详细展开**
 
 #### 任务 3.1：创建 TagQueryService 框架
 
-**预计时间**：15 分钟 | **状态**：⬜ 待开始
+**描述**：创建标签查询服务类框架
+
+**具体操作**：
+
+1. 创建 `TagQueryService.java`
+2. 添加 `@Service` 和 `@Transactional(readOnly = true)` 注解
+3. 注入依赖：`TagRepository`, `ArticleRepository`
+4. 添加 Logger
+
+**验证标准**：
+
+- [ ] 服务类创建完成
+- [ ] 只读事务配置正确
+- [ ] 编译通过
+
+**预计时间**：15 分钟
+
+**依赖**：任务 2.10
+
+**状态**：⬜ 待开始
 
 ---
 
-#### 任务 3.2-3.5：实现查询方法（21 个方法分 4 组）
+#### 任务 3.2：实现基础查询方法（6 个）
 
-- 基础查询（6 个）
-- 排序查询（2 个）
-- 搜索统计（5 个）
-- 特殊业务查询（8 个）
+**描述**：实现基础查询方法并配置缓存
 
-**预计时间**：180 分钟 | **状态**：⬜ 待开始
+**方法列表**：
+
+- `findById(TagId id)`
+- `findByIds(Set<TagId> ids)`
+- `findByName(String name)`
+- `findByNames(Set<String> names)`
+- `findAll()`
+- `findWithPagination(int page, int size)`
+
+**具体操作**：
+
+1. 实现每个查询方法
+2. 添加 `@Cacheable` 注解
+3. 配置缓存 key 和 TTL（15 分钟）
+
+**验证标准**：
+
+- [ ] 所有方法实现完成
+- [ ] 缓存配置正确
+- [ ] 参数验证完整
+
+**预计时间**：60 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
 
 ---
 
-#### 任务 3.6：创建 TagQueryServiceTest
+#### 任务 3.3：实现排序查询方法（2 个）
 
-**预计时间**：90 分钟 | **状态**：⬜ 待开始
+**描述**：实现排序查询方法
+
+**方法列表**：
+
+- `findAllOrderByName(boolean ascending)`
+- `findAllOrderByCreatedAt(boolean ascending)`
+
+**验证标准**：
+
+- [ ] 排序逻辑正确
+- [ ] 缓存配置正确（5 分钟）
+
+**预计时间**：20 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.4：实现搜索查询方法（2 个）
+
+**描述**：实现搜索功能
+
+**方法列表**：
+
+- `searchByName(String keyword)`
+- `searchByNamePrefix(String prefix)`
+
+**验证标准**：
+
+- [ ] 搜索功能正确
+- [ ] 缓存配置正确（5 分钟）
+
+**预计时间**：25 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.5：实现统计查询方法（3 个）
+
+**描述**：实现统计方法
+
+**方法列表**：
+
+- `countAll()`
+- `existsById(TagId id)`
+- `existsByName(String name)`
+
+**验证标准**：
+
+- [ ] 统计准确
+- [ ] 缓存 TTL 配置合理（30 分钟）
+
+**预计时间**：25 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.6：实现特殊查询方法（4 个）
+
+**描述**：实现特殊业务查询
+
+**方法列表**：
+
+- `findRecentlyCreated(int limit)`
+- `findPopularTags(int limit)`
+- `findUnusedTags()`
+- `findWithArticleCount(int page, int size)`
+
+**验证标准**：
+
+- [ ] 业务逻辑正确
+- [ ] 缓存配置正确（5-10 分钟）
+
+**预计时间**：35 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.7：实现业务查询方法（4 个）
+
+**描述**：实现业务相关查询
+
+**方法列表**：
+
+- `getTagUsageCount(TagId id)`
+- `findShortTags(int maxLength)`
+- `filterByKeyword(String keyword)`
+- `filterByPrefix(String prefix)`
+
+**验证标准**：
+
+- [ ] 业务逻辑正确
+- [ ] 过滤功能正确
+
+**预计时间**：35 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.8：创建 TagQueryServiceTest
+
+**描述**：创建查询服务单元测试
+
+**具体操作**：
+
+1. 创建测试类
+2. 测试所有 21 个查询方法
+3. 验证缓存配置
+4. 测试边界条件
+
+**验证标准**：
+
+- [ ] 测试覆盖所有方法
+- [ ] 测试覆盖率 > 85%
+- [ ] 缓存测试通过
+
+**预计时间**：90 分钟
+
+**依赖**：任务 3.2-3.7
+
+**状态**：⬜ 待开始
 
 ---
 
@@ -737,7 +965,7 @@ public final class CreateCategoryCommand {
 
 ---
 
-## 💬 Comment 模块任务清单（18 个任务）
+## 💬 Comment 模块任务清单（19 个任务）✨ **已详细展开**
 
 ### 阶段 1：准备工作（3 个任务，1-2 小时）
 
@@ -746,6 +974,7 @@ public final class CreateCategoryCommand {
 **描述**：创建评论相关领域事件（命令对象已存在）
 
 **事件列表**：
+
 - `CommentCreatedEvent`
 - `CommentDeletedEvent`
 
@@ -778,6 +1007,7 @@ public final class CreateCategoryCommand {
 **描述**：迁移并优化创建评论方法
 
 **具体操作**：
+
 1. 复用现有 `CreateCommentCommand`
 2. 添加缓存失效
 3. 集成事件发布
@@ -792,6 +1022,7 @@ public final class CreateCategoryCommand {
 **描述**：迁移并优化删除评论方法
 
 **具体操作**：
+
 1. 复用现有 `DeleteCommentCommand`
 2. 添加缓存失效
 3. 递归删除子评论
@@ -819,32 +1050,166 @@ public final class CreateCategoryCommand {
 
 ---
 
-### 阶段 3：查询服务实施（6 个任务，3-4 小时）
+### 阶段 3：查询服务实施（7 个任务，3-4 小时）✨ **已详细展开**
 
-#### 任务 3.1：创建 CommentQueryService
+#### 任务 3.1：创建 CommentQueryService 框架
 
-**预计时间**：15 分钟 | **状态**：⬜ 待开始
+**描述**：创建评论查询服务类框架
+
+**具体操作**：
+
+1. 创建 `CommentQueryService.java`
+2. 添加 `@Service` 和 `@Transactional(readOnly = true)` 注解
+3. 注入依赖：`CommentRepository`
+4. 添加 Logger
+
+**验证标准**：
+
+- [ ] 服务类创建完成
+- [ ] 只读事务配置正确
+- [ ] 编译通过
+
+**预计时间**：15 分钟
+
+**依赖**：任务 2.6
+
+**状态**：⬜ 待开始
 
 ---
 
-#### 任务 3.2-3.5：实现查询方法（9 个）
+#### 任务 3.2：实现基础查询方法（1 个）
+
+**描述**：实现基础 ID 查询
 
 **方法列表**：
-- `findById`
-- `findByArticleId`
-- `findTopLevelByArticleId`（分页和非分页）
-- `findRepliesByParentId`（分页和非分页）
-- `countByArticleId`
-- `countTopLevelByArticleId`
-- `countRepliesByParentId`
 
-**预计时间**：120 分钟 | **状态**：⬜ 待开始
+- `findById(CommentId id)`
+
+**验证标准**：
+
+- [ ] 方法实现完成
+- [ ] 缓存配置正确（10 分钟）
+
+**预计时间**：15 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
 
 ---
 
-#### 任务 3.6：创建 CommentQueryServiceTest
+#### 任务 3.3：实现文章评论查询方法（2 个）
 
-**预计时间**：60 分钟 | **状态**：⬜ 待开始
+**描述**：实现根据文章 ID 查询评论
+
+**方法列表**：
+
+- `findByArticleId(ArticleId articleId)`
+- `findTopLevelByArticleId(ArticleId articleId, int page, int size)` - 分页版本
+
+**验证标准**：
+
+- [ ] 分页逻辑正确
+- [ ] 缓存配置正确（5 分钟）
+
+**预计时间**：30 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.4：实现回复查询方法（2 个）
+
+**描述**：实现查询评论回复
+
+**方法列表**：
+
+- `findRepliesByParentId(CommentId parentId)`
+- `findRepliesByParentIdWithPage(CommentId parentId, int page, int size)`
+
+**验证标准**：
+
+- [ ] 递归查询正确
+- [ ] 缓存配置正确（5 分钟）
+
+**预计时间**：35 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.5：实现统计查询方法（3 个）
+
+**描述**：实现评论统计功能
+
+**方法列表**：
+
+- `countByArticleId(ArticleId articleId)`
+- `countTopLevelByArticleId(ArticleId articleId)`
+- `countRepliesByParentId(CommentId parentId)`
+
+**验证标准**：
+
+- [ ] 统计准确
+- [ ] 缓存 TTL 配置合理（15 分钟）
+
+**预计时间**：30 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.6：优化查询性能
+
+**描述**：优化评论树结构查询
+
+**具体操作**：
+
+1. 优化 N+1 查询问题
+2. 配置 JOIN FETCH
+3. 批量加载优化
+
+**验证标准**：
+
+- [ ] 查询性能优化
+- [ ] 无 N+1 问题
+
+**预计时间**：20 分钟
+
+**依赖**：任务 3.2-3.5
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.7：创建 CommentQueryServiceTest
+
+**描述**：创建查询服务单元测试
+
+**具体操作**：
+
+1. 创建测试类
+2. 测试所有 9 个查询方法
+3. 测试评论树结构查询
+4. 验证缓存配置
+
+**验证标准**：
+
+- [ ] 测试覆盖所有方法
+- [ ] 测试覆盖率 > 85%
+- [ ] 缓存测试通过
+
+**预计时间**：60 分钟
+
+**依赖**：任务 3.2-3.6
+
+**状态**：⬜ 待开始
 
 ---
 
@@ -862,7 +1227,7 @@ public final class CreateCategoryCommand {
 
 ---
 
-## 👤 User 模块任务清单（16 个任务）
+## 👤 User 模块任务清单（18 个任务）✨ **已详细展开**
 
 ### 阶段 1：准备工作（5 个任务，1-1.5 小时）
 
@@ -908,6 +1273,7 @@ public final class CreateCategoryCommand {
 **描述**：实现 GitHub 用户同步方法
 
 **具体操作**：
+
 1. 实现创建或更新逻辑
 2. 添加缓存失效
 3. 可选：发布事件
@@ -928,39 +1294,173 @@ public final class CreateCategoryCommand {
 
 ---
 
-### 阶段 3：查询服务实施（5 个任务，2-3 小时）
+### 阶段 3：查询服务实施（7 个任务，2-3 小时）✨ **已详细展开**
 
-#### 任务 3.1：创建 UserQueryService
+#### 任务 3.1：创建 UserQueryService 框架
 
-**预计时间**：15 分钟 | **状态**：⬜ 待开始
+**描述**：创建用户查询服务类框架
+
+**具体操作**：
+
+1. 创建 `UserQueryService.java`
+2. 添加 `@Service` 和 `@Transactional(readOnly = true)` 注解
+3. 注入依赖：`UserRepository`
+4. 添加 Logger
+
+**验证标准**：
+
+- [ ] 服务类创建完成
+- [ ] 只读事务配置正确
+- [ ] 编译通过
+
+**预计时间**：15 分钟
+
+**依赖**：任务 2.4
+
+**状态**：⬜ 待开始
 
 ---
 
-#### 任务 3.2：实现查询方法（8 个）
+#### 任务 3.2：实现基础查询方法（4 个）
+
+**描述**：实现基础 ID 和名称查询
 
 **方法列表**：
-- `findById`
-- `findByIds`
-- `findByGitHubId`
-- `findByUsername`
-- `existsByGitHubId`
-- `existsByUsername`
-- `findWithPagination`
-- `countAll`
 
-**预计时间**：90 分钟 | **状态**：⬜ 待开始
+- `findById(UserId id)`
+- `findByIds(Set<UserId> ids)`
+- `findByGitHubId(GitHubId gitHubId)`
+- `findByUsername(String username)`
+
+**具体操作**：
+
+1. 实现每个查询方法
+2. 添加 `@Cacheable` 注解
+3. 配置缓存 key 和 TTL（30 分钟）
+
+**验证标准**：
+
+- [ ] 所有方法实现完成
+- [ ] 缓存配置正确
+- [ ] 参数验证完整
+
+**预计时间**：40 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
 
 ---
 
-#### 任务 3.3：创建 UserQueryServiceTest
+#### 任务 3.3：实现存在性检查方法（2 个）
 
-**预计时间**：60 分钟 | **状态**：⬜ 待开始
+**描述**：实现存在性验证
+
+**方法列表**：
+
+- `existsByGitHubId(GitHubId gitHubId)`
+- `existsByUsername(String username)`
+
+**验证标准**：
+
+- [ ] 检查逻辑正确
+- [ ] 缓存 TTL 配置合理（60 分钟）
+
+**预计时间**：20 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
 
 ---
 
-#### 任务 3.4：阶段 3 验收
+#### 任务 3.4：实现分页和统计方法（2 个）
 
-**预计时间**：10 分钟 | **状态**：⬜ 待开始
+**描述**：实现分页查询和统计
+
+**方法列表**：
+
+- `findWithPagination(int page, int size)`
+- `countAll()`
+
+**验证标准**：
+
+- [ ] 分页逻辑正确
+- [ ] 统计准确
+- [ ] 缓存配置正确（10-60 分钟）
+
+**预计时间**：30 分钟
+
+**依赖**：任务 3.1
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.5：创建 UserQueryServiceTest
+
+**描述**：创建查询服务单元测试
+
+**具体操作**：
+
+1. 创建测试类
+2. 测试所有 8 个查询方法
+3. 验证缓存配置
+4. 测试 GitHub 同步场景
+
+**验证标准**：
+
+- [ ] 测试覆盖所有方法
+- [ ] 测试覆盖率 > 85%
+- [ ] 缓存测试通过
+
+**预计时间**：60 分钟
+
+**依赖**：任务 3.2-3.4
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.6：验证 UserListResponse 转换
+
+**描述**：验证分页响应对象转换正确
+
+**具体操作**：
+
+1. 测试 DTO 转换逻辑
+2. 验证分页信息正确
+3. 验证响应格式
+
+**验证标准**：
+
+- [ ] DTO 转换正确
+- [ ] 分页信息完整
+
+**预计时间**：15 分钟
+
+**依赖**：任务 3.4
+
+**状态**：⬜ 待开始
+
+---
+
+#### 任务 3.7：阶段 3 验收
+
+**描述**：验证查询服务阶段完成
+
+**验证标准**：
+
+- [ ] 所有查询方法实现完成
+- [ ] 缓存配置正确
+- [ ] 测试覆盖率 > 85%
+- [ ] 所有测试通过
+
+**预计时间**：10 分钟
+
+**依赖**：任务 3.1-3.6
+
+**状态**：⬜ 待开始
 
 ---
 
@@ -982,24 +1482,24 @@ public final class CreateCategoryCommand {
 
 ### 按模块统计
 
-| 模块 | 准备 | 命令 | 查询 | 集成 | 清理 | 总计 |
-|------|------|------|------|------|------|------|
-| Category | 9 | 8 | 6 | 1 | 1 | 25 |
-| Tag | 12 | 10 | 6 | 1 | 1 | 30 |
-| Comment | 3 | 6 | 6 | 1 | 2 | 18 |
-| User | 5 | 4 | 5 | 1 | 1 | 16 |
-| **总计** | **29** | **28** | **23** | **4** | **5** | **89** |
+| 模块     | 准备      | 命令   | 查询      | 集成  | 清理  | 总计      |
+| -------- | --------- | ------ | --------- | ----- | ----- | --------- |
+| Category | 9         | 8      | 6         | 1     | 1     | 25 ✅     |
+| Tag      | 13 ✨     | 10     | 8 ✨      | 1     | 1     | 33 ✨     |
+| Comment  | 3         | 6      | 7 ✨      | 1     | 2     | 19 ✨     |
+| User     | 5         | 4      | 7 ✨      | 1     | 1     | 18 ✨     |
+| **总计** | **30** ✨ | **28** | **28** ✨ | **4** | **5** | **95** ✨ |
 
 ### 按阶段统计
 
-| 阶段 | 任务数 | 预计用时 | 占比 |
-|------|--------|---------|------|
-| 阶段 1：准备工作 | 29 | 7-9.5 小时 | 33% |
-| 阶段 2：命令服务 | 28 | 10-13 小时 | 31% |
-| 阶段 3：查询服务 | 23 | 12-16 小时 | 26% |
-| 阶段 4：控制器集成 | 4 | 3.5-5 小时 | 5% |
-| 阶段 5：清理文档 | 5 | 3-4 小时 | 6% |
-| **总计** | **89** | **35.5-47.5 小时** | **100%** |
+| 阶段               | 任务数    | 预计用时       | 占比     |
+| ------------------ | --------- | -------------- | -------- |
+| 阶段 1：准备工作   | 30 ✨     | 7.5-10 小时    | 32%      |
+| 阶段 2：命令服务   | 28        | 10-13 小时     | 29%      |
+| 阶段 3：查询服务   | 28 ✨     | 13-17 小时     | 30%      |
+| 阶段 4：控制器集成 | 4         | 3.5-5 小时     | 5%       |
+| 阶段 5：清理文档   | 5         | 3-4 小时       | 5%       |
+| **总计**           | **95** ✨ | **37-49 小时** | **100%** |
 
 ---
 
@@ -1009,6 +1509,7 @@ public final class CreateCategoryCommand {
 
 **目标日期**：Day 1  
 **完成标准**：
+
 - [ ] 所有 25 个任务完成
 - [ ] 测试覆盖率 > 85%
 - [ ] 所有 API 正常工作
@@ -1019,6 +1520,7 @@ public final class CreateCategoryCommand {
 
 **目标日期**：Day 3  
 **完成标准**：
+
 - [ ] 所有 30 个任务完成
 - [ ] 测试覆盖率 > 85%
 - [ ] 复杂查询正常工作
@@ -1029,6 +1531,7 @@ public final class CreateCategoryCommand {
 
 **目标日期**：Day 4  
 **完成标准**：
+
 - [ ] 所有 18 个任务完成
 - [ ] 递归删除功能正常
 - [ ] 评论树结构查询正确
@@ -1039,6 +1542,7 @@ public final class CreateCategoryCommand {
 
 **目标日期**：Day 4.5  
 **完成标准**：
+
 - [ ] 所有 16 个任务完成
 - [ ] GitHub 同步功能正常
 - [ ] 缓存优化生效
@@ -1049,6 +1553,7 @@ public final class CreateCategoryCommand {
 
 **目标日期**：Day 5  
 **完成标准**：
+
 - [ ] 所有 89 个任务完成
 - [ ] 所有模块测试通过
 - [ ] 性能测试达标
@@ -1061,11 +1566,13 @@ public final class CreateCategoryCommand {
 ### 如何使用本清单
 
 1. **开始前**：
+
    - 阅读完整的任务清单
    - 理解任务依赖关系
    - 准备开发环境
 
 2. **执行中**：
+
    - 按顺序完成任务
    - 完成后勾选复选框
    - 更新进度跟踪表
@@ -1078,13 +1585,16 @@ public final class CreateCategoryCommand {
 ### 任务优先级
 
 **P1-高优先级**（先做）：
+
 - Category 模块（Day 1）
 - Tag 模块（Day 2-3）
 
 **P2-中优先级**（其次）：
+
 - Comment 模块（Day 4）
 
 **P3-低优先级**（最后）：
+
 - User 模块（Day 4.5-5）
 
 ---
@@ -1095,7 +1605,7 @@ public final class CreateCategoryCommand {
 **状态**：待开始 ⏳
 
 **相关文档**：
+
 - [设计文档](../design/modules-cqrs-implementation-guide.md)
 - [进度跟踪表](./modules-cqrs-progress-tracker.md)
 - [Article 任务清单](./cqrs-implementation-tasks.md)（参考）
-

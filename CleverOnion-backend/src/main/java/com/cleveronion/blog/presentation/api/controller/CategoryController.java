@@ -1,6 +1,10 @@
 package com.cleveronion.blog.presentation.api.controller;
 
-import com.cleveronion.blog.application.article.service.CategoryApplicationService;
+import com.cleveronion.blog.application.category.command.CreateCategoryCommand;
+import com.cleveronion.blog.application.category.command.DeleteCategoryCommand;
+import com.cleveronion.blog.application.category.command.UpdateCategoryCommand;
+import com.cleveronion.blog.application.category.service.CategoryCommandService;
+import com.cleveronion.blog.application.category.service.CategoryQueryService;
 import com.cleveronion.blog.domain.article.aggregate.CategoryAggregate;
 import com.cleveronion.blog.domain.article.repository.CategoryRepository;
 import com.cleveronion.blog.domain.article.valueobject.CategoryId;
@@ -30,9 +34,11 @@ import java.util.stream.Collectors;
 /**
  * 分类控制器
  * 提供分类管理相关的 RESTful API 接口
+ * 使用CQRS模式，命令和查询分离
  * 
  * @author CleverOnion
  * @since 1.0.0
+ * @version 2.0.0 - 引入CQRS架构
  */
 @RestController
 @RequestMapping("/categories")
@@ -42,10 +48,15 @@ public class CategoryController {
     
     private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
     
-    private final CategoryApplicationService categoryApplicationService;
+    private final CategoryCommandService categoryCommandService;
+    private final CategoryQueryService categoryQueryService;
     
-    public CategoryController(CategoryApplicationService categoryApplicationService) {
-        this.categoryApplicationService = categoryApplicationService;
+    public CategoryController(
+        CategoryCommandService categoryCommandService,
+        CategoryQueryService categoryQueryService
+    ) {
+        this.categoryCommandService = categoryCommandService;
+        this.categoryQueryService = categoryQueryService;
     }
     
     /**
@@ -67,8 +78,11 @@ public class CategoryController {
         
         logger.info("接收到创建分类请求，名称: {}, 图标: {}", request.getName(), request.getIcon());
         
-        // 创建分类
-        CategoryAggregate category = categoryApplicationService.createCategory(request.getName(), request.getIcon());
+        // 构建命令对象
+        CreateCategoryCommand command = CreateCategoryCommand.of(request.getName(), request.getIcon());
+        
+        // 执行命令
+        CategoryAggregate category = categoryCommandService.createCategory(command);
         
         // 构建响应
         CategoryResponse response = new CategoryResponse(category);
@@ -103,8 +117,11 @@ public class CategoryController {
         // 构建分类ID值对象
         CategoryId categoryId = CategoryId.of(id);
         
-        // 更新分类
-        CategoryAggregate category = categoryApplicationService.updateCategory(categoryId, request.getName(), request.getIcon());
+        // 构建命令对象
+        UpdateCategoryCommand command = UpdateCategoryCommand.of(categoryId, request.getName(), request.getIcon());
+        
+        // 执行命令
+        CategoryAggregate category = categoryCommandService.updateCategory(command);
         
         // 构建响应
         CategoryResponse response = new CategoryResponse(category);
@@ -137,8 +154,11 @@ public class CategoryController {
         // 构建分类ID值对象
         CategoryId categoryId = CategoryId.of(id);
         
-        // 删除分类
-        categoryApplicationService.deleteCategory(categoryId);
+        // 构建命令对象
+        DeleteCategoryCommand command = DeleteCategoryCommand.of(categoryId);
+        
+        // 执行命令
+        categoryCommandService.deleteCategory(command);
         
         logger.info("成功删除分类，分类ID: {}", id);
         
@@ -167,7 +187,7 @@ public class CategoryController {
         CategoryId categoryId = CategoryId.of(id);
         
         // 查询分类
-        Optional<CategoryAggregate> categoryOpt = categoryApplicationService.findById(categoryId);
+        Optional<CategoryAggregate> categoryOpt = categoryQueryService.findById(categoryId);
         
         if (categoryOpt.isEmpty()) {
             logger.warn("分类不存在，分类ID: {}", id);
@@ -205,10 +225,10 @@ public class CategoryController {
         
         // 根据排序方式查询
         if ("created_at".equalsIgnoreCase(sortBy)) {
-            categories = categoryApplicationService.findAllCategoriesOrderByCreatedAt(ascending);
+            categories = categoryQueryService.findAllOrderByCreatedAt(ascending);
         } else {
             // 默认按名称排序
-            categories = categoryApplicationService.findAllCategoriesOrderByName(ascending);
+            categories = categoryQueryService.findAllOrderByName(ascending);
         }
         
         // 构建响应
@@ -242,10 +262,10 @@ public class CategoryController {
         logger.debug("接收到分页查询分类列表请求，页码: {}, 每页大小: {}", page, size);
         
         // 分页查询分类
-        List<CategoryAggregate> categories = categoryApplicationService.findCategories(page, size);
+        List<CategoryAggregate> categories = categoryQueryService.findWithPagination(page, size);
         
         // 获取总数
-        long totalCount = categoryApplicationService.countCategories();
+        long totalCount = categoryQueryService.countAll();
         
         // 构建响应
         List<CategoryResponse> categoryResponses = categories.stream()
@@ -276,7 +296,7 @@ public class CategoryController {
         logger.debug("接收到搜索分类请求，关键词: {}", keyword);
         
         // 搜索分类
-        List<CategoryAggregate> categories = categoryApplicationService.searchByName(keyword);
+        List<CategoryAggregate> categories = categoryQueryService.searchByName(keyword);
         
         // 构建响应
         List<CategoryResponse> categoryResponses = categories.stream()
@@ -307,7 +327,7 @@ public class CategoryController {
         logger.debug("接收到查询最近创建分类请求，限制数量: {}", limit);
         
         // 查询最近创建的分类
-        List<CategoryAggregate> categories = categoryApplicationService.findRecentlyCreated(limit);
+        List<CategoryAggregate> categories = categoryQueryService.findRecentlyCreated(limit);
         
         // 构建响应
         List<CategoryResponse> categoryResponses = categories.stream()
@@ -335,7 +355,7 @@ public class CategoryController {
         logger.debug("接收到统计分类总数请求");
         
         // 统计分类总数
-        long count = categoryApplicationService.countCategories();
+        long count = categoryQueryService.countAll();
         
         return Result.success(count);
     }
@@ -362,10 +382,10 @@ public class CategoryController {
         
         // 分页查询分类及文章数量
         List<CategoryRepository.CategoryWithArticleCount> categoriesWithCount = 
-            categoryApplicationService.findCategoriesWithArticleCount(page, size);
+            categoryQueryService.findWithArticleCount(page, size);
         
         // 获取总数
-        long totalCount = categoryApplicationService.countCategories();
+        long totalCount = categoryQueryService.countAll();
         
         // 构建响应
         List<CategoryWithCountResponse> categoryResponses = categoriesWithCount.stream()

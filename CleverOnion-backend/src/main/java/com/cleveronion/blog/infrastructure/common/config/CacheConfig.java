@@ -70,19 +70,60 @@ public class CacheConfig {
             // 不缓存null值
             .disableCachingNullValues();
         
-        // 针对不同缓存区域的自定义配置（缓存DTO响应）
-        RedisCacheConfiguration articleResponsesConfig = defaultConfig
-            .entryTtl(Duration.ofMinutes(15));  // 文章详情响应缓存15分钟
+        // 针对不同缓存区域的自定义配置
+        // Article 缓存配置
+        RedisCacheConfiguration articlesConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
+        RedisCacheConfiguration articleListsConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        RedisCacheConfiguration articleStatsConfig = defaultConfig.entryTtl(Duration.ofMinutes(30));
         
-        RedisCacheConfiguration articleListResponsesConfig = defaultConfig
-            .entryTtl(Duration.ofMinutes(5));   // 文章列表响应缓存5分钟
+        // Category 缓存配置
+        RedisCacheConfiguration categoriesConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
+        RedisCacheConfiguration categoryListsConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        RedisCacheConfiguration categoryStatsConfig = defaultConfig.entryTtl(Duration.ofMinutes(30));
         
-        RedisCacheConfiguration articleSearchResponsesConfig = defaultConfig
-            .entryTtl(Duration.ofMinutes(3));   // 搜索响应缓存3分钟
+        // Tag 缓存配置
+        RedisCacheConfiguration tagsConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
+        RedisCacheConfiguration tagListsConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        RedisCacheConfiguration tagStatsConfig = defaultConfig.entryTtl(Duration.ofMinutes(30));
+        
+        // User 缓存配置
+        RedisCacheConfiguration usersConfig = defaultConfig.entryTtl(Duration.ofMinutes(30));
+        RedisCacheConfiguration userListsConfig = defaultConfig.entryTtl(Duration.ofMinutes(10));
+        RedisCacheConfiguration userStatsConfig = defaultConfig.entryTtl(Duration.ofMinutes(60));
+        
+        // Comment 缓存配置
+        RedisCacheConfiguration commentsConfig = defaultConfig.entryTtl(Duration.ofMinutes(10));
+        RedisCacheConfiguration commentListsConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        RedisCacheConfiguration commentStatsConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
+        
+        // 旧配置（兼容已有代码）
+        RedisCacheConfiguration articleResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
+        RedisCacheConfiguration articleListResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        RedisCacheConfiguration articleSearchResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(3));
         
         return RedisCacheManager.builder(connectionFactory)
             .cacheDefaults(defaultConfig)
-            // 为不同的缓存区域配置不同的过期时间
+            // Article 缓存区域
+            .withCacheConfiguration("articles", articlesConfig)
+            .withCacheConfiguration("article-lists", articleListsConfig)
+            .withCacheConfiguration("article-stats", articleStatsConfig)
+            // Category 缓存区域
+            .withCacheConfiguration("categories", categoriesConfig)
+            .withCacheConfiguration("category-lists", categoryListsConfig)
+            .withCacheConfiguration("category-stats", categoryStatsConfig)
+            // Tag 缓存区域
+            .withCacheConfiguration("tags", tagsConfig)
+            .withCacheConfiguration("tag-lists", tagListsConfig)
+            .withCacheConfiguration("tag-stats", tagStatsConfig)
+            // User 缓存区域
+            .withCacheConfiguration("users", usersConfig)
+            .withCacheConfiguration("user-lists", userListsConfig)
+            .withCacheConfiguration("user-stats", userStatsConfig)
+            // Comment 缓存区域
+            .withCacheConfiguration("comments", commentsConfig)
+            .withCacheConfiguration("comment-lists", commentListsConfig)
+            .withCacheConfiguration("comment-stats", commentStatsConfig)
+            // 旧配置（向后兼容）
             .withCacheConfiguration("article-responses", articleResponsesConfig)
             .withCacheConfiguration("article-list-responses", articleListResponsesConfig)
             .withCacheConfiguration("article-search-responses", articleSearchResponsesConfig)

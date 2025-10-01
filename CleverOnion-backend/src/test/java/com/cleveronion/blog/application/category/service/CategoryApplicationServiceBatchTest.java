@@ -1,6 +1,5 @@
 package com.cleveronion.blog.application.category.service;
 
-import com.cleveronion.blog.application.article.service.CategoryApplicationService;
 import com.cleveronion.blog.domain.article.aggregate.CategoryAggregate;
 import com.cleveronion.blog.domain.article.repository.CategoryRepository;
 import com.cleveronion.blog.domain.article.valueobject.CategoryId;
@@ -37,7 +36,7 @@ class CategoryApplicationServiceBatchTest {
     private CategoryRepository categoryRepository;
     
     @InjectMocks
-    private CategoryApplicationService categoryApplicationService;
+    private CategoryQueryService categoryApplicationService;
     
     @BeforeEach
     void setUp() {
