@@ -3,12 +3,14 @@
  */
 
 import { SoundManager } from "./SoundManager";
+import successSound from "../../assets/mp3/success.mp3";
+import failSound from "../../assets/mp3/fail.mp3";
 
 // 音效文件注册表
 const SOUND_REGISTRY = {
   api: {
-    success: "/src/assets/mp3/success.mp3",
-    error: "/src/assets/mp3/fail.mp3",
+    success: successSound,
+    error: failSound,
   },
 };
 

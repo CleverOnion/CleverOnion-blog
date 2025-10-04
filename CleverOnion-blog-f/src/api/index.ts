@@ -7,6 +7,7 @@ import type {
   AxiosError,
 } from "axios";
 import { soundManager } from "../utils/sound";
+import { AuthUtils } from "./auth";
 
 // API 基础配置
 const API_BASE_URL =
@@ -83,10 +84,8 @@ apiClient.interceptors.response.use(
         });
         window.dispatchEvent(event);
 
-        // Token过期或无效，清除本地存储
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("token_expires_at");
-        localStorage.removeItem("user_info");
+        // Token过期或无效，清除本地存储并触发状态更新
+        AuthUtils.clearLoginInfoWithEvent();
 
         return Promise.reject(new Error(message || "请先登录"));
       }
@@ -136,10 +135,8 @@ apiClient.interceptors.response.use(
         });
         window.dispatchEvent(event);
 
-        // Token过期或无效，清除本地存储
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("token_expires_at");
-        localStorage.removeItem("user_info");
+        // Token过期或无效，清除本地存储并触发状态更新
+        AuthUtils.clearLoginInfoWithEvent();
 
         return Promise.reject(new Error(message || "请先登录"));
       }
@@ -147,10 +144,8 @@ apiClient.interceptors.response.use(
 
     // 处理HTTP状态码401（兼容旧的处理方式）
     if (error.response?.status === 401) {
-      // Token过期或无效，清除本地存储
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("token_expires_at");
-      localStorage.removeItem("user_info");
+      // Token过期或无效，清除本地存储并触发状态更新
+      AuthUtils.clearLoginInfoWithEvent();
 
       // 如果不是登录相关的接口，重定向到登录页
       const currentPath = window.location.pathname;

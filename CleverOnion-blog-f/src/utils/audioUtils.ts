@@ -15,10 +15,13 @@
  * 详见文档：docs/sound-system/README.md
  */
 
+import successSound from "../assets/mp3/success.mp3";
+import failSound from "../assets/mp3/fail.mp3";
+
 // 音效文件路径
 const AUDIO_FILES = {
-  success: "/src/assets/mp3/success.mp3",
-  fail: "/src/assets/mp3/fail.mp3",
+  success: successSound,
+  fail: failSound,
 } as const;
 
 /**
