@@ -69,14 +69,6 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
     
     @Override
-    public List<CommentAggregate> findByArticleId(ArticleId articleId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        List<CommentPO> commentPOs = commentJpaRepository.findByArticleIdOrderByCreatedAtAsc(
-            Long.valueOf(articleId.getValue()), pageable);
-        return convertToAggregates(commentPOs);
-    }
-    
-    @Override
     public List<CommentAggregate> findByUserId(UserId userId) {
         List<CommentPO> commentPOs = commentJpaRepository.findByUserId(userId.getValue());
         return convertToAggregates(commentPOs);

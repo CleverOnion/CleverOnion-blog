@@ -19,23 +19,6 @@ import java.util.List;
 public interface CommentJpaRepository extends JpaRepository<CommentPO, Long> {
     
     /**
-     * 根据文章ID查找评论列表
-     * 
-     * @param articleId 文章ID
-     * @return 评论列表
-     */
-    List<CommentPO> findByArticleId(Long articleId);
-    
-    /**
-     * 分页根据文章ID查找评论列表
-     * 
-     * @param articleId 文章ID
-     * @param pageable 分页参数
-     * @return 评论列表
-     */
-    List<CommentPO> findByArticleId(Long articleId, Pageable pageable);
-    
-    /**
      * 根据用户ID查找评论列表
      * 
      * @param userId 用户ID
@@ -84,15 +67,6 @@ public interface CommentJpaRepository extends JpaRepository<CommentPO, Long> {
      * @return 评论列表
      */
     List<CommentPO> findByArticleIdOrderByCreatedAtAsc(Long articleId);
-    
-    /**
-     * 分页根据文章ID查找评论，按创建时间排序
-     * 
-     * @param articleId 文章ID
-     * @param pageable 分页参数
-     * @return 评论列表
-     */
-    List<CommentPO> findByArticleIdOrderByCreatedAtAsc(Long articleId, Pageable pageable);
     
     /**
      * 根据文章ID查找顶级评论，按创建时间排序

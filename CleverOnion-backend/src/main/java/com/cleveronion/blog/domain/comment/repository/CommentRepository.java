@@ -57,16 +57,6 @@ public interface CommentRepository {
     List<CommentAggregate> findByArticleId(ArticleId articleId);
     
     /**
-     * 分页查找文章的所有评论
-     * 
-     * @param articleId 文章ID
-     * @param page 页码（从0开始）
-     * @param size 每页大小
-     * @return 评论列表
-     */
-    List<CommentAggregate> findByArticleId(ArticleId articleId, int page, int size);
-    
-    /**
      * 根据用户ID查找评论列表
      * 
      * @param userId 用户ID

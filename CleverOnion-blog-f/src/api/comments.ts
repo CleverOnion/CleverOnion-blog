@@ -1,77 +1,92 @@
-import { api, ApiResponse } from './index';
+import { api, ApiResponse } from "./index";
+import type {
+  Comment,
+  CommentListResponse,
+  CreateCommentRequest,
+  GetCommentsParams,
+  GetRepliesParams,
+} from "../types/comment";
 
-// 评论数据类型定义
-export interface Comment {
-  id: string;
-  content: string;
-  article_id: string;
-  user_id: number;
-  parent_id: string | null;
-  is_top_level: boolean;
-  published_at: string;
-  // 后端返回的用户信息
-  user?: {
-    id: number;
-    github_id: number;
-    username: string;
-    avatar_url: string;
-  };
-  // 扩展字段，用于前端显示
-  author?: {
-    id: number;
-    username: string;
-    avatar?: string;
-  };
-  replies?: Comment[];
-}
-
-// 创建评论请求参数
-export interface CreateCommentRequest {
-  content: string;
-  article_id: string;
-  user_id: number;
-  parent_id?: string;
-}
-
-// 评论列表响应
-export interface CommentListResponse {
-  comments: Comment[];
-  total_count: number;
-  page: number;
-  size: number;
-  has_next: boolean;
-  has_previous: boolean;
-}
-
-// 查询评论列表参数
-export interface GetCommentsParams {
-  articleId: string;
-  page?: number;
-  size?: number;
-}
-
-// 评论API接口
-export const commentApi = {
-  // 获取文章评论列表
-  getComments: async (params: GetCommentsParams): Promise<ApiResponse<CommentListResponse>> => {
-    const { articleId, page = 0, size = 10 } = params;
-    const response = await api.get<ApiResponse<CommentListResponse>>(
-      `/comments?articleId=${articleId}&page=${page}&size=${size}`
-    );
-    return response.data;
-  },
-
-  // 发表评论
-  createComment: async (data: CreateCommentRequest): Promise<ApiResponse<Comment>> => {
-    const response = await api.post<ApiResponse<Comment>>('/comments', data);
-    return response.data;
-  },
-
-  // 删除评论
-  deleteComment: async (commentId: string): Promise<ApiResponse<null>> => {
-    const response = await api.delete<ApiResponse<null>>(`/comments/${commentId}`);
-    return response.data;
-  },
+// ===== 导出类型（供其他模块使用） =====
+export type {
+  Comment,
+  CommentListResponse,
+  CreateCommentRequest,
+  GetCommentsParams,
+  GetRepliesParams,
 };
 
-export default commentApi;
+// ===== 评论API接口 =====
+
+/**
+ * 获取文章的顶级评论及最新回复（新版接口 v2.0.0）
+ * 支持懒加载子评论，性能更好
+ *
+ * @param params.articleId - 文章ID
+ * @param params.page - 页码（默认0）
+ * @param params.size - 每页大小（默认10）
+ * @param params.replyLimit - 每个评论返回的最新回复数（默认3）
+ * @returns 顶级评论列表（包含回复统计和最新回复）
+ */
+export const getTopLevelCommentsWithReplies = async (
+  params: GetCommentsParams
+): Promise<ApiResponse<CommentListResponse>> => {
+  const { articleId, page = 0, size = 10, replyLimit = 3 } = params;
+  const response = await api.get<ApiResponse<CommentListResponse>>(
+    "/comments/top-level-with-replies",
+    {
+      params: { articleId, page, size, replyLimit },
+    }
+  );
+  return response.data;
+};
+
+/**
+ * 获取评论的所有回复（分页）
+ *
+ * @param params.parentId - 父评论ID
+ * @param params.page - 页码（默认0）
+ * @param params.size - 每页大小（默认50）
+ * @returns 回复列表
+ */
+export const getCommentReplies = async (
+  params: GetRepliesParams
+): Promise<ApiResponse<CommentListResponse>> => {
+  const { parentId, page = 0, size = 50 } = params;
+  const response = await api.get<ApiResponse<CommentListResponse>>(
+    "/comments/replies",
+    {
+      params: { parentId, page, size },
+    }
+  );
+  return response.data;
+};
+
+/**
+ * 发表评论或回复
+ *
+ * @param data.content - 评论内容
+ * @param data.article_id - 文章ID
+ * @param data.parent_id - 父评论ID（顶级评论为null）
+ * @returns 新创建的评论
+ */
+export const postComment = async (
+  data: CreateCommentRequest
+): Promise<ApiResponse<Comment>> => {
+  const response = await api.post<ApiResponse<Comment>>("/comments", data);
+  return response.data;
+};
+
+/**
+ * 删除评论
+ *
+ * @param commentId - 评论ID
+ */
+export const deleteComment = async (
+  commentId: string
+): Promise<ApiResponse<null>> => {
+  const response = await api.delete<ApiResponse<null>>(
+    `/comments/${commentId}`
+  );
+  return response.data;
+};

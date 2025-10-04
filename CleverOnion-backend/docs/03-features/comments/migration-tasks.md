@@ -424,7 +424,7 @@ CleverOnion-backend/src/test/java/com/cleveronion/blog/application/comment/servi
 
 #### Task 2.1.1: 扩展评论类型定义
 
-**状态**: ⬜  
+**状态**: ✅  
 **优先级**: 🔴 高  
 **预计时间**: 20 分钟
 
@@ -436,9 +436,9 @@ CleverOnion-backend/src/test/java/com/cleveronion/blog/application/comment/servi
 
 **验收标准**:
 
-- [ ] TypeScript 类型检查通过
-- [ ] 新字段标记为可选（`?`）
-- [ ] 添加 JSDoc 注释
+- [x] TypeScript 类型检查通过
+- [x] 新字段标记为可选（`?`）
+- [x] 添加 JSDoc 注释
 
 **文件路径**:
 
@@ -515,7 +515,7 @@ export interface CommentListResponse {
 
 #### Task 2.2.1: 添加新的评论 API 方法
 
-**状态**: ⬜  
+**状态**: ✅  
 **优先级**: 🔴 高  
 **预计时间**: 30 分钟
 
@@ -527,10 +527,10 @@ export interface CommentListResponse {
 
 **验收标准**:
 
-- [ ] 新方法实现完成
-- [ ] 旧方法保持不变
-- [ ] 类型定义正确
-- [ ] 错误处理完善
+- [x] 新方法实现完成
+- [x] 旧方法保持不变
+- [x] 类型定义正确
+- [x] 错误处理完善
 
 **文件路径**:
 
@@ -624,7 +624,7 @@ export const deleteComment = async (commentId: string) => {
 
 #### Task 2.3.1: 创建新的评论管理 Hook
 
-**状态**: ⬜  
+**状态**: ✅  
 **优先级**: 🔴 高  
 **预计时间**: 2 小时
 
@@ -636,11 +636,11 @@ export const deleteComment = async (commentId: string) => {
 
 **验收标准**:
 
-- [ ] Hook 实现完成
-- [ ] 类型定义正确
-- [ ] 错误处理完善
-- [ ] 添加 loading 状态管理
-- [ ] 添加 JSDoc 注释
+- [x] Hook 实现完成
+- [x] 类型定义正确
+- [x] 错误处理完善
+- [x] 添加 loading 状态管理
+- [x] 添加 JSDoc 注释
 
 **文件路径**:
 
@@ -824,7 +824,7 @@ export function useCommentsV2(articleId: string) {
 
 #### Task 3.1.1: 创建评论区容器组件 V2
 
-**状态**: ⬜  
+**状态**: ✅  
 **优先级**: 🔴 高  
 **预计时间**: 1 小时
 
@@ -837,11 +837,11 @@ export function useCommentsV2(articleId: string) {
 
 **验收标准**:
 
-- [ ] 组件创建完成
-- [ ] 集成 useCommentsV2 Hook
-- [ ] 复用现有样式
-- [ ] 添加 PropTypes/TypeScript 类型
-- [ ] 添加组件文档注释
+- [x] 组件创建完成
+- [x] 集成 useCommentsV2 Hook
+- [x] 复用现有样式
+- [x] 添加 PropTypes/TypeScript 类型
+- [x] 添加组件文档注释
 
 **文件路径**:
 
@@ -921,7 +921,7 @@ export default function CommentSectionV2({ articleId }: CommentSectionV2Props) {
 
 #### Task 3.1.2: 创建评论列表组件 V2
 
-**状态**: ⬜  
+**状态**: ✅  
 **优先级**: 🔴 高  
 **预计时间**: 1.5 小时
 
@@ -933,10 +933,15 @@ export default function CommentSectionV2({ articleId }: CommentSectionV2Props) {
 
 **验收标准**:
 
-- [ ] 组件创建完成
-- [ ] 正确渲染评论列表
-- [ ] 复用现有样式
-- [ ] 处理空列表状态
+- [x] 组件创建完成
+- [x] 正确渲染评论列表
+- [x] 复用现有样式
+- [x] 处理空列表状态
+
+**实现说明**:
+
+- 采用单文件组件方式，内联在 CommentSectionV2 中
+- 保持代码简洁，便于维护
 
 **文件路径**:
 
@@ -948,7 +953,7 @@ CleverOnion-blog-f/src/components/comment/CommentListV2.tsx (新建)
 
 #### Task 3.1.3: 创建评论项组件 V2
 
-**状态**: ⬜  
+**状态**: ✅  
 **优先级**: 🔴 高  
 **预计时间**: 2 小时
 
@@ -963,12 +968,18 @@ CleverOnion-blog-f/src/components/comment/CommentListV2.tsx (新建)
 
 **验收标准**:
 
-- [ ] 组件创建完成
-- [ ] 正确显示评论内容
-- [ ] 正确显示回复列表
-- [ ] 懒加载按钮功能正常
-- [ ] 复用所有现有样式类名
-- [ ] 添加骨架屏（加载状态）
+- [x] 组件创建完成
+- [x] 正确显示评论内容
+- [x] 正确显示回复列表
+- [x] 懒加载按钮功能正常
+- [x] 复用所有现有样式类名
+- [x] 添加骨架屏（加载状态）
+
+**实现说明**:
+
+- 采用单文件组件方式，内联在 CommentSectionV2 中
+- 完全复用现有样式类名
+- 实现了展开/收起回复功能
 
 **文件路径**:
 
@@ -1089,7 +1100,7 @@ export default function CommentItemV2({
 
 #### Task 3.1.4: 验证现有子组件可复用性
 
-**状态**: ⬜  
+**状态**: ✅  
 **优先级**: 🟡 中  
 **预计时间**: 30 分钟
 
@@ -1104,19 +1115,45 @@ export default function CommentItemV2({
 
 **验收标准**:
 
-- [ ] 列出可复用的组件清单
-- [ ] 列出需要调整的组件清单
-- [ ] 记录调整方案
+- [x] 列出可复用的组件清单
+- [x] 列出需要调整的组件清单
+- [x] 记录调整方案
+
+**分析结果**:
+
+现有 CommentSection.tsx 是单文件组件，包含所有逻辑。可复用的元素：
+
+✅ **可直接复用**:
+
+- Modal 组件 - 删除确认对话框
+- Button 组件 - 按钮样式
+- useToast Hook - 消息提示
+- 样式类名 - 所有 Tailwind 类名完全可复用
+
+✅ **可复用的工具函数**:
+
+- formatTimeAgo() - 时间格式化
+- transformComment() - 评论数据转换
+- findReplyTarget() - 查找回复目标
+
+📝 **新版组件策略**:
+
+- 创建 CommentSectionV2.tsx 为独立组件
+- 内联实现评论列表和评论项（保持简单）
+- 复用所有现有样式类名
+- 复用 Modal、Button、Toast 等 UI 组件
 
 ---
 
 ## Phase 4: 功能开关与灰度发布（0.5 天）
 
+**注意**: 根据项目需求，直接替换旧版本，无需功能开关和灰度发布。Phase 4 任务已取消。
+
 ### 4.1 功能开关
 
 #### Task 4.1.1: 添加功能开关配置
 
-**状态**: ⬜  
+**状态**: ❌ 已取消（直接替换，无需功能开关）  
 **优先级**: 🔴 高  
 **预计时间**: 30 分钟
 
@@ -1162,7 +1199,7 @@ VITE_USE_NEW_COMMENT_SYSTEM=false
 
 #### Task 4.1.2: 在文章详情页添加版本切换逻辑
 
-**状态**: ⬜  
+**状态**: ❌ 已取消（直接替换 CommentSection.tsx）  
 **优先级**: 🔴 高  
 **预计时间**: 20 分钟
 
@@ -1215,7 +1252,7 @@ export default function Article() {
 
 #### Task 4.2.1: 本地测试新版评论系统
 
-**状态**: ⬜  
+**状态**: ✅ 完成（直接替换后测试）  
 **优先级**: 🔴 高  
 **预计时间**: 1 小时
 
@@ -1244,7 +1281,7 @@ export default function Article() {
 
 #### Task 4.2.2: 性能对比测试
 
-**状态**: ⬜  
+**状态**: ❌ 已取消（无需对比，直接使用新版）  
 **优先级**: 🟡 中  
 **预计时间**: 1 小时
 
@@ -1561,19 +1598,19 @@ ORDER BY created_at ASC;
 | Phase    | 任务数 | 已完成 | 进行中 | 待开始 | 完成率  |
 | -------- | ------ | ------ | ------ | ------ | ------- |
 | Phase 1  | 12     | 7      | 0      | 5      | 58%     |
-| Phase 2  | 3      | 0      | 0      | 3      | 0%      |
-| Phase 3  | 4      | 0      | 0      | 4      | 0%      |
-| Phase 4  | 3      | 0      | 0      | 3      | 0%      |
+| Phase 2  | 3      | 3      | 0      | 0      | 100%    |
+| Phase 3  | 4      | 4      | 0      | 0      | 100%    |
+| Phase 4  | 3      | 1      | 0      | 0      | 已取消  |
 | Phase 5  | 2      | 0      | 0      | 2      | 0%      |
 | Phase 6  | 7      | 0      | 0      | 7      | 0%      |
 | Phase 7  | 4      | 0      | 0      | 4      | 0%      |
-| **总计** | **35** | **7**  | **0**  | **28** | **20%** |
+| **总计** | **35** | **14** | **0**  | **21** | **40%** |
 
 ### 关键里程碑
 
 - [x] M1: 后端新接口开发完成（Phase 1 完成）🎉
-- [ ] M2: 前端新组件开发完成（Phase 3 完成）
-- [ ] M3: 功能开关实现（Phase 4 完成）
+- [x] M2: 前端新组件开发完成（Phase 3 完成）🎉
+- [x] M3: 直接替换旧版本（取消灰度发布）✅
 - [ ] M4: 测试通过（Phase 6.1 完成）
 - [ ] M5: 成功上线并稳定运行
 
@@ -1605,14 +1642,22 @@ ORDER BY created_at ASC;
 
 ## 📝 更新日志
 
-| 日期       | 更新内容                                                         | 更新人      |
-| ---------- | ---------------------------------------------------------------- | ----------- |
-| 2025-10-04 | 创建任务文档                                                     | CleverOnion |
-| 2025-10-04 | 完成 Task 1.1.1 和 1.1.2 - DTO 层扩展完成                        | CleverOnion |
-| 2025-10-04 | 完成 Task 1.2.1 和 1.2.2 - Repository 层扩展完成（含性能优化）   | CleverOnion |
-| 2025-10-04 | 完成 Task 1.3.1 - Service 层核心业务逻辑实现完成                 | CleverOnion |
-| 2025-10-04 | 完成 Task 1.4.1 和 1.4.2 - Controller 层接口实现完成             | CleverOnion |
-| 2025-10-04 | 完成 Task 1.5.1 和 1.5.2 - 单元测试和集成测试完成（Phase 1完成）🎉 | CleverOnion |
+| 日期       | 更新内容                                                            | 更新人      |
+| ---------- | ------------------------------------------------------------------- | ----------- |
+| 2025-10-04 | 创建任务文档                                                        | CleverOnion |
+| 2025-10-04 | 完成 Task 1.1.1 和 1.1.2 - DTO 层扩展完成                           | CleverOnion |
+| 2025-10-04 | 完成 Task 1.2.1 和 1.2.2 - Repository 层扩展完成（含性能优化）      | CleverOnion |
+| 2025-10-04 | 完成 Task 1.3.1 - Service 层核心业务逻辑实现完成                    | CleverOnion |
+| 2025-10-04 | 完成 Task 1.4.1 和 1.4.2 - Controller 层接口实现完成                | CleverOnion |
+| 2025-10-04 | 完成 Task 1.5.1 和 1.5.2 - 单元测试和集成测试完成（Phase 1 完成）🎉 | CleverOnion |
+| 2025-10-04 | 完成 Task 2.1.1 - 前端类型定义扩展完成                              | CleverOnion |
+| 2025-10-04 | 完成 Task 2.2.1 - 前端 API 层扩展完成                               | CleverOnion |
+| 2025-10-04 | 完成 Task 2.3.1 - 前端评论管理 Hook 完成（Phase 2 完成）🎉          | CleverOnion |
+| 2025-10-04 | 完成 Task 3.1.1-3.1.4 - 前端评论组件开发完成（Phase 3 完成）🎉      | CleverOnion |
+| 2025-10-04 | 直接替换 CommentSection.tsx 为新版本，删除 CommentSectionV2.tsx     | CleverOnion |
+| 2025-10-04 | 取消 Phase 4 灰度发布相关任务（直接使用新版）                       | CleverOnion |
+| 2025-10-04 | 修复前端路径导入问题（@/ 改为相对路径）                             | CleverOnion |
+| 2025-10-04 | 创建完成报告 comment-system-upgrade-completion.md                   | CleverOnion |
 
 ---
 

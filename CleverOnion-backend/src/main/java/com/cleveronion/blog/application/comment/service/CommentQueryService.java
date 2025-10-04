@@ -66,30 +66,6 @@ public class CommentQueryService {
     }
     
     /**
-     * 根据文章ID查找评论（分页）
-     * 
-     * @param articleId 文章ID
-     * @param page 页码
-     * @param size 每页大小
-     * @return 评论列表
-     */
-    public List<CommentAggregate> findByArticleId(ArticleId articleId, int page, int size) {
-        if (articleId == null) {
-            throw new IllegalArgumentException("文章ID不能为空");
-        }
-        if (page < 0) {
-            throw new IllegalArgumentException("页码不能小于0");
-        }
-        if (size <= 0) {
-            throw new IllegalArgumentException("每页大小必须大于0");
-        }
-        
-        logger.debug("分页查询文章评论，文章ID: {}, 页码: {}, 每页: {}", 
-            articleId.getValue(), page, size);
-        return commentRepository.findByArticleId(articleId, page, size);
-    }
-    
-    /**
      * 获取文章的顶级评论
      * 
      * @param articleId 文章ID
@@ -102,30 +78,6 @@ public class CommentQueryService {
         
         logger.debug("查询文章顶级评论，文章ID: {}", articleId.getValue());
         return commentRepository.findTopLevelCommentsByArticleId(articleId);
-    }
-    
-    /**
-     * 获取文章的顶级评论（分页）
-     * 
-     * @param articleId 文章ID
-     * @param page 页码
-     * @param size 每页大小
-     * @return 顶级评论列表
-     */
-    public List<CommentAggregate> findTopLevelByArticleId(ArticleId articleId, int page, int size) {
-        if (articleId == null) {
-            throw new IllegalArgumentException("文章ID不能为空");
-        }
-        if (page < 0) {
-            throw new IllegalArgumentException("页码不能小于0");
-        }
-        if (size <= 0) {
-            throw new IllegalArgumentException("每页大小必须大于0");
-        }
-        
-        logger.debug("分页查询文章顶级评论，文章ID: {}, 页码: {}, 每页: {}", 
-            articleId.getValue(), page, size);
-        return commentRepository.findTopLevelCommentsByArticleId(articleId, page, size);
     }
     
     /**

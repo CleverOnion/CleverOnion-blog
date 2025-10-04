@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -27,11 +26,6 @@ public class CreateCommentRequest {
     @NotBlank(message = "文章ID不能为空")
     private String articleId;
     
-    @Schema(description = "用户ID", required = true)
-    @JsonProperty("user_id")
-    @NotNull(message = "用户ID不能为空")
-    private Long userId;
-    
     @Schema(description = "父评论ID")
     @JsonProperty("parent_id")
     private String parentId;
@@ -47,13 +41,11 @@ public class CreateCommentRequest {
      * 
      * @param content 评论内容
      * @param articleId 文章ID
-     * @param userId 用户ID
      * @param parentId 父评论ID
      */
-    public CreateCommentRequest(String content, String articleId, Long userId, String parentId) {
+    public CreateCommentRequest(String content, String articleId, String parentId) {
         this.content = content;
         this.articleId = articleId;
-        this.userId = userId;
         this.parentId = parentId;
     }
     
@@ -75,14 +67,6 @@ public class CreateCommentRequest {
         this.articleId = articleId;
     }
     
-    public Long getUserId() {
-        return userId;
-    }
-    
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-    
     public String getParentId() {
         return parentId;
     }
@@ -96,7 +80,6 @@ public class CreateCommentRequest {
         return "CreateCommentRequest{" +
                 "content='" + content + '\'' +
                 ", articleId='" + articleId + '\'' +
-                ", userId=" + userId +
                 ", parentId='" + parentId + '\'' +
                 '}';
     }

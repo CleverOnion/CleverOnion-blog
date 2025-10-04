@@ -98,34 +98,6 @@ class CommentQueryServiceTest {
         assertEquals(1, result.size());
     }
     
-    @Test
-    @DisplayName("应该分页查找顶级评论")
-    void shouldFindTopLevelByArticleIdWithPage() {
-        // Given
-        ArticleId articleId = new ArticleId("1");
-        List<CommentAggregate> comments = List.of(mock(CommentAggregate.class));
-        
-        when(commentRepository.findTopLevelCommentsByArticleId(articleId, 0, 10)).thenReturn(comments);
-        
-        // When
-        List<CommentAggregate> result = queryService.findTopLevelByArticleId(articleId, 0, 10);
-        
-        // Then
-        assertEquals(1, result.size());
-    }
-    
-    @Test
-    @DisplayName("分页查询应该拒绝无效参数")
-    void shouldRejectInvalidPaginationParams() {
-        // Given
-        ArticleId articleId = new ArticleId("1");
-        
-        // When & Then
-        assertThrows(IllegalArgumentException.class, 
-            () -> queryService.findTopLevelByArticleId(articleId, -1, 10));
-        assertThrows(IllegalArgumentException.class, 
-            () -> queryService.findTopLevelByArticleId(articleId, 0, 0));
-    }
     
     @Test
     @DisplayName("应该查找评论的回复")
