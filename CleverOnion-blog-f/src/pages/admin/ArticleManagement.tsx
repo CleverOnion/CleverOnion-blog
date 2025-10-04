@@ -900,7 +900,7 @@ const ArticleManagement = () => {
                         className="inline-flex items-center px-2 py-1 rounded-md text-sm bg-blue-50 text-blue-700 border border-blue-200"
                       >
                         <FiTag className="w-3 h-3 mr-1" />
-                        {typeof tag === 'string' ? tag : tag.name}
+                        {typeof tag === "string" ? tag : tag.name}
                       </span>
                     ))}
                   </div>
