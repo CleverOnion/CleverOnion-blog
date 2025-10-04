@@ -1,5 +1,8 @@
 package com.cleveronion.blog.domain.comment.valueobject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -19,7 +22,8 @@ public class CommentId {
      * @param value ID值，不能为空
      * @throws IllegalArgumentException 如果value为空或小于等于0
      */
-    public CommentId(Long value) {
+    @JsonCreator
+    public CommentId(@JsonProperty("value") Long value) {
         if (value == null || value <= 0) {
             throw new IllegalArgumentException("评论ID不能为空且必须大于0");
         }

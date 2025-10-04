@@ -3,6 +3,7 @@ package com.cleveronion.blog.application.article.service;
 import com.cleveronion.blog.application.article.command.CreateArticleDraftCommand;
 import com.cleveronion.blog.application.article.command.PublishArticleCommand;
 import com.cleveronion.blog.application.article.command.UpdateArticleCommand;
+import com.cleveronion.blog.common.cache.CacheNames;
 import com.cleveronion.blog.domain.article.aggregate.ArticleAggregate;
 import com.cleveronion.blog.domain.article.repository.ArticleRepository;
 import com.cleveronion.blog.domain.article.valueobject.ArticleId;
@@ -11,6 +12,8 @@ import com.cleveronion.blog.domain.article.valueobject.TagId;
 import com.cleveronion.blog.domain.common.event.DomainEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +21,15 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * 文章命令服务
+ * 文章命令服务（CQRS - Command）
  * 负责处理所有改变文章状态的操作（写操作）
+ * 
+ * <p>所有写操作都会自动清除相关缓存，确保数据一致性：
+ * <ul>
+ *   <li>创建/更新文章：清除文章列表、文章统计缓存</li>
+ *   <li>更新/发布/归档/删除：清除文章详情、列表、统计缓存</li>
+ *   <li>添加/移除标签：清除文章详情、列表缓存</li>
+ * </ul>
  * 
  * @author CleverOnion
  * @since 2.0.0
@@ -41,11 +51,20 @@ public class ArticleCommandService {
     }
     
     /**
-     * 创建文章草稿
+     * 创建文章草稿（清除缓存）
+     * 
+     * <p>清除缓存：文章列表、文章统计
      * 
      * @param command 创建文章草稿命令
      * @return 创建的文章聚合
      */
+    @CacheEvict(
+        cacheNames = {
+            CacheNames.ARTICLE_LIST,
+            CacheNames.ARTICLE_COUNT
+        },
+        allEntries = true
+    )
     public ArticleAggregate createDraft(CreateArticleDraftCommand command) {
         logger.debug("执行创建文章草稿命令: authorId={}, categoryId={}, title={}", 
             command.getAuthorId().getValue(), 
@@ -78,11 +97,20 @@ public class ArticleCommandService {
     }
     
     /**
-     * 创建并发布文章
+     * 创建并发布文章（清除缓存）
+     * 
+     * <p>清除缓存：文章列表、文章统计
      * 
      * @param command 发布文章命令
      * @return 发布的文章聚合
      */
+    @CacheEvict(
+        cacheNames = {
+            CacheNames.ARTICLE_LIST,
+            CacheNames.ARTICLE_COUNT
+        },
+        allEntries = true
+    )
     public ArticleAggregate createAndPublish(PublishArticleCommand command) {
         logger.debug("执行创建并发布文章命令: authorId={}, title={}", 
             command.getAuthorId().getValue(),
@@ -117,11 +145,18 @@ public class ArticleCommandService {
     }
     
     /**
-     * 更新文章内容
+     * 更新文章内容（清除缓存）
+     * 
+     * <p>清除缓存：指定文章的详情、所有文章列表、文章统计
      * 
      * @param command 更新文章命令
      * @return 更新后的文章聚合
      */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_DETAIL, key = "#command.articleId.value"),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_LIST, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_COUNT, allEntries = true)
+    })
     public ArticleAggregate updateContent(UpdateArticleCommand command) {
         logger.debug("执行更新文章命令: articleId={}", command.getArticleId().getValue());
         
@@ -157,13 +192,19 @@ public class ArticleCommandService {
     }
     
     /**
-     * 添加标签到文章
+     * 添加标签到文章（清除缓存）
+     * 
+     * <p>清除缓存：指定文章的详情、文章列表
      * 
      * @param articleId 文章ID
      * @param tagIds 标签ID集合
      * @param authorId 作者ID
      * @return 更新后的文章聚合
      */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_DETAIL, key = "#articleId.value"),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_LIST, allEntries = true)
+    })
     public ArticleAggregate addTags(ArticleId articleId, Set<TagId> tagIds, AuthorId authorId) {
         if (tagIds == null || tagIds.isEmpty()) {
             throw new IllegalArgumentException("标签ID集合不能为空");
@@ -187,13 +228,19 @@ public class ArticleCommandService {
     }
     
     /**
-     * 从文章移除标签
+     * 从文章移除标签（清除缓存）
+     * 
+     * <p>清除缓存：指定文章的详情、文章列表
      * 
      * @param articleId 文章ID
      * @param tagIds 标签ID集合
      * @param authorId 作者ID
      * @return 更新后的文章聚合
      */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_DETAIL, key = "#articleId.value"),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_LIST, allEntries = true)
+    })
     public ArticleAggregate removeTags(ArticleId articleId, Set<TagId> tagIds, AuthorId authorId) {
         if (tagIds == null || tagIds.isEmpty()) {
             throw new IllegalArgumentException("标签ID集合不能为空");
@@ -217,12 +264,19 @@ public class ArticleCommandService {
     }
     
     /**
-     * 发布文章
+     * 发布文章（清除缓存）
+     * 
+     * <p>清除缓存：指定文章的详情、所有文章列表、文章统计
      * 
      * @param articleId 文章ID
      * @param authorId 作者ID
      * @return 发布后的文章聚合
      */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_DETAIL, key = "#articleId.value"),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_LIST, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_COUNT, allEntries = true)
+    })
     public ArticleAggregate publish(ArticleId articleId, AuthorId authorId) {
         logger.debug("执行发布文章命令: articleId={}", articleId.getValue());
         
@@ -240,12 +294,19 @@ public class ArticleCommandService {
     }
     
     /**
-     * 归档文章
+     * 归档文章（清除缓存）
+     * 
+     * <p>清除缓存：指定文章的详情、所有文章列表、文章统计
      * 
      * @param articleId 文章ID
      * @param authorId 作者ID
      * @return 归档后的文章聚合
      */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_DETAIL, key = "#articleId.value"),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_LIST, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_COUNT, allEntries = true)
+    })
     public ArticleAggregate archive(ArticleId articleId, AuthorId authorId) {
         logger.debug("执行归档文章命令: articleId={}", articleId.getValue());
         
@@ -263,12 +324,19 @@ public class ArticleCommandService {
     }
     
     /**
-     * 撤回文章到草稿状态
+     * 撤回文章到草稿状态（清除缓存）
+     * 
+     * <p>清除缓存：指定文章的详情、所有文章列表、文章统计
      * 
      * @param articleId 文章ID
      * @param authorId 作者ID
      * @return 撤回后的文章聚合
      */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_DETAIL, key = "#articleId.value"),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_LIST, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_COUNT, allEntries = true)
+    })
     public ArticleAggregate revertToDraft(ArticleId articleId, AuthorId authorId) {
         logger.debug("执行撤回文章到草稿命令: articleId={}", articleId.getValue());
         
@@ -286,11 +354,18 @@ public class ArticleCommandService {
     }
     
     /**
-     * 删除文章
+     * 删除文章（清除缓存）
+     * 
+     * <p>清除缓存：指定文章的详情、所有文章列表、文章统计
      * 
      * @param articleId 文章ID
      * @param authorId 作者ID
      */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_DETAIL, key = "#articleId.value"),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_LIST, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_COUNT, allEntries = true)
+    })
     public void delete(ArticleId articleId, AuthorId authorId) {
         logger.debug("执行删除文章命令: articleId={}", articleId.getValue());
         

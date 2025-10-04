@@ -5,6 +5,7 @@ import com.cleveronion.blog.domain.user.event.UserCreated;
 import com.cleveronion.blog.domain.user.event.UserProfileUpdated;
 import com.cleveronion.blog.domain.user.valueobject.GitHubId;
 import com.cleveronion.blog.domain.user.valueobject.UserId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Objects;
 
@@ -106,9 +107,11 @@ public class UserAggregate extends AggregateRoot {
     
     /**
      * 设置用户ID（仅用于持久化后设置）
+     * 注意：此方法不应在反序列化时调用（会触发领域事件）
      * 
      * @param id 用户ID
      */
+    @JsonIgnore
     public void setId(UserId id) {
         if (this.id != null) {
             throw new IllegalStateException("用户ID已经设置，不能重复设置");
@@ -143,14 +146,17 @@ public class UserAggregate extends AggregateRoot {
         return avatarUrl;
     }
     
+    @JsonIgnore
     public boolean isNewUser() {
         return id == null;
     }
     
+    @JsonIgnore
     public boolean hasValidUsername() {
         return username != null && !username.trim().isEmpty() && username.length() <= 255;
     }
     
+    @JsonIgnore
     public boolean hasAvatar() {
         return avatarUrl != null && !avatarUrl.trim().isEmpty();
     }

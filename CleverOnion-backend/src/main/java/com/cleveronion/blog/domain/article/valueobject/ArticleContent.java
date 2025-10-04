@@ -1,5 +1,9 @@
 package com.cleveronion.blog.domain.article.valueobject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -23,7 +27,12 @@ public class ArticleContent {
      * @param summary 文章摘要，可以为空
      * @throws IllegalArgumentException 当标题或内容为空时抛出
      */
-    public ArticleContent(String title, String content, String summary) {
+    @JsonCreator
+    public ArticleContent(
+        @JsonProperty("title") String title,
+        @JsonProperty("content") String content,
+        @JsonProperty("summary") String summary
+    ) {
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("文章标题不能为空");
         }
@@ -68,6 +77,7 @@ public class ArticleContent {
      * 
      * @return 如果有摘要返回true，否则返回false
      */
+    @JsonIgnore
     public boolean hasSummary() {
         return summary != null && !summary.isEmpty();
     }
@@ -77,6 +87,7 @@ public class ArticleContent {
      * 
      * @return 内容字符数
      */
+    @JsonIgnore
     public int getContentLength() {
         return content.length();
     }

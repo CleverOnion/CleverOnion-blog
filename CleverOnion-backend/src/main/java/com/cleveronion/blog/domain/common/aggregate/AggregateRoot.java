@@ -1,6 +1,7 @@
 package com.cleveronion.blog.domain.common.aggregate;
 
 import com.cleveronion.blog.domain.common.event.DomainEvent;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +13,7 @@ import java.util.List;
  */
 public abstract class AggregateRoot {
     
+    @JsonIgnore
     private final List<DomainEvent> domainEvents = new ArrayList<>();
     
     /**
@@ -30,6 +32,7 @@ public abstract class AggregateRoot {
      * 
      * @return 领域事件列表的只读副本
      */
+    @JsonIgnore
     public List<DomainEvent> getDomainEvents() {
         return Collections.unmodifiableList(domainEvents);
     }
@@ -47,6 +50,7 @@ public abstract class AggregateRoot {
      * 
      * @return true如果有待发布的事件
      */
+    @JsonIgnore
     public boolean hasDomainEvents() {
         return !domainEvents.isEmpty();
     }

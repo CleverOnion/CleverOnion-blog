@@ -3,6 +3,7 @@ package com.cleveronion.blog.application.category.service;
 import com.cleveronion.blog.application.category.command.CreateCategoryCommand;
 import com.cleveronion.blog.application.category.command.DeleteCategoryCommand;
 import com.cleveronion.blog.application.category.command.UpdateCategoryCommand;
+import com.cleveronion.blog.common.cache.CacheNames;
 import com.cleveronion.blog.domain.article.aggregate.CategoryAggregate;
 import com.cleveronion.blog.domain.article.event.CategoryCreatedEvent;
 import com.cleveronion.blog.domain.article.event.CategoryDeletedEvent;
@@ -13,6 +14,8 @@ import com.cleveronion.blog.domain.article.valueobject.CategoryId;
 import com.cleveronion.blog.domain.common.event.DomainEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +23,18 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 分类命令服务
- * 负责处理所有修改分类状态的操作
+ * 分类命令服务（CQRS - Command）
+ * 负责处理所有修改分类状态的操作（写操作）
+ * 
+ * <p>所有写操作都会自动清除相关缓存，确保数据一致性：
+ * <ul>
+ *   <li>创建分类：清除分类列表缓存</li>
+ *   <li>更新分类：清除分类详情、分类列表、文章列表缓存</li>
+ *   <li>删除分类：清除分类详情、分类列表、分类统计、文章列表缓存</li>
+ * </ul>
  * 
  * @author CleverOnion
- * @since 1.0.0
+ * @since 2.0.0
  */
 @Service
 @Transactional
@@ -47,11 +57,17 @@ public class CategoryCommandService {
     }
     
     /**
-     * 创建分类
+     * 创建分类（清除缓存）
+     * 
+     * <p>清除缓存：分类列表
      * 
      * @param command 创建分类命令
      * @return 创建的分类聚合
      */
+    @CacheEvict(
+        cacheNames = CacheNames.CATEGORY_LIST,
+        allEntries = true
+    )
     public CategoryAggregate createCategory(CreateCategoryCommand command) {
         logger.debug("执行创建分类命令: {}", command);
         
@@ -83,11 +99,19 @@ public class CategoryCommandService {
     }
     
     /**
-     * 更新分类
+     * 更新分类（清除缓存）
+     * 
+     * <p>清除缓存：指定分类的详情、分类列表、文章列表
+     * <p>注意：文章列表也需要清除，因为文章响应中包含分类信息
      * 
      * @param command 更新分类命令
      * @return 更新后的分类聚合
      */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.CATEGORY_DETAIL, key = "#command.categoryId.value"),
+        @CacheEvict(cacheNames = CacheNames.CATEGORY_LIST, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_LIST, allEntries = true)
+    })
     public CategoryAggregate updateCategory(UpdateCategoryCommand command) {
         logger.debug("执行更新分类命令: {}", command);
         
@@ -144,10 +168,18 @@ public class CategoryCommandService {
     }
     
     /**
-     * 删除分类
+     * 删除分类（清除缓存）
+     * 
+     * <p>清除缓存：指定分类的详情、分类列表、分类统计、文章列表
      * 
      * @param command 删除分类命令
      */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.CATEGORY_DETAIL, key = "#command.categoryId.value"),
+        @CacheEvict(cacheNames = CacheNames.CATEGORY_LIST, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.CATEGORY_COUNT, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.ARTICLE_LIST, allEntries = true)
+    })
     public void deleteCategory(DeleteCategoryCommand command) {
         logger.debug("执行删除分类命令: {}", command);
         
@@ -180,11 +212,17 @@ public class CategoryCommandService {
     }
     
     /**
-     * 批量创建分类
+     * 批量创建分类（清除缓存）
+     * 
+     * <p>清除缓存：分类列表
      * 
      * @param names 分类名称列表
      * @return 创建的分类列表
      */
+    @CacheEvict(
+        cacheNames = CacheNames.CATEGORY_LIST,
+        allEntries = true
+    )
     public List<CategoryAggregate> createCategories(List<String> names) {
         if (names == null || names.isEmpty()) {
             throw new IllegalArgumentException("分类名称列表不能为空");

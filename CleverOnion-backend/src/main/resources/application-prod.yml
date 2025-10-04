@@ -46,6 +46,12 @@ spring:
           max-wait: -1ms
         shutdown-timeout: 100ms
 
+  # 缓存配置（生产环境）
+  cache:
+    redis:
+      time-to-live: 1800000 # 30 分钟（生产环境标准配置）
+      key-prefix: "cleveronion:cache:" # 缓存 key 前缀
+
 # Sa-Token 配置
 sa-token:
   # Redis 配置
@@ -77,6 +83,8 @@ logging:
   level:
     com.cleveronion.blog: INFO
     org.springframework.web: WARN
+    org.springframework.cache: INFO # 缓存日志（生产环境 INFO 级别）
+    org.springframework.data.redis: WARN # Redis 日志
     org.hibernate: WARN
     root: WARN
   file:

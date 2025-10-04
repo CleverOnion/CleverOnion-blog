@@ -2,8 +2,8 @@
 spring:
   # 数据源配置
   datasource:
-    url: jdbc:postgresql://pgm-bp169mgqz2i5772lwo.rwlb.rds.aliyuncs.com:5432/blog
-    username: blog_dev
+    url: jdbc:postgresql://localhost:5432/blog
+    username: postgres
     password: Shicong666
     driver-class-name: org.postgresql.Driver
     hikari:
@@ -16,8 +16,8 @@ spring:
   # JPA 配置
   jpa:
     hibernate:
-      ddl-auto: create-drop  # 测试环境每次重新创建表
-    show-sql: false  # 测试环境不显示 SQL
+      ddl-auto: validate
+    show-sql: false # 测试环境不显示 SQL
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -30,8 +30,8 @@ spring:
     redis:
       host: localhost
       port: 16379
-      password: 
-      database: 2  # 使用不同的数据库
+      password:
+      database: 2 # 使用不同的数据库
       timeout: 5000ms
       lettuce:
         pool:
@@ -39,6 +39,12 @@ spring:
           max-idle: 4
           min-idle: 0
           max-wait: -1ms
+
+  # 缓存配置（测试环境）
+  cache:
+    redis:
+      time-to-live: 300000 # 5 分钟（快速测试）
+      key-prefix: "cleveronion:cache:test:" # 测试环境使用独立前缀
 
 # Sa-Token 配置
 sa-token:
@@ -49,10 +55,10 @@ sa-token:
     database: 3
     host: localhost
     port: 16379
-    password: 
+    password:
     timeout: 10s
   # 测试环境 token 有效期较短
-  timeout: 3600  # 1小时
+  timeout: 3600 # 1小时
 
 # 服务器配置
 server:
@@ -65,6 +71,8 @@ logging:
   level:
     com.cleveronion.blog: INFO
     org.springframework.web: WARN
+    org.springframework.cache: INFO # 缓存日志
+    org.springframework.data.redis: INFO # Redis 日志
     org.hibernate.SQL: WARN
   file:
     name: logs/cleveronion-blog-test.log

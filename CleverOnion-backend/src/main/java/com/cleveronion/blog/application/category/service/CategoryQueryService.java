@@ -1,11 +1,13 @@
 package com.cleveronion.blog.application.category.service;
 
+import com.cleveronion.blog.common.cache.CacheNames;
 import com.cleveronion.blog.domain.article.aggregate.CategoryAggregate;
 import com.cleveronion.blog.domain.article.repository.ArticleRepository;
 import com.cleveronion.blog.domain.article.repository.CategoryRepository;
 import com.cleveronion.blog.domain.article.valueobject.CategoryId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,11 +16,18 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * 分类查询服务
- * 负责处理所有分类查询操作，配置缓存优化性能
+ * 分类查询服务（CQRS - Query）
+ * 负责处理所有分类查询操作（读操作）
+ * 
+ * <p>使用 Redis 缓存提升查询性能：
+ * <ul>
+ *   <li>分类详情缓存：1 小时</li>
+ *   <li>分类列表缓存：30 分钟</li>
+ *   <li>分类统计缓存：10 分钟</li>
+ * </ul>
  * 
  * @author CleverOnion
- * @since 1.0.0
+ * @since 2.0.0
  */
 @Service
 @Transactional(readOnly = true)
@@ -38,32 +47,48 @@ public class CategoryQueryService {
     }
     
     /**
-     * 根据ID查找分类
+     * 根据ID查找分类（带缓存）
+     * 
+     * <p>缓存Key: category:detail::{categoryId}
+     * <p>缓存时间: 1小时
      * 
      * @param categoryId 分类ID
      * @return 分类聚合（如果存在）
      */
+    @Cacheable(
+        cacheNames = CacheNames.CATEGORY_DETAIL,
+        key = "#categoryId.value",
+        unless = "#result == null"
+    )
     public Optional<CategoryAggregate> findById(CategoryId categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
         }
         
-        logger.debug("查询分类，ID: {}", categoryId.getValue());
+        logger.debug("从数据库查询分类，ID: {}", categoryId.getValue());
         return categoryRepository.findById(categoryId);
     }
     
     /**
-     * 根据ID集合批量查找分类
+     * 根据ID集合批量查找分类（带缓存）
+     * 
+     * <p>缓存Key: category:list::batch:{ids}
+     * <p>缓存时间: 30分钟
      * 
      * @param categoryIds 分类ID集合
      * @return 分类聚合列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.CATEGORY_LIST,
+        key = "'batch:' + #categoryIds.toString()",
+        unless = "#result == null"
+    )
     public List<CategoryAggregate> findByIds(Set<CategoryId> categoryIds) {
         if (categoryIds == null || categoryIds.isEmpty()) {
             throw new IllegalArgumentException("分类ID集合不能为空");
         }
         
-        logger.debug("批量查询分类，ID数量: {}", categoryIds.size());
+        logger.debug("从数据库批量查询分类，ID数量: {}", categoryIds.size());
         return categoryRepository.findByIds(categoryIds);
     }
     
@@ -83,12 +108,20 @@ public class CategoryQueryService {
     }
     
     /**
-     * 查找所有分类
+     * 查找所有分类（带缓存）
+     * 
+     * <p>缓存Key: category:list::all
+     * <p>缓存时间: 30分钟
      * 
      * @return 分类列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.CATEGORY_LIST,
+        key = "'all'",
+        unless = "#result == null"
+    )
     public List<CategoryAggregate> findAll() {
-        logger.debug("查询所有分类");
+        logger.debug("从数据库查询所有分类");
         return categoryRepository.findAll();
     }
     
@@ -204,17 +237,24 @@ public class CategoryQueryService {
     }
     
     /**
-     * 获取分类使用统计信息
+     * 获取分类使用统计信息（带缓存）
+     * 
+     * <p>缓存Key: category:count::{categoryId}
+     * <p>缓存时间: 10分钟
      * 
      * @param categoryId 分类ID
      * @return 使用该分类的文章数量
      */
+    @Cacheable(
+        cacheNames = CacheNames.CATEGORY_COUNT,
+        key = "#categoryId.value"
+    )
     public long getCategoryUsageCount(CategoryId categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
         }
         
-        logger.debug("统计分类使用情况，ID: {}", categoryId.getValue());
+        logger.debug("从数据库统计分类使用情况，ID: {}", categoryId.getValue());
         return articleRepository.countByCategoryId(categoryId);
     }
     

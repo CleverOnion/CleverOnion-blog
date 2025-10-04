@@ -1,5 +1,6 @@
 package com.cleveronion.blog.application.user.service;
 
+import com.cleveronion.blog.common.cache.CacheNames;
 import com.cleveronion.blog.domain.user.aggregate.UserAggregate;
 import com.cleveronion.blog.domain.user.repository.UserRepository;
 import com.cleveronion.blog.domain.user.valueobject.GitHubId;
@@ -8,6 +9,7 @@ import com.cleveronion.blog.presentation.api.dto.UserListResponse;
 import com.cleveronion.blog.presentation.api.dto.UserResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,11 +19,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 用户查询服务
- * 负责处理所有用户查询操作，配置缓存优化性能
+ * 用户查询服务（CQRS - Query）
+ * 负责处理所有用户查询操作（读操作）
+ * 
+ * <p>使用 Redis 缓存提升查询性能：
+ * <ul>
+ *   <li>用户详情缓存：30 分钟</li>
+ *   <li>用户列表缓存：30 分钟</li>
+ * </ul>
  * 
  * @author CleverOnion
- * @since 1.0.0
+ * @since 2.0.0
  */
 @Service
 @Transactional(readOnly = true)
@@ -36,33 +44,49 @@ public class UserQueryService {
     }
     
     /**
-     * 根据用户ID查找用户
+     * 根据用户ID查找用户（带缓存）
+     * 
+     * <p>缓存Key: user:detail::{userId}
+     * <p>缓存时间: 30分钟
      * 
      * @param userId 用户ID
      * @return 用户聚合的Optional包装
      */
+    @Cacheable(
+        cacheNames = CacheNames.USER_DETAIL,
+        key = "#userId.value",
+        unless = "#result == null"
+    )
     public Optional<UserAggregate> findById(UserId userId) {
         if (userId == null) {
             return Optional.empty();
         }
         
-        logger.debug("查询用户，ID: {}", userId.getValue());
+        logger.debug("从数据库查询用户，ID: {}", userId.getValue());
         return userRepository.findById(userId);
     }
     
     /**
-     * 根据用户ID集合批量查找用户
+     * 根据用户ID集合批量查找用户（带缓存）
+     * 
+     * <p>缓存Key: user:list::batch:{ids}
+     * <p>缓存时间: 30分钟
      * 
      * @param userIds 用户ID集合
      * @return 用户聚合列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.USER_LIST,
+        key = "'batch:' + #userIds.toString()",
+        unless = "#result == null"
+    )
     public List<UserAggregate> findByIds(Set<UserId> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             logger.debug("用户ID集合为空，返回空列表");
             return List.of();
         }
         
-        logger.debug("批量查询用户，用户ID数量: {}", userIds.size());
+        logger.debug("从数据库批量查询用户，用户ID数量: {}", userIds.size());
         return userRepository.findByIds(userIds);
     }
     

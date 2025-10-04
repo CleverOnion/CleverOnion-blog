@@ -1,10 +1,12 @@
 package com.cleveronion.blog.application.article.service;
 
+import com.cleveronion.blog.common.cache.CacheNames;
 import com.cleveronion.blog.domain.article.aggregate.ArticleAggregate;
 import com.cleveronion.blog.domain.article.repository.ArticleRepository;
 import com.cleveronion.blog.domain.article.valueobject.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,8 +14,15 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 文章查询服务
+ * 文章查询服务（CQRS - Query）
  * 负责处理所有文章查询操作（读操作）
+ * 
+ * <p>使用 Redis 缓存提升查询性能：
+ * <ul>
+ *   <li>文章详情缓存：30 分钟</li>
+ *   <li>文章列表缓存：10 分钟</li>
+ *   <li>文章统计缓存：5 分钟</li>
+ * </ul>
  * 
  * @author CleverOnion
  * @since 2.0.0
@@ -33,18 +42,25 @@ public class ArticleQueryService {
     // ========== 基础查询方法 ==========
     
     /**
-     * 根据ID查询文章
+     * 根据ID查询文章（带缓存）
+     * 
+     * <p>缓存Key: article:detail::{articleId}
+     * <p>缓存时间: 30分钟
      * 
      * @param articleId 文章ID
      * @return 文章聚合（如果存在）
      */
-    // 注意：不在Service层缓存领域对象，建议在Controller层缓存DTO
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_DETAIL,
+        key = "#articleId.value",
+        unless = "#result == null"
+    )
     public Optional<ArticleAggregate> findById(ArticleId articleId) {
         if (articleId == null) {
             throw new IllegalArgumentException("文章ID不能为空");
         }
         
-        logger.debug("查询文章: articleId={}", articleId.getValue());
+        logger.debug("从数据库查询文章: articleId={}", articleId.getValue());
         return articleRepository.findById(articleId);
     }
     
@@ -64,17 +80,25 @@ public class ArticleQueryService {
     }
     
     /**
-     * 查询指定分类的文章
+     * 查询指定分类的文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::category:{categoryId}:all
+     * <p>缓存时间: 10分钟
      * 
      * @param categoryId 分类ID
      * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'category:' + #categoryId.value + ':all'",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findByCategoryId(CategoryId categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
         }
         
-        logger.debug("查询分类文章: categoryId={}", categoryId.getValue());
+        logger.debug("从数据库查询分类所有文章: categoryId={}", categoryId.getValue());
         return articleRepository.findByCategoryId(categoryId);
     }
     
@@ -96,114 +120,178 @@ public class ArticleQueryService {
     // ========== 分页查询方法 ==========
     
     /**
-     * 分页查找已发布的文章
+     * 分页查找已发布的文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::published:page:{page}:size:{size}
+     * <p>缓存时间: 10分钟
      * 
      * @param page 页码（从0开始）
      * @param size 每页大小
      * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'published:page:' + #page + ':size:' + #size",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findPublishedArticles(int page, int size) {
         validatePageParams(page, size);
         
-        logger.debug("查询已发布文章列表: page={}, size={}", page, size);
+        logger.debug("从数据库查询已发布文章列表: page={}, size={}", page, size);
         return articleRepository.findPublishedArticles(page, size);
     }
     
     /**
-     * 分页查找所有文章
+     * 分页查找所有文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::all:page:{page}:size:{size}
+     * <p>缓存时间: 10分钟
      * 
      * @param page 页码
      * @param size 每页大小
      * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'all:page:' + #page + ':size:' + #size",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findAllArticles(int page, int size) {
         validatePageParams(page, size);
         
-        logger.debug("查询所有文章: page={}, size={}", page, size);
+        logger.debug("从数据库查询所有文章: page={}, size={}", page, size);
         return articleRepository.findAllArticles(page, size);
     }
     
     /**
-     * 分页查找指定作者的文章
+     * 分页查找指定作者的文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::author:{authorId}:page:{page}:size:{size}
+     * <p>缓存时间: 10分钟
      * 
      * @param authorId 作者ID
      * @param page 页码
      * @param size 每页大小
      * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'author:' + #authorId.value + ':page:' + #page + ':size:' + #size",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findByAuthorId(AuthorId authorId, int page, int size) {
         if (authorId == null) {
             throw new IllegalArgumentException("作者ID不能为空");
         }
         validatePageParams(page, size);
         
-        logger.debug("查询作者文章: authorId={}, page={}, size={}", authorId.getValue(), page, size);
+        logger.debug("从数据库查询作者文章: authorId={}, page={}, size={}", authorId.getValue(), page, size);
         return articleRepository.findByAuthorId(authorId, page, size);
     }
     
     /**
-     * 分页查找指定分类的已发布文章
+     * 分页查找指定分类的已发布文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::category:{categoryId}:page:{page}:size:{size}
+     * <p>缓存时间: 10分钟
      * 
      * @param categoryId 分类ID
      * @param page 页码
      * @param size 每页大小
      * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'category:' + #categoryId.value + ':page:' + #page + ':size:' + #size",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findPublishedByCategoryId(CategoryId categoryId, int page, int size) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
         }
         validatePageParams(page, size);
         
-        logger.debug("查询分类文章: categoryId={}, page={}, size={}", categoryId.getValue(), page, size);
+        logger.debug("从数据库查询分类文章: categoryId={}, page={}, size={}", categoryId.getValue(), page, size);
         return articleRepository.findPublishedByCategoryId(categoryId, page, size);
     }
     
     /**
-     * 分页查找指定标签的已发布文章
+     * 分页查找指定标签的已发布文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::tag:{tagId}:page:{page}:size:{size}
+     * <p>缓存时间: 10分钟
      * 
      * @param tagId 标签ID
      * @param page 页码
      * @param size 每页大小
      * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'tag:' + #tagId.value + ':page:' + #page + ':size:' + #size",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findPublishedByTagId(TagId tagId, int page, int size) {
         if (tagId == null) {
             throw new IllegalArgumentException("标签ID不能为空");
         }
         validatePageParams(page, size);
         
-        logger.debug("查询标签文章: tagId={}, page={}, size={}", tagId.getValue(), page, size);
+        logger.debug("从数据库查询标签文章: tagId={}, page={}, size={}", tagId.getValue(), page, size);
         return articleRepository.findPublishedByTagId(tagId, page, size);
     }
     
     /**
-     * 分页查找指定状态的文章
+     * 分页查找指定状态的文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::status:{status}:page:{page}:size:{size}
+     * <p>缓存时间: 10分钟
      * 
      * @param status 文章状态
      * @param page 页码
      * @param size 每页大小
      * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'status:' + #status.name() + ':page:' + #page + ':size:' + #size",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findByStatus(ArticleStatus status, int page, int size) {
         if (status == null) {
             throw new IllegalArgumentException("文章状态不能为空");
         }
         validatePageParams(page, size);
         
-        logger.debug("查询状态文章: status={}, page={}, size={}", status, page, size);
+        logger.debug("从数据库查询状态文章: status={}, page={}, size={}", status, page, size);
         return articleRepository.findByStatus(status, page, size);
     }
     
     /**
-     * 分页查找指定分类和标签的已发布文章
+     * 分页查找指定分类和标签的已发布文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::category:{categoryId}:tag:{tagId}:page:{page}:size:{size}
+     * <p>缓存时间: 10分钟
+     * 
+     * @param categoryId 分类ID
+     * @param tagId 标签ID
+     * @param page 页码
+     * @param size 每页大小
+     * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'category:' + #categoryId.value + ':tag:' + #tagId.value + ':page:' + #page + ':size:' + #size",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findPublishedByCategoryAndTag(CategoryId categoryId, TagId tagId, int page, int size) {
         if (categoryId == null || tagId == null) {
             throw new IllegalArgumentException("分类ID和标签ID不能为空");
         }
         validatePageParams(page, size);
         
+        logger.debug("从数据库查询分类和标签文章: categoryId={}, tagId={}, page={}, size={}", 
+            categoryId.getValue(), tagId.getValue(), page, size);
         return articleRepository.findPublishedByCategoryAndTag(categoryId, tagId, page, size);
     }
     
@@ -242,93 +330,172 @@ public class ArticleQueryService {
     // ========== 统计方法 ==========
     
     /**
-     * 统计已发布文章总数
+     * 统计已发布文章总数（带缓存）
+     * 
+     * <p>缓存Key: article:count::published
+     * <p>缓存时间: 5分钟
+     * 
+     * @return 已发布文章数量
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_COUNT,
+        key = "'published'"
+    )
     public long countPublishedArticles() {
-        logger.debug("统计已发布文章数量");
+        logger.debug("从数据库统计已发布文章数量");
         return articleRepository.countPublishedArticles();
     }
     
     /**
-     * 统计指定作者的文章数量
+     * 统计指定作者的文章数量（带缓存）
+     * 
+     * <p>缓存Key: article:count::author:{authorId}
+     * <p>缓存时间: 5分钟
+     * 
+     * @param authorId 作者ID
+     * @return 文章数量
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_COUNT,
+        key = "'author:' + #authorId.value"
+    )
     public long countByAuthorId(AuthorId authorId) {
         if (authorId == null) {
             throw new IllegalArgumentException("作者ID不能为空");
         }
         
+        logger.debug("从数据库统计作者文章数量: authorId={}", authorId.getValue());
         return articleRepository.countByAuthorId(authorId);
     }
     
     /**
-     * 统计指定分类的文章数量
+     * 统计指定分类的文章数量（带缓存）
+     * 
+     * <p>缓存Key: article:count::category:{categoryId}
+     * <p>缓存时间: 5分钟
+     * 
+     * @param categoryId 分类ID
+     * @return 文章数量
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_COUNT,
+        key = "'category:' + #categoryId.value"
+    )
     public long countByCategoryId(CategoryId categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("分类ID不能为空");
         }
         
+        logger.debug("从数据库统计分类文章数量: categoryId={}", categoryId.getValue());
         return articleRepository.countByCategoryId(categoryId);
     }
     
     /**
-     * 统计指定标签的文章数量
+     * 统计指定标签的文章数量（带缓存）
+     * 
+     * <p>缓存Key: article:count::tag:{tagId}
+     * <p>缓存时间: 5分钟
+     * 
+     * @param tagId 标签ID
+     * @return 文章数量
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_COUNT,
+        key = "'tag:' + #tagId.value"
+    )
     public long countByTagId(TagId tagId) {
         if (tagId == null) {
             throw new IllegalArgumentException("标签ID不能为空");
         }
         
+        logger.debug("从数据库统计标签文章数量: tagId={}", tagId.getValue());
         return articleRepository.countByTagId(tagId);
     }
     
     /**
-     * 统计所有文章数量
+     * 统计所有文章数量（带缓存）
+     * 
+     * <p>缓存Key: article:count::all
+     * <p>缓存时间: 5分钟
+     * 
+     * @return 所有文章数量
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_COUNT,
+        key = "'all'"
+    )
     public long countAllArticles() {
+        logger.debug("从数据库统计所有文章数量");
         return articleRepository.countAllArticles();
     }
     
     /**
-     * 统计指定状态的文章数量
+     * 统计指定状态的文章数量（带缓存）
+     * 
+     * <p>缓存Key: article:count::status:{status}
+     * <p>缓存时间: 5分钟
+     * 
+     * @param status 文章状态
+     * @return 文章数量
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_COUNT,
+        key = "'status:' + #status.name()"
+    )
     public long countByStatus(ArticleStatus status) {
         if (status == null) {
             throw new IllegalArgumentException("文章状态不能为空");
         }
         
+        logger.debug("从数据库统计指定状态文章数量: status={}", status.name());
         return articleRepository.countByStatus(status);
     }
     
     // ========== 特殊查询方法 ==========
     
     /**
-     * 查询最近发布的文章
+     * 查询最近发布的文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::recent:{limit}
+     * <p>缓存时间: 10分钟
      * 
      * @param limit 限制数量
      * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'recent:' + #limit",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findRecentlyPublished(int limit) {
         if (limit <= 0) {
             throw new IllegalArgumentException("限制数量必须大于0");
         }
         
-        logger.debug("查询最近发布文章: limit={}", limit);
+        logger.debug("从数据库查询最近发布文章: limit={}", limit);
         return articleRepository.findRecentlyPublished(limit);
     }
     
     /**
-     * 查询热门文章
+     * 查询热门文章（带缓存）
+     * 
+     * <p>缓存Key: article:list::popular:{limit}
+     * <p>缓存时间: 10分钟
      * 
      * @param limit 限制数量
      * @return 文章列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.ARTICLE_LIST,
+        key = "'popular:' + #limit",
+        unless = "#result == null"
+    )
     public List<ArticleAggregate> findPopularArticles(int limit) {
         if (limit <= 0) {
             throw new IllegalArgumentException("限制数量必须大于0");
         }
         
-        logger.debug("查询热门文章: limit={}", limit);
+        logger.debug("从数据库查询热门文章: limit={}", limit);
         return articleRepository.findPopularArticles(limit);
     }
     

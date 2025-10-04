@@ -1,5 +1,9 @@
 package com.cleveronion.blog.domain.user.valueobject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -10,24 +14,31 @@ public class GitHubId {
     
     private final Long value;
     
-    private GitHubId(Long value) {
-        this.value = value;
-    }
-    
     /**
-     * 创建GitHub用户ID
+     * 构造GitHub用户ID值对象
      * 
-     * @param value GitHub用户ID值
-     * @return GitHubId实例
-     * @throws IllegalArgumentException 当ID无效时
+     * @param value GitHub用户ID值，不能为null且必须大于0
+     * @throws IllegalArgumentException 当ID值无效时抛出
      */
-    public static GitHubId of(Long value) {
+    @JsonCreator
+    public GitHubId(@JsonProperty("value") Long value) {
         if (value == null) {
             throw new IllegalArgumentException("GitHub用户ID不能为空");
         }
         if (value <= 0) {
             throw new IllegalArgumentException("GitHub用户ID必须为正数");
         }
+        this.value = value;
+    }
+    
+    /**
+     * 创建GitHub用户ID（静态工厂方法，委托给构造函数）
+     * 
+     * @param value GitHub用户ID值
+     * @return GitHubId实例
+     * @throws IllegalArgumentException 当ID无效时
+     */
+    public static GitHubId of(Long value) {
         return new GitHubId(value);
     }
     
@@ -77,6 +88,7 @@ public class GitHubId {
      * 
      * @return true如果ID有效
      */
+    @JsonIgnore
     public boolean isValid() {
         return value != null && value > 0;
     }
@@ -86,6 +98,7 @@ public class GitHubId {
      * 
      * @return 字符串形式的GitHub用户ID
      */
+    @JsonIgnore
     public String asString() {
         return value.toString();
     }

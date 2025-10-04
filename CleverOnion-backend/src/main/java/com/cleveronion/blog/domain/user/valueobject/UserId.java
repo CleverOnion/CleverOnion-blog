@@ -1,5 +1,9 @@
 package com.cleveronion.blog.domain.user.valueobject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -11,28 +15,30 @@ public class UserId {
     private final Long value;
     
     /**
-     * 私有构造函数
+     * 构造用户ID值对象
      * 
-     * @param value 用户ID值
+     * @param value 用户ID值，不能为null且必须大于0
+     * @throws IllegalArgumentException 当ID值无效时抛出
      */
-    private UserId(Long value) {
-        this.value = value;
-    }
-    
-    /**
-     * 创建用户ID
-     * 
-     * @param value 用户ID值
-     * @return UserId实例
-     * @throws IllegalArgumentException 当ID无效时
-     */
-    public static UserId of(Long value) {
+    @JsonCreator
+    public UserId(@JsonProperty("value") Long value) {
         if (value == null) {
             throw new IllegalArgumentException("用户ID不能为空");
         }
         if (value <= 0) {
             throw new IllegalArgumentException("用户ID必须为正数");
         }
+        this.value = value;
+    }
+    
+    /**
+     * 创建用户ID（静态工厂方法，委托给构造函数）
+     * 
+     * @param value 用户ID值
+     * @return UserId实例
+     * @throws IllegalArgumentException 当ID无效时
+     */
+    public static UserId of(Long value) {
         return new UserId(value);
     }
     
@@ -69,6 +75,7 @@ public class UserId {
      * 
      * @return true如果ID有效
      */
+    @JsonIgnore
     public boolean isValid() {
         return value != null && value > 0;
     }

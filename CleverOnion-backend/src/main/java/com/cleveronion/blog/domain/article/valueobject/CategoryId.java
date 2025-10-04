@@ -1,5 +1,8 @@
 package com.cleveronion.blog.domain.article.valueobject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -19,7 +22,8 @@ public class CategoryId {
      * @param value 分类ID值，不能为null且必须大于0
      * @throws IllegalArgumentException 当ID值无效时抛出
      */
-    public CategoryId(Long value) {
+    @JsonCreator
+    public CategoryId(@JsonProperty("value") Long value) {
         if (value == null || value <= 0) {
             throw new IllegalArgumentException("分类ID必须是大于0的正整数");
         }

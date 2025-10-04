@@ -32,6 +32,15 @@
     - [设计文档](./architecture/cqrs/design/) - 理论、方案、最佳实践
     - [执行文档](./architecture/cqrs/execution/) - 任务清单、进度跟踪
 
+### 🚀 性能优化
+
+- **[Redis 缓存设计文档](./cache/)** - 完整的 Redis 缓存设计方案（推荐）
+  - [📑 文档索引](./cache/INDEX.md) - 快速找到所需文档
+  - [📖 主设计文档](./cache/README.md) - 缓存架构和策略详解
+  - [🔧 实施指南](./cache/IMPLEMENTATION_GUIDE.md) - 详细的实施步骤和代码示例
+  - [⚡ 快速参考](./cache/QUICK_REFERENCE.md) - 常用操作速查手册
+  - [📋 任务清单](./cache/TASKS.md) - 实施进度跟踪和任务管理
+
 ## 🎯 项目概述
 
 CleverOnion 是一个基于 Spring Boot 和领域驱动设计（DDD）的现代化博客系统，采用前后端分离架构，提供完整的博客管理功能。

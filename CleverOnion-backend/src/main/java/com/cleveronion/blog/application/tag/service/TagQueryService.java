@@ -1,5 +1,6 @@
 package com.cleveronion.blog.application.tag.service;
 
+import com.cleveronion.blog.common.cache.CacheNames;
 import com.cleveronion.blog.domain.article.aggregate.ArticleAggregate;
 import com.cleveronion.blog.domain.article.aggregate.TagAggregate;
 import com.cleveronion.blog.domain.article.repository.ArticleRepository;
@@ -7,6 +8,7 @@ import com.cleveronion.blog.domain.article.repository.TagRepository;
 import com.cleveronion.blog.domain.article.valueobject.TagId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +17,18 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * 标签查询服务
- * 负责处理所有标签查询操作，配置缓存优化性能
+ * 标签查询服务（CQRS - Query）
+ * 负责处理所有标签查询操作（读操作）
+ * 
+ * <p>使用 Redis 缓存提升查询性能：
+ * <ul>
+ *   <li>标签详情缓存：1 小时</li>
+ *   <li>标签列表缓存：30 分钟</li>
+ *   <li>标签统计缓存：10 分钟</li>
+ * </ul>
  * 
  * @author CleverOnion
- * @since 1.0.0
+ * @since 2.0.0
  */
 @Service
 @Transactional(readOnly = true)
@@ -38,32 +47,48 @@ public class TagQueryService {
     // ========== 基础查询方法（6个）==========
     
     /**
-     * 根据ID查找标签
+     * 根据ID查找标签（带缓存）
+     * 
+     * <p>缓存Key: tag:detail::{tagId}
+     * <p>缓存时间: 1小时
      * 
      * @param tagId 标签ID
      * @return 标签聚合（如果存在）
      */
+    @Cacheable(
+        cacheNames = CacheNames.TAG_DETAIL,
+        key = "#tagId.value",
+        unless = "#result == null"
+    )
     public Optional<TagAggregate> findById(TagId tagId) {
         if (tagId == null) {
             throw new IllegalArgumentException("标签ID不能为空");
         }
         
-        logger.debug("查询标签，ID: {}", tagId.getValue());
+        logger.debug("从数据库查询标签，ID: {}", tagId.getValue());
         return tagRepository.findById(tagId);
     }
     
     /**
-     * 根据ID集合查找标签列表
+     * 根据ID集合查找标签列表（带缓存）
+     * 
+     * <p>缓存Key: tag:list::batch:{ids}
+     * <p>缓存时间: 30分钟
      * 
      * @param tagIds 标签ID集合
      * @return 标签列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.TAG_LIST,
+        key = "'batch:' + #tagIds.toString()",
+        unless = "#result == null"
+    )
     public List<TagAggregate> findByIds(Set<TagId> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {
             throw new IllegalArgumentException("标签ID集合不能为空");
         }
         
-        logger.debug("批量查询标签，ID数量: {}", tagIds.size());
+        logger.debug("从数据库批量查询标签，ID数量: {}", tagIds.size());
         return tagRepository.findByIds(tagIds);
     }
     
@@ -98,12 +123,20 @@ public class TagQueryService {
     }
     
     /**
-     * 查找所有标签
+     * 查找所有标签（带缓存）
+     * 
+     * <p>缓存Key: tag:list::all
+     * <p>缓存时间: 30分钟
      * 
      * @return 标签列表
      */
+    @Cacheable(
+        cacheNames = CacheNames.TAG_LIST,
+        key = "'all'",
+        unless = "#result == null"
+    )
     public List<TagAggregate> findAll() {
-        logger.debug("查询所有标签");
+        logger.debug("从数据库查询所有标签");
         return tagRepository.findAll();
     }
     
@@ -288,17 +321,24 @@ public class TagQueryService {
     // ========== 业务查询方法（4个）==========
     
     /**
-     * 获取标签使用统计信息
+     * 获取标签使用统计信息（带缓存）
+     * 
+     * <p>缓存Key: tag:count::{tagId}
+     * <p>缓存时间: 10分钟
      * 
      * @param tagId 标签ID
      * @return 使用该标签的文章数量
      */
+    @Cacheable(
+        cacheNames = CacheNames.TAG_COUNT,
+        key = "#tagId.value"
+    )
     public long getTagUsageCount(TagId tagId) {
         if (tagId == null) {
             throw new IllegalArgumentException("标签ID不能为空");
         }
         
-        logger.debug("统计标签使用情况，ID: {}", tagId.getValue());
+        logger.debug("从数据库统计标签使用情况，ID: {}", tagId.getValue());
         List<ArticleAggregate> articlesUsingTag = articleRepository.findByTagId(tagId);
         return articlesUsingTag.size();
     }

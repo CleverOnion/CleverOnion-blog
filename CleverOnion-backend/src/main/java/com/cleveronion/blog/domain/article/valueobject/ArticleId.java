@@ -1,5 +1,9 @@
 package com.cleveronion.blog.domain.article.valueobject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -19,7 +23,8 @@ public class ArticleId {
      * @param value ID值，不能为空
      * @throws IllegalArgumentException 如果value为空或空字符串
      */
-    public ArticleId(String value) {
+    @JsonCreator
+    public ArticleId(@JsonProperty("value") String value) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException("文章ID不能为空");
         }
@@ -59,6 +64,7 @@ public class ArticleId {
      * 
      * @return 如果是有效UUID格式返回true
      */
+    @JsonIgnore
     public boolean isValidUuid() {
         try {
             UUID.fromString(value);
@@ -73,6 +79,7 @@ public class ArticleId {
      * 
      * @return 简短ID字符串
      */
+    @JsonIgnore
     public String getShortForm() {
         return value.length() > 8 ? value.substring(0, 8) : value;
     }
