@@ -135,6 +135,15 @@ public interface CommentRepository {
     long countRepliesByParentId(CommentId parentId);
     
     /**
+     * 批量统计多个评论的回复数量（性能优化方法）
+     * 避免 N+1 查询问题
+     * 
+     * @param parentIds 父评论ID列表
+     * @return Map，key为父评论ID，value为对应的回复数量
+     */
+    java.util.Map<Long, Long> countRepliesByParentIds(List<CommentId> parentIds);
+    
+    /**
      * 统计用户的评论总数
      * 
      * @param userId 用户ID

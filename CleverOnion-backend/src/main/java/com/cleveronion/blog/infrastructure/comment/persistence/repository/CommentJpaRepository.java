@@ -86,6 +86,15 @@ public interface CommentJpaRepository extends JpaRepository<CommentPO, Long> {
     List<CommentPO> findByArticleIdOrderByCreatedAtAsc(Long articleId);
     
     /**
+     * 分页根据文章ID查找评论，按创建时间排序
+     * 
+     * @param articleId 文章ID
+     * @param pageable 分页参数
+     * @return 评论列表
+     */
+    List<CommentPO> findByArticleIdOrderByCreatedAtAsc(Long articleId, Pageable pageable);
+    
+    /**
      * 根据文章ID查找顶级评论，按创建时间排序
      * 
      * @param articleId 文章ID
@@ -125,6 +134,19 @@ public interface CommentJpaRepository extends JpaRepository<CommentPO, Long> {
      * @return 回复数
      */
     long countByParentId(Long parentId);
+    
+    /**
+     * 批量统计多个评论的回复数（性能优化）
+     * 使用自定义查询，一次性查询多个父评论的回复数
+     * 
+     * @param parentIds 父评论ID列表
+     * @return 评论PO列表，包含parent_id和回复数量
+     */
+    @Query("SELECT c.parentId as parentId, COUNT(c) as replyCount " +
+           "FROM CommentPO c " +
+           "WHERE c.parentId IN :parentIds " +
+           "GROUP BY c.parentId")
+    List<Object[]> countRepliesByParentIdIn(@Param("parentIds") List<Long> parentIds);
     
     /**
      * 统计用户的评论总数

@@ -12,7 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -69,7 +71,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     @Override
     public List<CommentAggregate> findByArticleId(ArticleId articleId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<CommentPO> commentPOs = commentJpaRepository.findByArticleId(
+        List<CommentPO> commentPOs = commentJpaRepository.findByArticleIdOrderByCreatedAtAsc(
             Long.valueOf(articleId.getValue()), pageable);
         return convertToAggregates(commentPOs);
     }
@@ -130,6 +132,36 @@ public class CommentRepositoryImpl implements CommentRepository {
     @Override
     public long countRepliesByParentId(CommentId parentId) {
         return commentJpaRepository.countByParentId(parentId.getValue());
+    }
+    
+    @Override
+    public Map<Long, Long> countRepliesByParentIds(List<CommentId> parentIds) {
+        if (parentIds == null || parentIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        
+        // 转换为 Long 类型的 ID 列表
+        List<Long> parentIdValues = parentIds.stream()
+            .map(CommentId::getValue)
+            .collect(Collectors.toList());
+        
+        // 批量查询回复数
+        List<Object[]> results = commentJpaRepository.countRepliesByParentIdIn(parentIdValues);
+        
+        // 转换为 Map
+        Map<Long, Long> replyCountMap = new HashMap<>();
+        for (Object[] result : results) {
+            Long parentId = (Long) result[0];
+            Long replyCount = (Long) result[1];
+            replyCountMap.put(parentId, replyCount);
+        }
+        
+        // 为没有回复的评论补充 0
+        for (Long parentId : parentIdValues) {
+            replyCountMap.putIfAbsent(parentId, 0L);
+        }
+        
+        return replyCountMap;
     }
     
     @Override

@@ -1,5 +1,6 @@
 package com.cleveronion.blog.presentation.api.controller;
 
+import com.cleveronion.blog.application.comment.dto.CommentWithRepliesDTO;
 import com.cleveronion.blog.application.comment.service.CommentCommandService;
 import com.cleveronion.blog.application.comment.service.CommentQueryService;
 import com.cleveronion.blog.application.comment.command.CreateCommentCommand;
@@ -114,12 +115,13 @@ public class CommentController {
     }
     
     /**
-     * 查询文章的评论列表
+     * 查询文章的评论列表（包括所有顶级评论和子评论）
+     * 前端可以根据 parent_id 字段来组织树形结构
      * 
      * @param articleId 文章ID
      * @param page 页码（从0开始）
      * @param size 每页大小
-     * @return 评论列表
+     * @return 评论列表（平铺结构）
      */
     @GetMapping
     public Result<CommentListResponse> getComments(
@@ -127,11 +129,11 @@ public class CommentController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         
-        logger.debug("查询文章评论，文章ID: {}, 页码: {}, 每页大小: {}", articleId, page, size);
+        logger.debug("查询文章所有评论，文章ID: {}, 页码: {}, 每页大小: {}", articleId, page, size);
         
-        // 执行查询评论业务逻辑
+        // 执行查询评论业务逻辑 - 查询所有评论（包括子评论）
         ArticleId articleIdVO = new ArticleId(articleId.toString());
-        List<CommentAggregate> comments = commentQueryService.findTopLevelByArticleId(articleIdVO, page, size);
+        List<CommentAggregate> comments = commentQueryService.findByArticleId(articleIdVO, page, size);
         
         // 转换为响应DTO
         List<CommentResponse> commentResponses = comments.stream()
@@ -148,7 +150,7 @@ public class CommentController {
             size
         );
         
-        logger.debug("成功查询文章评论，文章ID: {}, 返回评论数: {}", articleId, commentResponses.size());
+        logger.debug("成功查询文章所有评论，文章ID: {}, 返回评论数: {}", articleId, commentResponses.size());
         
         return Result.success(response);
     }
@@ -189,6 +191,53 @@ public class CommentController {
         );
         
         logger.debug("成功查询文章顶级评论，文章ID: {}, 返回评论数: {}", articleId, commentResponses.size());
+        
+        return Result.success(response);
+    }
+    
+    /**
+     * 查询文章的顶级评论列表（带回复信息）- 新版评论系统
+     * 支持懒加载子评论，每个顶级评论包含回复统计和最新回复列表
+     * 
+     * @param articleId 文章ID
+     * @param page 页码（从0开始）
+     * @param size 每页大小
+     * @param replyLimit 每个评论返回的最新回复数（默认3条）
+     * @return 顶级评论列表（包含回复统计和最新回复）
+     * @since 2.0.0
+     */
+    @GetMapping("/top-level-with-replies")
+    public Result<CommentListResponse> getTopLevelCommentsWithReplies(
+            @RequestParam Long articleId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "3") int replyLimit) {
+        
+        logger.debug("查询文章顶级评论（带回复），文章ID: {}, 页码: {}, 每页: {}, 回复数: {}", 
+            articleId, page, size, replyLimit);
+        
+        // 执行查询
+        ArticleId articleIdVO = new ArticleId(articleId.toString());
+        List<CommentWithRepliesDTO> commentsWithReplies = 
+            commentQueryService.findTopLevelCommentsWithLatestReplies(articleIdVO, page, size, replyLimit);
+        
+        // 转换为响应DTO
+        List<CommentResponse> commentResponses = commentsWithReplies.stream()
+            .map(this::convertToCommentResponseWithReplies)
+            .collect(Collectors.toList());
+        
+        // 获取顶级评论总数
+        long totalComments = commentQueryService.countTopLevelByArticleId(articleIdVO);
+        
+        CommentListResponse response = new CommentListResponse(
+            commentResponses,
+            totalComments,
+            page,
+            size
+        );
+        
+        logger.debug("成功查询文章顶级评论（带回复），文章ID: {}, 返回评论数: {}", 
+            articleId, commentResponses.size());
         
         return Result.success(response);
     }
@@ -262,6 +311,31 @@ public class CommentController {
             comment.isTopLevel()
         );
         response.setPublishedAt(comment.getPublishedAt());
+        return response;
+    }
+    
+    /**
+     * 转换带回复信息的评论（新版评论系统）
+     * 
+     * @param dto 包含评论和回复信息的DTO
+     * @return 评论响应DTO（包含回复统计和最新回复）
+     * @since 2.0.0
+     */
+    private CommentResponse convertToCommentResponseWithReplies(CommentWithRepliesDTO dto) {
+        // 转换主评论
+        CommentResponse response = convertToCommentResponse(dto.getComment());
+        
+        // 添加回复统计
+        response.setReplyCount((int) dto.getReplyCount());
+        
+        // 添加最新回复
+        if (dto.getLatestReplies() != null && !dto.getLatestReplies().isEmpty()) {
+            List<CommentResponse> latestReplies = dto.getLatestReplies().stream()
+                .map(this::convertToCommentResponse)
+                .collect(Collectors.toList());
+            response.setLatestReplies(latestReplies);
+        }
+        
         return response;
     }
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 评论响应DTO
@@ -44,6 +45,14 @@ public class CommentResponse {
     @JsonProperty("published_at")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime publishedAt;
+    
+    @Schema(description = "回复总数（仅顶级评论有效）")
+    @JsonProperty("reply_count")
+    private Integer replyCount;
+    
+    @Schema(description = "最新的几条回复（仅顶级评论有效，默认3条）")
+    @JsonProperty("latest_replies")
+    private List<CommentResponse> latestReplies;
     
     /**
      * 默认构造函数
@@ -129,6 +138,22 @@ public class CommentResponse {
         this.publishedAt = publishedAt;
     }
     
+    public Integer getReplyCount() {
+        return replyCount;
+    }
+    
+    public void setReplyCount(Integer replyCount) {
+        this.replyCount = replyCount;
+    }
+    
+    public List<CommentResponse> getLatestReplies() {
+        return latestReplies;
+    }
+    
+    public void setLatestReplies(List<CommentResponse> latestReplies) {
+        this.latestReplies = latestReplies;
+    }
+    
     @Override
     public String toString() {
         return "CommentResponse{" +
@@ -138,6 +163,8 @@ public class CommentResponse {
                 ", parentId='" + parentId + '\'' +
                 ", isTopLevel=" + isTopLevel +
                 ", publishedAt=" + publishedAt +
+                ", replyCount=" + replyCount +
+                ", latestRepliesCount=" + (latestReplies != null ? latestReplies.size() : 0) +
                 '}';
     }
 }
