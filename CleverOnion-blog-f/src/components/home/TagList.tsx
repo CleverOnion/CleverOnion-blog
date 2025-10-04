@@ -39,7 +39,7 @@ const TagList: React.FC<TagListProps> = React.memo(({ isVisible = true }) => {
       style={{ display: isVisible ? "block" : "none" }}
     >
       <div className="text-center mb-8">
-        <h2 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">
+        <h2 className="text-pink-500 font-semibold text-2xl uppercase tracking-wider mb-6">
           热门标签
         </h2>
       </div>

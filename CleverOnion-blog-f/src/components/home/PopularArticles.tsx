@@ -45,7 +45,7 @@ const PopularArticles: React.FC<PopularArticlesProps> = React.memo(
       return (
         <div className="p-6 sticky top-20">
           <div className="text-center mb-8">
-            <h2 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">
+            <h2 className="text-pink-500 font-semibold text-2xl uppercase tracking-wider mb-6">
               热门文章
             </h2>
           </div>
@@ -65,7 +65,7 @@ const PopularArticles: React.FC<PopularArticlesProps> = React.memo(
       return (
         <div className="p-6 sticky top-20">
           <div className="text-center mb-8">
-            <h3 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">
+            <h3 className="text-pink-500 font-semibold text-2xl uppercase tracking-wider mb-6">
               POPULAR CONTENT
             </h3>
           </div>
@@ -77,7 +77,7 @@ const PopularArticles: React.FC<PopularArticlesProps> = React.memo(
     return (
       <div className="p-6 sticky top-20">
         <div className="text-center mb-8">
-          <h2 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-6">
+          <h2 className="text-pink-500 font-semibold text-2xl uppercase tracking-wider mb-6">
             热门文章
           </h2>
         </div>

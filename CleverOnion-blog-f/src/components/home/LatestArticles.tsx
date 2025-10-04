@@ -76,8 +76,7 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
   const handleScroll = useThrottle(() => {
     if (showReadMore || loadingMore || !hasMore) return;
 
-    const scrollTop =
-      window.pageYOffset || document.documentElement.scrollTop;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
 
@@ -143,7 +142,7 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
   return (
     <div className="space-y-8">
       <div className="text-center mb-12">
-        <h2 className="text-pink-500 font-semibold text-lg uppercase tracking-wider mb-2">
+        <h2 className="text-pink-500 font-semibold text-3xl uppercase tracking-wider mb-2">
           最新文章
         </h2>
       </div>
