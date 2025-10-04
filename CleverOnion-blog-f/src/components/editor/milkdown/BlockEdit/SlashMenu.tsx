@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useInstance } from '@milkdown/react';
 import { SlashProvider } from '@milkdown/plugin-slash';
-import { callCommand } from '@milkdown/kit/utils';
 import { commandsCtx } from '@milkdown/kit/core';
 import {
   paragraphSchema,

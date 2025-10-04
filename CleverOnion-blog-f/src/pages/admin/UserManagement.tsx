@@ -21,7 +21,7 @@ const UserManagement: React.FC = () => {
   const [hasPrevious, setHasPrevious] = useState(false);
 
 
-  const { showToast } = useToast();
+  const toast = useToast();
 
   /**
    * 获取用户列表
@@ -40,7 +40,7 @@ const UserManagement: React.FC = () => {
       setHasPrevious(response.hasPrevious);
     } catch (error) {
       console.error('获取用户列表失败:', error);
-      showToast('获取用户列表失败，请稍后重试', 'error');
+      toast.error('获取用户列表失败，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ const UserManagement: React.FC = () => {
   const handleRefresh = () => {
     fetchUsers(0, pageSize);
     setCurrentPage(0);
-    showToast('用户列表已刷新', 'success');
+    toast.success('用户列表已刷新');
   };
 
   /**
@@ -85,6 +85,7 @@ const UserManagement: React.FC = () => {
   // 组件挂载时获取用户列表
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

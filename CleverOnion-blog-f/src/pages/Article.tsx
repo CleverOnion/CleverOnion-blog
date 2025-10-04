@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
 import Header from "../components/Header";
 import ArticleHero from "../components/article/ArticleHero";
 import ArticleContent from "../components/article/ArticleContent";

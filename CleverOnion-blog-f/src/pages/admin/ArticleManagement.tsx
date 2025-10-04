@@ -13,7 +13,6 @@ import {
   FiCalendar,
   FiTag,
   FiTrash2,
-  FiFilter,
 } from "react-icons/fi";
 import {
   articleApi,
@@ -21,7 +20,7 @@ import {
   type ArticleQueryParams,
 } from "../../api/articles";
 import { tagApi, type TagWithCount } from "../../api/tags";
-import { Loading, SkeletonLoading } from "../../components/ui/Loading";
+import { SkeletonLoading } from "../../components/ui/Loading";
 import Select from "../../components/ui/Select";
 import { Modal, useToast } from "../../components/ui";
 
@@ -83,7 +82,9 @@ const ArticleManagement = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "DRAFT" | "PUBLISHED" | "ARCHIVED" | ""
+  >("");
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -94,7 +95,7 @@ const ArticleManagement = () => {
     undefined
   );
   const [tagFilter, setTagFilter] = useState<number | undefined>(undefined);
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [categories] = useState<Category[]>(mockCategories);
   const [tags, setTags] = useState<TagWithCount[]>([]);
   const [selectedArticles, setSelectedArticles] = useState<Set<string>>(
     new Set()
@@ -116,7 +117,9 @@ const ArticleManagement = () => {
       const params: ArticleQueryParams = {
         page,
         size: pageSize,
-        status: statusFilter || undefined,
+        status: statusFilter
+          ? (statusFilter as "DRAFT" | "PUBLISHED" | "ARCHIVED")
+          : undefined,
         categoryId: categoryFilter,
         tagId: tagFilter,
       };
@@ -210,30 +213,6 @@ const ArticleManagement = () => {
     setShowDeleteModal(true);
   };
 
-  // 继续处理批量删除的剩余逻辑
-  const handleBatchDeleteContinue = async () => {
-    try {
-      await articleApi.batchDeleteArticles(Array.from(selectedArticles));
-      setSelectedArticles(new Set());
-      await loadArticles(currentPage);
-    } catch (error) {
-      console.error("批量删除失败:", error);
-    }
-  };
-
-  // 更新文章状态
-  const handleUpdateStatus = async (
-    id: string,
-    status: "PUBLISHED" | "DRAFT" | "ARCHIVED"
-  ) => {
-    try {
-      await articleApi.updateArticle(id, { status });
-      await loadArticles(currentPage);
-    } catch (error) {
-      console.error("更新文章状态失败:", error);
-    }
-  };
-
   // 编辑文章
   const handleEditArticle = (article: Article) => {
     navigate(`/admin/articles/edit/${article.id}`);
@@ -248,6 +227,7 @@ const ArticleManagement = () => {
     if (!searchTerm.trim()) {
       loadArticles(currentPage);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, statusFilter, categoryFilter, tagFilter]);
 
   // 处理URL参数
@@ -267,6 +247,7 @@ const ArticleManagement = () => {
   useEffect(() => {
     loadArticles(0);
     loadTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // API已经处理了所有筛选，直接使用返回的文章列表
@@ -372,7 +353,7 @@ const ArticleManagement = () => {
 
             {/* 文章摘要 */}
             <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-2">
-              {article.excerpt || article.summary || "暂无摘要"}
+              {article.summary || "暂无摘要"}
             </p>
 
             {/* 标签区域 */}
@@ -401,11 +382,7 @@ const ArticleManagement = () => {
               {/* 作者信息 */}
               <div className="flex items-center space-x-2">
                 <img
-                  src={
-                    article.author?.avatar_url ||
-                    article.author?.avatar ||
-                    "/default-avatar.svg"
-                  }
+                  src={article.author?.avatar_url || "/default-avatar.svg"}
                   alt={article.author?.username || "未知作者"}
                   loading="lazy"
                   decoding="async"
@@ -516,15 +493,13 @@ const ArticleManagement = () => {
                     )}
                   </div>
                   <p className="text-sm text-gray-600 mt-1 line-clamp-1">
-                    {article.excerpt || article.summary || "暂无摘要"}
+                    {article.summary || "暂无摘要"}
                   </p>
                   <div className="flex items-center mt-2 text-xs text-gray-500 space-x-4">
                     <div className="flex items-center">
                       <img
                         src={
-                          article.author?.avatar_url ||
-                          article.author?.avatar ||
-                          "/default-avatar.svg"
+                          article.author?.avatar_url || "/default-avatar.svg"
                         }
                         alt={article.author?.username || "未知作者"}
                         className="w-4 h-4 rounded-full mr-1"
@@ -533,7 +508,7 @@ const ArticleManagement = () => {
                     </div>
                     <div className="flex items-center">
                       <FiCalendar className="w-3 h-3 mr-1" />
-                      {article.publishedAt || article.published_at || "未发布"}
+                      {article.published_at || "未发布"}
                     </div>
                     <div className="flex items-center">
                       <FiEye className="w-3 h-3 mr-1" />
@@ -678,7 +653,11 @@ const ArticleManagement = () => {
             {/* 状态筛选 */}
             <Select
               value={statusFilter}
-              onChange={(value) => setStatusFilter(value)}
+              onChange={(value) =>
+                setStatusFilter(
+                  value as "" | "PUBLISHED" | "DRAFT" | "ARCHIVED"
+                )
+              }
               options={[
                 { value: "", label: "全部状态" },
                 { value: "PUBLISHED", label: "已发布" },
@@ -884,7 +863,6 @@ const ArticleManagement = () => {
                       <img
                         src={
                           selectedArticle.author?.avatar_url ||
-                          selectedArticle.author?.avatar ||
                           "/default-avatar.svg"
                         }
                         alt={selectedArticle.author?.username || "未知作者"}
@@ -896,11 +874,7 @@ const ArticleManagement = () => {
                     </div>
                     <div className="flex items-center">
                       <FiCalendar className="w-4 h-4 mr-1" />
-                      <span>
-                        {selectedArticle.publishedAt ||
-                          selectedArticle.published_at ||
-                          "未发布"}
-                      </span>
+                      <span>{selectedArticle.published_at || "未发布"}</span>
                     </div>
                     <div className="flex items-center">
                       <FiEye className="w-4 h-4 mr-1" />
@@ -913,9 +887,9 @@ const ArticleManagement = () => {
                   <div className="flex items-center space-x-2 mb-6">
                     <span className="text-sm text-gray-500">分类:</span>
                     <span className="inline-flex items-center px-2 py-1 rounded-md text-sm bg-gray-100 text-gray-700">
-                      {selectedArticle.category?.name ||
-                        selectedArticle.category ||
-                        "未分类"}
+                      {typeof selectedArticle.category === "string"
+                        ? selectedArticle.category
+                        : selectedArticle.category?.name || "未分类"}
                     </span>
                   </div>
 
@@ -926,7 +900,7 @@ const ArticleManagement = () => {
                         className="inline-flex items-center px-2 py-1 rounded-md text-sm bg-blue-50 text-blue-700 border border-blue-200"
                       >
                         <FiTag className="w-3 h-3 mr-1" />
-                        {tag.name || tag}
+                        {typeof tag === 'string' ? tag : tag.name}
                       </span>
                     ))}
                   </div>

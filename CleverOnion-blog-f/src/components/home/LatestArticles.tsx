@@ -93,7 +93,8 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
   }, [handleScroll, showReadMore, loadingMore, hasMore]);
 
   // 格式化发布时间
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "未知日期";
     const date = new Date(dateString);
     return date.toLocaleDateString("zh-CN", {
       year: "numeric",
@@ -168,7 +169,7 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
 
               {/* 文章摘要 */}
               <p className="text-xl text-gray-600 mb-6 leading-relaxed">
-                {article.excerpt || article.summary}
+                {article.summary}
               </p>
 
               {/* 标签 */}

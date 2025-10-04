@@ -1,36 +1,36 @@
-import React from 'react';
-import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'motion/react';
-import { useToast } from './ToastContext';
-import Toast from './Toast';
-import { ToastContainerProps } from './types';
+import React from "react";
+import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "motion/react";
+import { useToast } from "./useToast";
+import Toast from "./Toast";
+import { ToastContainerProps } from "./types";
 
 /**
  * ToastContainer组件 - Toast容器
  * 负责管理Toast的显示位置和堆叠效果
  */
-const ToastContainer: React.FC<ToastContainerProps> = ({ 
-  position = 'bottom-right',
-  maxToasts = 5 
+const ToastContainer: React.FC<ToastContainerProps> = ({
+  position = "bottom-right",
+  maxToasts = 5,
 }) => {
   const { toasts, removeToast } = useToast();
 
   // 获取位置样式
   const getPositionStyles = () => {
-    const baseStyles = 'fixed z-50 pointer-events-none';
-    
+    const baseStyles = "fixed z-50 pointer-events-none";
+
     switch (position) {
-      case 'top-right':
+      case "top-right":
         return `${baseStyles} top-4 right-4`;
-      case 'top-left':
+      case "top-left":
         return `${baseStyles} top-4 left-4`;
-      case 'top-center':
+      case "top-center":
         return `${baseStyles} top-4 left-1/2 transform -translate-x-1/2`;
-      case 'bottom-left':
+      case "bottom-left":
         return `${baseStyles} bottom-4 left-4`;
-      case 'bottom-center':
+      case "bottom-center":
         return `${baseStyles} bottom-4 left-1/2 transform -translate-x-1/2`;
-      case 'bottom-right':
+      case "bottom-right":
       default:
         return `${baseStyles} bottom-4 right-4`;
     }
@@ -38,7 +38,7 @@ const ToastContainer: React.FC<ToastContainerProps> = ({
 
   // 获取堆叠方向
   const getStackDirection = () => {
-    return position.includes('top') ? 'flex-col' : 'flex-col-reverse';
+    return position.includes("top") ? "flex-col" : "flex-col-reverse";
   };
 
   // 限制显示的Toast数量
@@ -56,40 +56,48 @@ const ToastContainer: React.FC<ToastContainerProps> = ({
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.1
-      }
-    }
+        delayChildren: 0.1,
+      },
+    },
   };
 
   // Toast项动画变体
   const itemVariants = {
-    hidden: { 
-      opacity: 0, 
-      x: position.includes('right') ? 300 : position.includes('left') ? -300 : 0,
-      y: position.includes('top') ? -50 : position.includes('bottom') ? 50 : 0,
-      scale: 0.8
+    hidden: {
+      opacity: 0,
+      x: position.includes("right")
+        ? 300
+        : position.includes("left")
+        ? -300
+        : 0,
+      y: position.includes("top") ? -50 : position.includes("bottom") ? 50 : 0,
+      scale: 0.8,
     },
-    visible: { 
-      opacity: 1, 
-      x: 0, 
-      y: 0, 
+    visible: {
+      opacity: 1,
+      x: 0,
+      y: 0,
       scale: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
-        damping: 30
-      }
+        damping: 30,
+      },
     },
-    exit: { 
-      opacity: 0, 
-      x: position.includes('right') ? 300 : position.includes('left') ? -300 : 0,
-      y: position.includes('top') ? -50 : position.includes('bottom') ? 50 : 0,
+    exit: {
+      opacity: 0,
+      x: position.includes("right")
+        ? 300
+        : position.includes("left")
+        ? -300
+        : 0,
+      y: position.includes("top") ? -50 : position.includes("bottom") ? 50 : 0,
       scale: 0.8,
       transition: {
         duration: 0.3,
-        ease: "easeInOut"
-      }
-    }
+        ease: "easeInOut" as const,
+      },
+    },
   };
 
   const containerContent = (
@@ -113,15 +121,12 @@ const ToastContainer: React.FC<ToastContainerProps> = ({
             style={{
               zIndex: visibleToasts.length - index, // 确保新的Toast在上层
             }}
-            whileHover={{ 
+            whileHover={{
               scale: 1.02,
-              transition: { duration: 0.2 }
+              transition: { duration: 0.2 },
             }}
           >
-            <Toast
-              toast={toast}
-              onRemove={removeToast}
-            />
+            <Toast toast={toast} onRemove={removeToast} />
           </motion.div>
         ))}
       </AnimatePresence>

@@ -1,6 +1,6 @@
-import React from 'react';
-import { useLoading } from '../../contexts/LoadingContext';
-import { Loading } from './Loading';
+import React from "react";
+import { useLoading } from "../../hooks/useLoading";
+import { Loading } from "./Loading";
 
 const GlobalLoading: React.FC = () => {
   const { isLoading, loadingMessage } = useLoading();
@@ -9,13 +9,7 @@ const GlobalLoading: React.FC = () => {
     return null;
   }
 
-  return (
-    <Loading 
-      text={loadingMessage} 
-      overlay={true} 
-      size="lg"
-    />
-  );
+  return <Loading text={loadingMessage} overlay={true} size="lg" />;
 };
 
 export default GlobalLoading;

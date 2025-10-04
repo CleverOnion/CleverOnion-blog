@@ -176,8 +176,8 @@ export const renderIcon = (
   return React.createElement(IconComponent, {
     className,
     size,
-    "aria-hidden": true,
-  });
+    "aria-hidden": "true",
+  } as any);
 };
 
 /**

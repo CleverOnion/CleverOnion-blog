@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GitHubOAuth, AuthUtils, AuthAPI, type UserInfo } from "../../api/auth";
 import { useToast } from "../ui/Toast";
 import { soundManager, PresetNames } from "../../utils/sound";
-import type { PresetName } from "../../utils/sound";
 import { FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import { MdWarning } from "react-icons/md";
 
@@ -21,7 +20,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
   const [showSoundMenu, setShowSoundMenu] = useState(false);
   const [soundConfig, setSoundConfig] = useState(soundManager.getConfig());
   const toast = useToast();
@@ -30,28 +28,24 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   const buttonClass =
     "p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 cursor-pointer hover:scale-105";
 
-  // 检查管理员状态
-  const checkAdminStatus = async () => {
-    if (!isLoggedIn) {
-      setIsAdmin(false);
-      return;
-    }
-
-    try {
-      setIsCheckingAdmin(true);
-      const adminStatus = await AuthAPI.checkAdminStatus();
-      console.log("🔍 管理员权限检查结果:", adminStatus);
-      setIsAdmin(adminStatus);
-    } catch (error) {
-      console.error("检查管理员权限失败:", error);
-      setIsAdmin(false);
-    } finally {
-      setIsCheckingAdmin(false);
-    }
-  };
-
   // 检查登录状态
   useEffect(() => {
+    // 检查管理员状态
+    const checkAdminStatus = async () => {
+      if (!isLoggedIn) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const adminStatus = await AuthAPI.checkAdminStatus();
+        console.log("🔍 管理员权限检查结果:", adminStatus);
+        setIsAdmin(adminStatus.isAdmin);
+      } catch (error) {
+        console.error("检查管理员权限失败:", error);
+        setIsAdmin(false);
+      }
+    };
     const checkAuthStatus = () => {
       const token = AuthUtils.getAccessToken();
       const user = AuthUtils.getUserInfo();
@@ -79,6 +73,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
     checkAuthStatus();
 
+    // 当登录状态变化时检查管理员权限
+    if (isLoggedIn) {
+      checkAdminStatus();
+    }
+
     // 监听存储变化
     const handleStorageChange = () => {
       checkAuthStatus();
@@ -92,13 +91,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("authStatusChanged", handleStorageChange);
     };
-  }, []);
-
-  // 当登录状态变化时检查管理员权限
-  useEffect(() => {
-    if (isLoggedIn) {
-      checkAdminStatus();
-    }
   }, [isLoggedIn]);
 
   // 点击外部关闭音效菜单

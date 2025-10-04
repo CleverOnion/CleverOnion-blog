@@ -22,8 +22,6 @@ const PopularArticles: React.FC<PopularArticlesProps> = React.memo(
           page: 0,
           size: 10,
           status: "PUBLISHED",
-          sortBy: "viewCount",
-          sortDirection: "desc",
         });
 
         setPopularArticles(response.articles || []);

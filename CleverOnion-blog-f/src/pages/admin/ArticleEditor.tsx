@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import EditorToolbar from "../../components/editor/EditorToolbar";
 import EditorContent from "../../components/editor/EditorContent";
 import ArticleSettingsPanel from "../../components/editor/ArticleSettingsPanel";
-import { articleApi, type PublishArticleRequest } from "../../api/articles";
+import { articleApi } from "../../api/articles";
 import categoryApi, { type Category } from "../../api/categories";
-import { useLoading } from "../../contexts/LoadingContext";
+import { useLoading } from "../../hooks/useLoading";
 import { useToast } from "../../components/ui/Toast";
 import { useFormValidation } from "../../hooks/useFormValidation";
 import { articleValidationRules } from "../../utils/validation";
@@ -23,7 +23,8 @@ interface Article {
   category_id: number | null;
   tag_names: string[];
   tag_ids: number[];
-  status: "DRAFT" | "PUBLISHED";
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  [key: string]: any;
 }
 
 const ArticleEditor = () => {
@@ -56,9 +57,9 @@ const ArticleEditor = () => {
     focusFirstError,
     registerField,
   } = useFormValidation(article, {
-    title: articleValidationRules.title,
-    content: articleValidationRules.content,
-    category_id: articleValidationRules.category_id,
+    title: articleValidationRules.title as any,
+    content: articleValidationRules.content as any,
+    category_id: articleValidationRules.category_id as any,
   });
 
   // 检测未保存的更改
@@ -219,7 +220,7 @@ const ArticleEditor = () => {
             title: article.title,
             content: article.content,
             summary: article.summary || "",
-            category_id: article.category_id,
+            category_id: article.category_id!,
             tag_names: article.tag_names,
             status: "PUBLISHED" as const,
           };
@@ -339,13 +340,22 @@ const ArticleEditor = () => {
       } else {
         await loadCategories();
         // 新文章，设置初始原始状态
-        setOriginalArticle(article);
+        setOriginalArticle({
+          title: "",
+          content: "",
+          summary: "",
+          category_id: null,
+          tag_names: [],
+          tag_ids: [],
+          status: "DRAFT",
+        });
       }
 
       setIsInitializing(false);
     };
 
     initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleId, isEdit]);
 
   // 页面加载后自动聚焦到标题输入框
@@ -411,7 +421,7 @@ const ArticleEditor = () => {
       <div className="fixed inset-0 bg-white flex flex-col">
         <EditorToolbar
           title={article.title}
-          articleStatus={article.status}
+          articleStatus={article.status as "PUBLISHED" | "DRAFT" | undefined}
           isNewArticle={!isEdit}
           onTitleChange={handleTitleChange}
           onTitleBlur={handleTitleBlur}
