@@ -10,7 +10,6 @@ import com.cleveronion.blog.domain.article.valueobject.TagId;
 import com.cleveronion.blog.domain.common.event.DomainEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +46,6 @@ public class TagCommandService {
      * @param command 创建标签命令
      * @return 创建的标签聚合
      */
-    @CacheEvict(value = {"tags", "tag-lists", "tag-stats"}, allEntries = true)
     public TagAggregate createTag(CreateTagCommand command) {
         logger.debug("执行创建标签命令: {}", command);
         
@@ -81,7 +79,6 @@ public class TagCommandService {
      * @param command 更新标签命令
      * @return 更新后的标签聚合
      */
-    @CacheEvict(value = {"tags", "tag-lists", "tag-stats"}, allEntries = true)
     public TagAggregate updateTagName(UpdateTagCommand command) {
         logger.debug("执行更新标签命令: {}", command);
         
@@ -130,7 +127,6 @@ public class TagCommandService {
      * 
      * @param command 删除标签命令
      */
-    @CacheEvict(value = {"tags", "tag-lists", "tag-stats"}, allEntries = true)
     public void deleteTag(DeleteTagCommand command) {
         logger.debug("执行删除标签命令: {}", command);
         
@@ -160,7 +156,6 @@ public class TagCommandService {
      * @param command 批量创建标签命令
      * @return 创建的标签列表
      */
-    @CacheEvict(value = {"tags", "tag-lists", "tag-stats"}, allEntries = true)
     public List<TagAggregate> createTags(CreateTagsCommand command) {
         logger.debug("开始批量创建标签，数量: {}", command.getNames().size());
         
@@ -192,7 +187,6 @@ public class TagCommandService {
      * @param command 批量保存标签命令
      * @return 保存后的标签列表
      */
-    @CacheEvict(value = {"tags", "tag-lists", "tag-stats"}, allEntries = true)
     public List<TagAggregate> saveTags(SaveTagsCommand command) {
         logger.debug("开始批量保存标签，数量: {}", command.getTags().size());
         
@@ -208,7 +202,6 @@ public class TagCommandService {
      * 
      * @param command 批量删除标签命令
      */
-    @CacheEvict(value = {"tags", "tag-lists", "tag-stats"}, allEntries = true)
     public void deleteTags(DeleteTagsCommand command) {
         logger.debug("开始批量删除标签，数量: {}", command.getTagIds().size());
         
@@ -236,7 +229,6 @@ public class TagCommandService {
      * @param command 清理未使用标签命令
      * @return 清理的标签数量
      */
-    @CacheEvict(value = {"tags", "tag-lists", "tag-stats"}, allEntries = true)
     public int cleanupUnusedTags(CleanupUnusedTagsCommand command) {
         logger.debug("开始清理未使用的标签");
         
@@ -275,7 +267,6 @@ public class TagCommandService {
      * @param command 查找或创建标签命令
      * @return 标签聚合列表
      */
-    @CacheEvict(value = {"tags", "tag-lists", "tag-stats"}, allEntries = true)
     public List<TagAggregate> findOrCreateByNames(FindOrCreateTagsCommand command) {
         logger.debug("开始查找或创建标签，标签名称: {}", command.getNames());
         

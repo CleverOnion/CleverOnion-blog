@@ -13,7 +13,6 @@ import com.cleveronion.blog.domain.article.valueobject.CategoryId;
 import com.cleveronion.blog.domain.common.event.DomainEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +52,6 @@ public class CategoryCommandService {
      * @param command 创建分类命令
      * @return 创建的分类聚合
      */
-    @CacheEvict(value = {"categories", "category-lists", "category-stats"}, allEntries = true)
     public CategoryAggregate createCategory(CreateCategoryCommand command) {
         logger.debug("执行创建分类命令: {}", command);
         
@@ -90,7 +88,6 @@ public class CategoryCommandService {
      * @param command 更新分类命令
      * @return 更新后的分类聚合
      */
-    @CacheEvict(value = {"categories", "category-lists", "category-stats"}, allEntries = true)
     public CategoryAggregate updateCategory(UpdateCategoryCommand command) {
         logger.debug("执行更新分类命令: {}", command);
         
@@ -151,7 +148,6 @@ public class CategoryCommandService {
      * 
      * @param command 删除分类命令
      */
-    @CacheEvict(value = {"categories", "category-lists", "category-stats"}, allEntries = true)
     public void deleteCategory(DeleteCategoryCommand command) {
         logger.debug("执行删除分类命令: {}", command);
         
@@ -189,7 +185,6 @@ public class CategoryCommandService {
      * @param names 分类名称列表
      * @return 创建的分类列表
      */
-    @CacheEvict(value = {"categories", "category-lists", "category-stats"}, allEntries = true)
     public List<CategoryAggregate> createCategories(List<String> names) {
         if (names == null || names.isEmpty()) {
             throw new IllegalArgumentException("分类名称列表不能为空");
@@ -203,9 +198,6 @@ public class CategoryCommandService {
             .distinct() // 去重
             .filter(name -> !categoryRepository.existsByName(name)) // 过滤已存在的分类
             .map(name -> {
-                // 为每个分类创建命令对象
-                CreateCategoryCommand command = CreateCategoryCommand.of(name, null);
-                
                 // 创建分类聚合
                 CategoryAggregate category = CategoryAggregate.create(name);
                 CategoryAggregate saved = categoryRepository.save(category);

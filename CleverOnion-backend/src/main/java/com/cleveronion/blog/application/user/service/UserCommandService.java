@@ -5,7 +5,6 @@ import com.cleveronion.blog.domain.user.aggregate.UserAggregate;
 import com.cleveronion.blog.domain.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +36,6 @@ public class UserCommandService {
      * @param command 同步GitHub用户命令
      * @return 用户聚合
      */
-    @CacheEvict(value = {"users", "user-lists", "user-stats"}, allEntries = true)
     public UserAggregate syncUserFromGitHub(SyncGitHubUserCommand command) {
         logger.debug("执行GitHub用户同步命令: {}", command);
         

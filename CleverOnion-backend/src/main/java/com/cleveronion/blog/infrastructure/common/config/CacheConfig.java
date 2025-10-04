@@ -96,6 +96,21 @@ public class CacheConfig {
         RedisCacheConfiguration commentListsConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
         RedisCacheConfiguration commentStatsConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
         
+        // Response 缓存配置（Controller 层使用）
+        RedisCacheConfiguration categoryResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
+        RedisCacheConfiguration categoryListResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        RedisCacheConfiguration categoryPageResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        
+        RedisCacheConfiguration tagResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
+        RedisCacheConfiguration tagListResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        RedisCacheConfiguration tagPageResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        
+        RedisCacheConfiguration userResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(30));
+        RedisCacheConfiguration userListResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(10));
+        
+        RedisCacheConfiguration commentListResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        RedisCacheConfiguration commentTopResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        
         // 旧配置（兼容已有代码）
         RedisCacheConfiguration articleResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
         RedisCacheConfiguration articleListResponsesConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
@@ -107,22 +122,36 @@ public class CacheConfig {
             .withCacheConfiguration("articles", articlesConfig)
             .withCacheConfiguration("article-lists", articleListsConfig)
             .withCacheConfiguration("article-stats", articleStatsConfig)
-            // Category 缓存区域
+            // Category 缓存区域（领域层，保留用于兼容）
             .withCacheConfiguration("categories", categoriesConfig)
             .withCacheConfiguration("category-lists", categoryListsConfig)
             .withCacheConfiguration("category-stats", categoryStatsConfig)
-            // Tag 缓存区域
+            // Category Response 缓存区域（Controller 层）
+            .withCacheConfiguration("category-responses", categoryResponsesConfig)
+            .withCacheConfiguration("category-list-responses", categoryListResponsesConfig)
+            .withCacheConfiguration("category-page-responses", categoryPageResponsesConfig)
+            // Tag 缓存区域（领域层，保留用于兼容）
             .withCacheConfiguration("tags", tagsConfig)
             .withCacheConfiguration("tag-lists", tagListsConfig)
             .withCacheConfiguration("tag-stats", tagStatsConfig)
-            // User 缓存区域
+            // Tag Response 缓存区域（Controller 层）
+            .withCacheConfiguration("tag-responses", tagResponsesConfig)
+            .withCacheConfiguration("tag-list-responses", tagListResponsesConfig)
+            .withCacheConfiguration("tag-page-responses", tagPageResponsesConfig)
+            // User 缓存区域（领域层，保留用于兼容）
             .withCacheConfiguration("users", usersConfig)
             .withCacheConfiguration("user-lists", userListsConfig)
             .withCacheConfiguration("user-stats", userStatsConfig)
-            // Comment 缓存区域
+            // User Response 缓存区域（Controller 层）
+            .withCacheConfiguration("user-responses", userResponsesConfig)
+            .withCacheConfiguration("user-list-responses", userListResponsesConfig)
+            // Comment 缓存区域（领域层，保留用于兼容）
             .withCacheConfiguration("comments", commentsConfig)
             .withCacheConfiguration("comment-lists", commentListsConfig)
             .withCacheConfiguration("comment-stats", commentStatsConfig)
+            // Comment Response 缓存区域（Controller 层）
+            .withCacheConfiguration("comment-list-responses", commentListResponsesConfig)
+            .withCacheConfiguration("comment-top-responses", commentTopResponsesConfig)
             // 旧配置（向后兼容）
             .withCacheConfiguration("article-responses", articleResponsesConfig)
             .withCacheConfiguration("article-list-responses", articleListResponsesConfig)

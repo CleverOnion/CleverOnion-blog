@@ -23,7 +23,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -147,7 +146,6 @@ public class TagController {
         @ApiResponse(responseCode = "200", description = "查询成功"),
         @ApiResponse(responseCode = "404", description = "标签不存在")
     })
-    @Cacheable(value = "tag-responses", key = "#id")
     public Result<TagResponse> getTagById(
             @Parameter(description = "标签ID", required = true) @PathVariable Long id) {
         
@@ -170,7 +168,6 @@ public class TagController {
     @GetMapping
     @Operation(summary = "查询所有标签", description = "查询系统中的所有标签")
     @ApiResponse(responseCode = "200", description = "查询成功")
-    @Cacheable(value = "tag-list-responses", key = "'all'")
     public Result<TagListResponse> getAllTags() {
         
         List<TagAggregate> tags = tagQueryService.findAll();
@@ -192,7 +189,6 @@ public class TagController {
     @GetMapping("/page")
     @Operation(summary = "分页查询标签", description = "分页查询标签列表")
     @ApiResponse(responseCode = "200", description = "查询成功")
-    @Cacheable(value = "tag-page-responses", key = "'page:' + #page + ':' + #size")
     public Result<TagListResponse> getTagsWithPagination(
             @Parameter(description = "页码（从0开始）") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size) {

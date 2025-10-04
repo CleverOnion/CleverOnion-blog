@@ -2,9 +2,9 @@
 spring:
   # 数据源配置
   datasource:
-    url: jdbc:postgresql://pgm-bp169mgqz2i5772lwo.rwlb.rds.aliyuncs.com:5432/blog
-    username: blog_dev
-    password: Shicong666
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:blog}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
@@ -17,8 +17,8 @@ spring:
   # JPA 配置
   jpa:
     hibernate:
-      ddl-auto: validate  # 生产环境只验证表结构
-    show-sql: false  # 生产环境不显示 SQL
+      ddl-auto: validate # 生产环境只验证表结构
+    show-sql: false # 生产环境不显示 SQL
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -33,9 +33,9 @@ spring:
   # Redis 配置
   data:
     redis:
-      host: ${REDIS_HOST:123.57.139.125}
+      host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      password: ${REDIS_PASSWORD}
       database: ${REDIS_DATABASE:0}
       timeout: 5000ms
       lettuce:
@@ -51,15 +51,15 @@ sa-token:
   # Redis 配置
   alone-redis:
     database: ${SA_TOKEN_REDIS_DATABASE:1}
-    host: ${REDIS_HOST:123.57.139.125}
+    host: ${REDIS_HOST:localhost}
     port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
+    password: ${REDIS_PASSWORD}
     timeout: 10s
   # 生产环境安全配置
-  timeout: 7200  # 2小时
-  active-timeout: 1800  # 30分钟无操作自动冻结
-  is-concurrent: false  # 生产环境不允许多地登录
-  is-share: false  # 每次登录新建 token
+  timeout: 7200 # 2小时
+  active-timeout: 1800 # 30分钟无操作自动冻结
+  is-concurrent: false # 生产环境不允许多地登录
+  is-share: false # 每次登录新建 token
 
 # 服务器配置
 server:
@@ -89,9 +89,9 @@ logging:
 # GitHub OAuth2 配置（生产环境）
 github:
   oauth2:
-    client-id: Ov23lidYpkQFTdG7UseL
-    client-secret: ab1bc714224d8425f4aeb0237a225746162b3ca2
-    redirect-uri: https://blog.cleveronion.cn/auth/callback
+    client-id: ${GITHUB_CLIENT_ID}
+    client-secret: ${GITHUB_CLIENT_SECRET}
+    redirect-uri: ${GITHUB_REDIRECT_URI:https://blog.cleveronion.cn/auth/callback}
     authorize-url: https://github.com/login/oauth/authorize
     access-token-url: https://github.com/login/oauth/access_token
     user-info-url: https://api.github.com/user

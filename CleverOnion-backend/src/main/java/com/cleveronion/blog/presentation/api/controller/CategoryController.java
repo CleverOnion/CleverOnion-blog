@@ -24,7 +24,6 @@ import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -179,7 +178,6 @@ public class CategoryController {
         @ApiResponse(responseCode = "404", description = "分类不存在"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
-    @Cacheable(value = "category-responses", key = "#id")
     public Result<CategoryResponse> getCategoryById(
             @Parameter(description = "分类ID") @PathVariable @NotNull Long id) {
         
@@ -216,7 +214,6 @@ public class CategoryController {
         @ApiResponse(responseCode = "400", description = "请求参数错误"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
-    @Cacheable(value = "category-list-responses", key = "#sortBy + ':' + #order")
     public Result<CategoryListResponse> getAllCategories(
             @Parameter(description = "排序方式") @RequestParam(defaultValue = "name") String sortBy,
             @Parameter(description = "排序顺序") @RequestParam(defaultValue = "asc") String order) {
@@ -258,7 +255,6 @@ public class CategoryController {
         @ApiResponse(responseCode = "400", description = "请求参数错误"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
-    @Cacheable(value = "category-page-responses", key = "'page:' + #page + ':' + #size")
     public Result<CategoryListResponse> getCategoriesWithPagination(
             @Parameter(description = "页码（从0开始）") @RequestParam(defaultValue = "0") @Min(0) Integer page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") @Min(1) Integer size) {

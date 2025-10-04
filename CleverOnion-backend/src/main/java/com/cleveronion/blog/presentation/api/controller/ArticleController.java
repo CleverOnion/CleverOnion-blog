@@ -33,7 +33,6 @@ import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -402,8 +401,6 @@ public class ArticleController {
         @ApiResponse(responseCode = "400", description = "请求参数错误"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
-    @Cacheable(value = "article-list-responses", 
-               key = "'p:' + #page + ':s:' + #size + ':st:' + #status + ':c:' + #categoryId + ':t:' + #tagId")
     public Result<ArticleListResponse> getPublishedArticles(
             @Parameter(description = "页码（从0开始）") @RequestParam(defaultValue = "0") @Min(0) Integer page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") @Min(1) Integer size,
@@ -477,7 +474,6 @@ public class ArticleController {
         @ApiResponse(responseCode = "404", description = "文章不存在"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
-    @Cacheable(value = "article-responses", key = "#id")  // 缓存DTO
     public Result<ArticleResponse> getArticleById(
             @Parameter(description = "文章ID") @PathVariable @NotNull Long id) {
         
@@ -790,7 +786,6 @@ public class ArticleController {
         @ApiResponse(responseCode = "400", description = "请求参数错误"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
-    @Cacheable(value = "article-search-responses", key = "'search:' + #keyword")
     public Result<ArticleListResponse> searchArticles(
             @Parameter(description = "搜索关键词") @RequestParam @NotBlank String keyword) {
         
@@ -820,7 +815,6 @@ public class ArticleController {
         @ApiResponse(responseCode = "400", description = "请求参数错误"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
-    @Cacheable(value = "article-list-responses", key = "'recent:' + #limit")
     public Result<ArticleListResponse> getRecentArticles(
             @Parameter(description = "限制数量") @RequestParam(defaultValue = "10") @Min(1) Integer limit) {
         
@@ -850,7 +844,6 @@ public class ArticleController {
         @ApiResponse(responseCode = "400", description = "请求参数错误"),
         @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
-    @Cacheable(value = "article-list-responses", key = "'popular:' + #limit")
     public Result<ArticleListResponse> getPopularArticles(
             @Parameter(description = "限制数量") @RequestParam(defaultValue = "10") @Min(1) Integer limit) {
         

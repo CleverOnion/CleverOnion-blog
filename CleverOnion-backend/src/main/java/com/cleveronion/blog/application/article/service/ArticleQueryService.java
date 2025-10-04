@@ -5,7 +5,6 @@ import com.cleveronion.blog.domain.article.repository.ArticleRepository;
 import com.cleveronion.blog.domain.article.valueobject.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-// import org.springframework.cache.annotation.Cacheable;  // 暂不在Service层缓存
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -12,7 +12,6 @@ import com.cleveronion.blog.domain.common.event.DomainEventPublisher;
 import com.cleveronion.blog.domain.user.valueobject.UserId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +45,6 @@ public class CommentCommandService {
      * @param command 创建评论命令
      * @return 创建的评论聚合
      */
-    @CacheEvict(value = {"comments", "comment-lists", "comment-stats"}, allEntries = true)
     public CommentAggregate createComment(CreateCommentCommand command) {
         logger.debug("执行创建评论命令: {}", command);
         
@@ -103,7 +101,6 @@ public class CommentCommandService {
      * 
      * @param command 删除评论命令
      */
-    @CacheEvict(value = {"comments", "comment-lists", "comment-stats"}, allEntries = true)
     public void deleteComment(DeleteCommentCommand command) {
         logger.debug("执行删除评论命令: {}", command);
         
