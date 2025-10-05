@@ -25,7 +25,7 @@ public class RestTemplateConfig {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         
         // 设置连接超时时间（毫秒）
-        factory.setConnectTimeout(10000);
+        factory.setConnectTimeout(15000);
         
         // 设置读取超时时间（毫秒）
         factory.setReadTimeout(30000);
