@@ -92,11 +92,3 @@ frontend:
   auth:
     callback-path: /auth/callback
     error-path: /auth/error
-
-# 管理员配置
-admin:
-  github-ids:
-    - 152043550 # 示例管理员GitHub ID，请替换为实际的GitHub ID
-    # - 987654321  # 可以配置多个管理员
-  allow-credentials: true
-  max-age: 3600
