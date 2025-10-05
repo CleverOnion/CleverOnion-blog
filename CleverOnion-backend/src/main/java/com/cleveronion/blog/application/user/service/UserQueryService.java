@@ -67,27 +67,24 @@ public class UserQueryService {
     }
     
     /**
-     * 根据用户ID集合批量查找用户（带缓存）
-     * 
-     * <p>缓存Key: user:list::batch:{ids}
-     * <p>缓存时间: 30分钟
+     * 根据用户ID集合批量查找用户
+     * 注意：批量查询暂时不使用缓存，避免缓存键冲突问题
      * 
      * @param userIds 用户ID集合
      * @return 用户聚合列表
      */
-    @Cacheable(
-        cacheNames = CacheNames.USER_LIST,
-        key = "'batch:' + #userIds.toString()",
-        unless = "#result == null"
-    )
     public List<UserAggregate> findByIds(Set<UserId> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             logger.debug("用户ID集合为空，返回空列表");
             return List.of();
         }
         
-        logger.debug("从数据库批量查询用户，用户ID数量: {}", userIds.size());
-        return userRepository.findByIds(userIds);
+        logger.info("从数据库批量查询用户，用户ID数量: {}, IDs: {}", userIds.size(), userIds);
+        List<UserAggregate> result = userRepository.findByIds(userIds);
+        logger.info("批量查询用户完成，查询到 {} 个用户，结果: {}", 
+            result.size(),
+            result.stream().map(u -> "ID=" + u.getId().getValue() + ",Username=" + u.getUsername()).collect(Collectors.joining("; ")));
+        return result;
     }
     
     /**

@@ -2,6 +2,8 @@ package com.cleveronion.blog.domain.article.aggregate;
 
 import com.cleveronion.blog.domain.article.valueobject.*;
 import com.cleveronion.blog.domain.common.aggregate.AggregateRoot;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -16,12 +18,25 @@ import java.util.Set;
  * @author CleverOnion
  */
 public class ArticleAggregate extends AggregateRoot {
+    @JsonProperty("id")
     private ArticleId id;
+    
+    @JsonProperty("content")
     private ArticleContent content;
+    
+    @JsonProperty("status")
     private ArticleStatus status;
+    
+    @JsonProperty("categoryId")
     private CategoryId categoryId;
+    
+    @JsonProperty("authorId")
     private AuthorId authorId;
+    
+    @JsonProperty("tagIds")
     private Set<TagId> tagIds;
+    
+    @JsonProperty("publishedAt")
     private LocalDateTime publishedAt;
     
     /**
@@ -29,6 +44,28 @@ public class ArticleAggregate extends AggregateRoot {
      */
     private ArticleAggregate() {
         this.tagIds = new HashSet<>();
+    }
+    
+    /**
+     * 用于 JSON 反序列化的构造函数
+     * 注意：此构造函数仅供 Jackson 使用，不应在业务代码中调用
+     */
+    @JsonCreator
+    private ArticleAggregate(
+            @JsonProperty("id") ArticleId id,
+            @JsonProperty("content") ArticleContent content,
+            @JsonProperty("status") ArticleStatus status,
+            @JsonProperty("categoryId") CategoryId categoryId,
+            @JsonProperty("authorId") AuthorId authorId,
+            @JsonProperty("tagIds") Set<TagId> tagIds,
+            @JsonProperty("publishedAt") LocalDateTime publishedAt) {
+        this.id = id;
+        this.content = content;
+        this.status = status;
+        this.categoryId = categoryId;
+        this.authorId = authorId;
+        this.tagIds = tagIds != null ? tagIds : new HashSet<>();
+        this.publishedAt = publishedAt;
     }
     
     /**

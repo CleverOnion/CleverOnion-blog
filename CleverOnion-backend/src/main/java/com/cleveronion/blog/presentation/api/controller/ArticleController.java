@@ -10,8 +10,6 @@ import com.cleveronion.blog.application.category.service.CategoryQueryService;
 import com.cleveronion.blog.application.tag.command.FindOrCreateTagsCommand;
 import com.cleveronion.blog.application.tag.service.TagCommandService;
 import com.cleveronion.blog.application.tag.service.TagQueryService;
-import com.cleveronion.blog.application.user.command.SyncGitHubUserCommand;
-import com.cleveronion.blog.application.user.service.UserCommandService;
 import com.cleveronion.blog.application.user.service.UserQueryService;
 import com.cleveronion.blog.domain.article.aggregate.ArticleAggregate;
 import com.cleveronion.blog.domain.article.aggregate.CategoryAggregate;
@@ -19,7 +17,6 @@ import com.cleveronion.blog.domain.article.aggregate.TagAggregate;
 import com.cleveronion.blog.domain.user.aggregate.UserAggregate;
 import com.cleveronion.blog.domain.user.valueobject.UserId;
 import com.cleveronion.blog.domain.article.valueobject.*;
-import java.util.HashSet;
 import com.cleveronion.blog.presentation.api.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,8 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-
 
 import java.util.HashSet;
 import java.util.List;
@@ -544,19 +539,37 @@ public class ArticleController {
             return List.of();
         }
         
-        logger.debug("开始批量构建文章响应，文章数量: {}", articles.size());
+        logger.info("开始批量构建文章响应，文章数量: {}", articles.size());
+        
+        // 【关键调试】打印每篇文章的 authorId
+        articles.forEach(article -> {
+            logger.info("文章ID: {}, authorId对象: {}, authorId.getValue(): {}", 
+                article.getId() != null ? article.getId().getValue() : "null",
+                article.getAuthorId(),
+                article.getAuthorId() != null ? article.getAuthorId().getValue() : "null");
+        });
         
         // 收集所有需要查询的ID
         Set<CategoryId> categoryIds = articles.stream()
             .map(ArticleAggregate::getCategoryId)
             .filter(id -> id != null)
             .collect(Collectors.toSet());
-            
+        
+        logger.info("【关键】开始收集用户ID...");    
         Set<UserId> userIds = articles.stream()
-            .map(ArticleAggregate::getAuthorId)
+            .map(article -> {
+                AuthorId authorId = article.getAuthorId();
+                logger.debug("处理文章 {}, authorId={}", article.getId(), authorId);
+                return authorId;
+            })
             .filter(authorId -> authorId != null)
-            .map(authorId -> UserId.of(authorId.getValue()))
+            .map(authorId -> {
+                Long value = authorId.getValue();
+                logger.debug("authorId.getValue()={}", value);
+                return UserId.of(value);
+            })
             .collect(Collectors.toSet());
+        logger.info("【关键】收集到的用户ID集合: {}, 数量: {}", userIds, userIds.size());
             
         Set<TagId> allTagIds = articles.stream()
             .filter(article -> article.getTagIds() != null)
@@ -568,11 +581,13 @@ public class ArticleController {
             Map.of() : 
             categoryQueryService.findByIds(categoryIds).stream()
                 .collect(Collectors.toMap(CategoryAggregate::getId, Function.identity()));
-                
+        
+        logger.debug("准备批量查询用户，用户ID集合: {}", userIds);
         Map<UserId, UserAggregate> userMap = userIds.isEmpty() ? 
             Map.of() : 
             userQueryService.findByIds(userIds).stream()
                 .collect(Collectors.toMap(UserAggregate::getId, Function.identity()));
+        logger.debug("用户批量查询结果，userMap: {}", userMap);
                 
         Map<TagId, TagAggregate> tagMap = allTagIds.isEmpty() ? 
             Map.of() : 
@@ -598,9 +613,15 @@ public class ArticleController {
                 UserResponse authorResponse = null;
                 if (article.getAuthorId() != null) {
                     UserId userId = UserId.of(article.getAuthorId().getValue());
+                    logger.debug("文章ID: {}, 作者ID: {}, 查找用户userId: {}", 
+                        article.getId().getValue(), article.getAuthorId().getValue(), userId);
                     UserAggregate user = userMap.get(userId);
+                    logger.debug("从userMap获取的用户: {}", user);
                     if (user != null) {
                         authorResponse = UserResponse.from(user);
+                        logger.debug("构建的authorResponse: {}", authorResponse);
+                    } else {
+                        logger.warn("未找到用户，文章ID: {}, 用户ID: {}", article.getId().getValue(), userId);
                     }
                 }
                 
