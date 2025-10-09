@@ -141,18 +141,18 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
   }
 
   return (
-    <div className="space-y-8">
-      <div className="text-center mb-12">
-        <h2 className="text-pink-500 font-semibold text-3xl uppercase tracking-wider mb-2">
+    <div className="space-y-6 md:space-y-8">
+      <div className="text-center mb-8 md:mb-12">
+        <h2 className="text-pink-500 font-semibold text-2xl sm:text-3xl uppercase tracking-wider mb-2">
           最新文章
         </h2>
       </div>
 
-      <div className="space-y-12">
+      <div className="space-y-8 md:space-y-12">
         {articles.map((article) => (
           <article key={article.id} className="max-w-4xl mx-auto">
-            <div className="mb-6">
-              <h3 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+            <div className="mb-4 md:mb-6">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4 leading-tight">
                 <Link
                   to={`/article/${article.id}`}
                   className="hover:text-gray-700 transition-colors"
@@ -162,23 +162,23 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
               </h3>
 
               {/* 文章元信息 */}
-              <div className="flex items-center gap-4 mb-6 text-sm text-gray-500">
+              <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-4 md:mb-6 text-xs sm:text-sm text-gray-500">
                 <span>发布于: {formatDate(article.published_at)}</span>
                 {article.views && <span>阅读量: {article.views}</span>}
               </div>
 
               {/* 文章摘要 */}
-              <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-4 md:mb-6 leading-relaxed">
                 {article.summary}
               </p>
 
               {/* 标签 */}
               {article.tags && article.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
                   {article.tags.map((tag, index) => (
                     <span
                       key={typeof tag === "object" ? tag.id : index}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                      className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-gray-100 text-gray-700 rounded-full text-xs sm:text-sm"
                     >
                       {typeof tag === "string" ? tag : tag.name}
                     </span>
@@ -188,7 +188,7 @@ const LatestArticles: React.FC<LatestArticlesProps> = ({
 
               <Link
                 to={`/article/${article.id}`}
-                className="text-gray-900 font-semibold text-lg hover:text-gray-700 transition-colors"
+                className="text-gray-900 font-semibold text-base sm:text-lg hover:text-gray-700 transition-colors"
               >
                 阅读全文
               </Link>

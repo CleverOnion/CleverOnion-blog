@@ -11,7 +11,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative h-96 bg-gradient-to-b from-sky-300 to-white overflow-hidden">
+    <section className="relative h-64 sm:h-80 md:h-96 bg-gradient-to-b from-sky-300 to-white overflow-hidden">
       {/* 分层云朵背景 - 从下往上的大云朵局部 */}
       <div className="absolute inset-0" aria-hidden="true">
         <svg
@@ -72,15 +72,15 @@ const Hero: React.FC = () => {
         </svg>
       </div>
 
-      {/* 右下角头像 */}
-      <div className="absolute bottom-8 right-80">
+      {/* 右下角头像 - 响应式定位 */}
+      <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-8 md:bottom-8 md:right-16 lg:right-32 xl:right-80">
         <img
           src={avatarImage}
           alt="CleverOnion的个人头像，点击可触发旋转动画效果"
           onClick={handleAvatarClick}
           role="button"
           aria-label="点击查看头像动画"
-          className={`w-50 h-50 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer transition-all duration-700 ease-in-out hover:scale-110 hover:shadow-xl hover:border-blue-300 ${
+          className={`w-32 h-32 sm:w-40 sm:h-40 md:w-50 md:h-50 rounded-full border-2 sm:border-3 md:border-4 border-white shadow-lg object-cover cursor-pointer transition-all duration-700 ease-in-out hover:scale-110 hover:shadow-xl hover:border-blue-300 ${
             isAvatarClicked
               ? "animate-spin scale-110 border-purple-400 shadow-2xl"
               : ""

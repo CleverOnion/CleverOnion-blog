@@ -19,7 +19,7 @@ const ArticleHero: React.FC<ArticleHeroProps> = React.memo(
   }) => {
     return (
       <section
-        className={`relative h-[36rem] ${backgroundColor} overflow-hidden`}
+        className={`relative h-80 sm:h-96 md:h-[28rem] lg:h-[32rem] xl:h-[36rem] ${backgroundColor} overflow-hidden`}
       >
         {/* 分层云朵背景 */}
         <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -29,7 +29,7 @@ const ArticleHero: React.FC<ArticleHeroProps> = React.memo(
             viewBox="0 0 1440 320"
             preserveAspectRatio="none"
             aria-hidden="true"
-            style={{ minHeight: "200px" }}
+            style={{ minHeight: "150px" }}
           >
             {/* 云朵形状使用path创建更自然的波浪 */}
             <path
@@ -45,7 +45,7 @@ const ArticleHero: React.FC<ArticleHeroProps> = React.memo(
             viewBox="0 0 1440 200"
             preserveAspectRatio="none"
             aria-hidden="true"
-            style={{ minHeight: "150px" }}
+            style={{ minHeight: "100px" }}
           >
             <path
               fill="#ffffff"
@@ -56,31 +56,35 @@ const ArticleHero: React.FC<ArticleHeroProps> = React.memo(
         </div>
 
         {/* 内容区域 */}
-        <div className="relative z-10 h-full flex items-center justify-center px-4">
+        <div className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 md:px-8">
           <div className="text-center max-w-4xl mx-auto">
             {/* 文章标题 */}
-            <h1 className="text-5xl md:text-6xl font-bold text-black mb-6 leading-tight drop-shadow-lg">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-4 sm:mb-5 md:mb-6 leading-tight drop-shadow-lg">
               {title}
             </h1>
 
             {/* 文章元信息 */}
-            <div className="flex flex-wrap items-center justify-center gap-6 mb-6 text-black/80">
-              <div className="flex items-center gap-2">
-                <FaUser className="text-lg" />
-                <span className="text-lg font-medium">{author}</span>
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-5 md:mb-6 text-black/80">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <FaUser className="text-sm sm:text-base md:text-lg" />
+                <span className="text-sm sm:text-base md:text-lg font-medium">
+                  {author}
+                </span>
               </div>
-              <div className="flex items-center gap-2">
-                <FaCalendarAlt className="text-lg" />
-                <span className="text-lg">{publishDate}</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <FaCalendarAlt className="text-sm sm:text-base md:text-lg" />
+                <span className="text-sm sm:text-base md:text-lg">
+                  {publishDate}
+                </span>
               </div>
             </div>
 
             {/* 标签 */}
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 md:gap-3">
               {tags.map((tag, index) => (
                 <span
                   key={`tag-${tag}-${index}`}
-                  className="px-4 py-2 bg-white/30 backdrop-blur-sm text-black rounded-full text-sm font-medium border border-black/20 hover:bg-white/40 transition-colors duration-200"
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 bg-white/30 backdrop-blur-sm text-black rounded-full text-xs sm:text-sm font-medium border border-black/20 hover:bg-white/40 transition-colors duration-200"
                 >
                   {tag}
                 </span>
@@ -90,7 +94,7 @@ const ArticleHero: React.FC<ArticleHeroProps> = React.memo(
         </div>
 
         {/* 底部渐变遮罩 */}
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/20 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 bg-gradient-to-t from-white/20 to-transparent"></div>
       </section>
     );
   }

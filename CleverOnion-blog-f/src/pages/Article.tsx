@@ -176,23 +176,26 @@ const Article: React.FC = () => {
       />
 
       <main id="main-content" tabIndex={-1} className="focus:outline-none">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="flex gap-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             <ArticleContent ref={articleRef} content={article.content} />
 
-            <TableOfContents
-              tableOfContents={tableOfContents}
-              onSectionClick={scrollToSection}
-            />
+            {/* 目录在移动端隐藏，大屏显示 */}
+            <div className="hidden lg:block">
+              <TableOfContents
+                tableOfContents={tableOfContents}
+                onSectionClick={scrollToSection}
+              />
+            </div>
           </div>
         </div>
 
         {/* 评论区分隔线 */}
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="border-t border-gray-200 my-12"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="border-t border-gray-200 my-8 md:my-12"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pb-8 md:pb-12">
           <CommentSection articleId={id || ""} />
         </div>
       </main>

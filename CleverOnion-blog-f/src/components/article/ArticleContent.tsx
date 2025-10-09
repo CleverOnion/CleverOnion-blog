@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -13,12 +13,12 @@ const ArticleContent = forwardRef<HTMLElement, ArticleContentProps>(
     return (
       <motion.article
         ref={ref}
-        className="flex-1 bg-white/80 backdrop-blur-sm rounded-lg p-8"
+        className="flex-1 bg-white/80 backdrop-blur-sm rounded-lg p-4 sm:p-6 md:p-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <div className="prose prose-slate prose-xl dark:prose-invert max-w-none text-left">
+        <div className="prose prose-slate prose-sm sm:prose-base md:prose-lg lg:prose-xl dark:prose-invert max-w-none text-left">
           {content ? (
             <ReactMarkdown
               components={{
