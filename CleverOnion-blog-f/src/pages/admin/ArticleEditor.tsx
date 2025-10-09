@@ -152,6 +152,12 @@ const ArticleEditor = () => {
   };
 
   const handleSaveDraft = async () => {
+    // 防止在数据还未加载完成时保存
+    if (isInitializing || loading) {
+      toast.warning("数据正在加载中，请稍后重试");
+      return;
+    }
+
     // 验证必填字段
     const isValid = validateAllFields(article);
 
@@ -172,19 +178,32 @@ const ArticleEditor = () => {
         status: "DRAFT" as const,
       };
 
-      if (isEdit && articleId) {
+      // 如果文章已经有ID，更新草稿
+      if (articleId) {
         await articleApi.updateArticle(articleId, articleData);
         toast.success("草稿保存成功！");
-        // 更新原始数据
-        setOriginalArticle({ ...article, ...articleData });
+        // 更新本地状态和原始数据
+        setArticle({ ...article, status: "DRAFT" });
+        setOriginalArticle({ ...article, status: "DRAFT" });
       } else {
         const newArticle = await articleApi.createArticle(articleData);
-        const updatedArticle = { ...article, id: newArticle.id };
+        // 使用服务器返回的完整文章数据更新状态，包括status
+        const updatedArticle = {
+          ...article,
+          ...newArticle,
+          tag_names: article.tag_names, // 保留本地的tag_names
+          status: "DRAFT" as const, // 明确设置为草稿状态
+        };
         setArticle(updatedArticle);
         setOriginalArticle(updatedArticle);
-        // 更新URL为编辑模式
-        navigate(`/admin/articles/edit/${newArticle.id}`, { replace: true });
         toast.success("草稿创建成功！");
+
+        // 禁用拦截器后再导航，避免触发"未保存的更改"提示
+        disableBlocking();
+        // 延迟导航，确保状态完全同步
+        setTimeout(() => {
+          navigate(`/admin/articles/edit/${newArticle.id}`, { replace: true });
+        }, 100);
       }
     } catch (error) {
       console.error("保存草稿失败:", error);
@@ -195,6 +214,12 @@ const ArticleEditor = () => {
   };
 
   const handlePublish = async () => {
+    // 防止在数据还未加载完成时发布
+    if (isInitializing || loading) {
+      toast.warning("数据正在加载中，请稍后重试");
+      return;
+    }
+
     // 验证所有字段（包括分类）
     const isValid = validateAllFields(article);
 
@@ -207,15 +232,17 @@ const ArticleEditor = () => {
     try {
       setSaving(true);
 
-      if (isEdit && articleId) {
-        // 如果是草稿，调用发布接口
+      // 如果文章已经有ID（已保存的草稿或已发布的文章）
+      if (articleId) {
+        // 如果是草稿，调用发布接口；否则调用更新接口
         if (article.status === "DRAFT") {
           await articleApi.publishArticle(articleId);
           toast.success("文章发布成功！");
           // 更新原始数据，防止触发未保存警告
+          setArticle({ ...article, status: "PUBLISHED" });
           setOriginalArticle({ ...article, status: "PUBLISHED" });
         } else {
-          // 如果是新文章，调用创建并发布接口
+          // 已发布的文章，更新内容
           const articleData = {
             title: article.title,
             content: article.content,
@@ -225,12 +252,13 @@ const ArticleEditor = () => {
             status: "PUBLISHED" as const,
           };
           await articleApi.updateArticle(articleId, articleData);
-          toast.success("文章发布成功！");
+          toast.success("文章更新成功！");
           // 更新原始数据，防止触发未保存警告
+          setArticle({ ...article, ...articleData });
           setOriginalArticle({ ...article, ...articleData });
         }
       } else {
-        // 新文章直接发布
+        // 全新文章，直接发布
         const articleData = {
           title: article.title,
           content: article.content,
@@ -238,10 +266,17 @@ const ArticleEditor = () => {
           category_id: article.category_id!,
           tag_names: article.tag_names,
         };
-        await articleApi.publishArticleDirectly(articleData);
+        const publishedArticle = await articleApi.publishArticleDirectly(
+          articleData
+        );
         toast.success("文章发布成功！");
-        // 更新原始数据，防止触发未保存警告
-        setOriginalArticle({ ...article, ...articleData, status: "PUBLISHED" });
+        // 更新本地状态
+        setArticle({ ...article, ...publishedArticle, status: "PUBLISHED" });
+        setOriginalArticle({
+          ...article,
+          ...publishedArticle,
+          status: "PUBLISHED",
+        });
       }
 
       // 禁用拦截器后再导航
@@ -281,6 +316,12 @@ const ArticleEditor = () => {
 
   // 更新已发布文章
   const handleUpdate = async () => {
+    // 防止在数据还未加载完成时更新
+    if (isInitializing || loading) {
+      toast.warning("数据正在加载中，请稍后重试");
+      return;
+    }
+
     // 验证所有字段
     const isValid = validateAllFields(article);
 

@@ -22,32 +22,36 @@ const ArticleHero: React.FC<ArticleHeroProps> = React.memo(
         className={`relative h-[36rem] ${backgroundColor} overflow-hidden`}
       >
         {/* 分层云朵背景 */}
-        <div className="absolute inset-0" aria-hidden="true">
+        <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+          {/* 使用多个云朵层确保在各种分辨率下都能覆盖 */}
           <svg
-            className="absolute inset-0 w-full h-full"
-            viewBox="0 0 1200 580"
-            preserveAspectRatio="xMidYMid slice"
+            className="absolute bottom-0 left-0 right-0 w-full"
+            viewBox="0 0 1440 320"
+            preserveAspectRatio="none"
             aria-hidden="true"
+            style={{ minHeight: "200px" }}
           >
-            {/* 简化云朵 - 纯白色 */}
-            <g fill="#ffffff">
-              {/* 左侧云朵 */}
-              <circle cx="200" cy="450" r="120" />
-              <circle cx="350" cy="430" r="100" />
-              <circle cx="480" cy="460" r="90" />
+            {/* 云朵形状使用path创建更自然的波浪 */}
+            <path
+              fill="#ffffff"
+              fillOpacity="1"
+              d="M0,192L48,197.3C96,203,192,213,288,197.3C384,181,480,139,576,133.3C672,128,768,160,864,181.3C960,203,1056,213,1152,197.3C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+            ></path>
+          </svg>
 
-              {/* 右侧云朵 */}
-              <circle cx="750" cy="440" r="110" />
-              <circle cx="900" cy="420" r="95" />
-              <circle cx="1050" cy="450" r="85" />
-
-              {/* 底部大云朵 */}
-              <circle cx="100" cy="520" r="150" />
-              <circle cx="300" cy="540" r="140" />
-              <circle cx="600" cy="530" r="130" />
-              <circle cx="900" cy="550" r="140" />
-              <circle cx="1100" cy="520" r="120" />
-            </g>
+          {/* 第二层云朵，增加层次感 */}
+          <svg
+            className="absolute bottom-0 left-0 right-0 w-full"
+            viewBox="0 0 1440 200"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            style={{ minHeight: "150px" }}
+          >
+            <path
+              fill="#ffffff"
+              fillOpacity="0.8"
+              d="M0,96L60,106.7C120,117,240,139,360,133.3C480,128,600,96,720,90.7C840,85,960,107,1080,117.3C1200,128,1320,128,1380,128L1440,128L1440,200L1380,200C1320,200,1200,200,1080,200C960,200,840,200,720,200C600,200,480,200,360,200C240,200,120,200,60,200L0,200Z"
+            ></path>
           </svg>
         </div>
 
