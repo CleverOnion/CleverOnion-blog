@@ -451,6 +451,39 @@ const ArticleEditor = () => {
     });
   };
 
+  const handleImportMarkdown = (content: string, filename: string) => {
+    // 从 Markdown 内容中提取标题（第一个 # 标题）
+    const titleMatch = content.match(/^#\s+(.+)$/m);
+    let extractedTitle = "";
+    let contentWithoutTitle = content;
+
+    if (titleMatch) {
+      extractedTitle = titleMatch[1].trim();
+      // 移除第一个标题行
+      contentWithoutTitle = content.replace(/^#\s+.+\n?/m, "").trim();
+    } else {
+      // 如果没有标题，使用文件名（去除扩展名）
+      extractedTitle = filename.replace(/\.(md|markdown)$/i, "");
+    }
+
+    // 更新文章内容
+    setArticle((prev) => ({
+      ...prev,
+      title: extractedTitle,
+      content: contentWithoutTitle,
+    }));
+
+    // 更新验证状态
+    updateFieldValidation("title", extractedTitle, { dirty: true });
+    updateFieldValidation("content", contentWithoutTitle, { dirty: true });
+
+    // 显示成功提示
+    toast.success(`已成功导入文件：${filename}`);
+  };
+
+  // 检查是否有内容
+  const hasContent = Boolean(article.title || article.content);
+
   // 显示骨架屏
   if (isInitializing) {
     return <EditorSkeleton />;
@@ -472,6 +505,7 @@ const ArticleEditor = () => {
           onPublish={handlePublish}
           onUnpublish={handleUnpublish}
           onUpdate={handleUpdate}
+          onImportMarkdown={handleImportMarkdown}
           titleError={validationState.title?.message}
           showTitleError={
             validationState.title?.isTouched && !validationState.title?.isValid
@@ -479,6 +513,7 @@ const ArticleEditor = () => {
           registerTitleRef={(ref) => registerField("title", ref)}
           saving={saving}
           hasUnsavedChanges={hasUnsavedChanges}
+          hasContent={hasContent}
         />
 
         <div className="flex-1 flex overflow-hidden w-full">

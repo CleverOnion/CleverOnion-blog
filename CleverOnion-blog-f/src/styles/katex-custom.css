@@ -1,0 +1,133 @@
+/**
+ * Custom KaTeX Styles
+ * 
+ * Optimizes the display of LaTeX math formulas in both editor and reader views
+ */
+
+/* Math block styling */
+.katex-display {
+  margin: 1.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5em 0;
+  text-align: center;
+}
+
+/* Scrollbar for long equations */
+.katex-display::-webkit-scrollbar {
+  height: 8px;
+}
+
+.katex-display::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.katex-display::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.katex-display::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Inline math styling */
+.katex {
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+/* Error styling */
+.katex-error {
+  color: #cc0000;
+  background-color: #fff0f0;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+/* Math in headings */
+h1 .katex,
+h2 .katex,
+h3 .katex,
+h4 .katex,
+h5 .katex,
+h6 .katex {
+  font-size: 0.9em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .katex-display {
+    font-size: 0.9em;
+    margin: 1em 0;
+  }
+
+  .katex {
+    font-size: 1em;
+  }
+}
+
+/* Dark mode support (if needed in the future) */
+@media (prefers-color-scheme: dark) {
+  .katex-display::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .katex-display::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .katex-display::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  .katex-error {
+    color: #ff6b6b;
+    background-color: rgba(255, 0, 0, 0.1);
+  }
+}
+
+/* Accessibility: ensure focus visibility */
+.katex:focus-visible {
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Print styles */
+@media print {
+  .katex-display {
+    page-break-inside: avoid;
+  }
+}
+
+/* Milkdown editor specific styles */
+.milkdown .katex-display {
+  cursor: text;
+  user-select: text;
+}
+
+.milkdown .katex {
+  cursor: text;
+  user-select: text;
+}
+
+/* Ensure proper spacing in prose */
+.prose .katex-display {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+
+/* Better alignment in lists */
+li .katex-display {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+/* Prevent layout shift */
+.katex .katex-html {
+  display: inline-block;
+  vertical-align: middle;
+}

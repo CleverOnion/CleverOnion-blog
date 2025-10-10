@@ -41,11 +41,14 @@ import {
   inlineImageConfig,
 } from "@milkdown/kit/component/image-inline";
 import { imageBlockConfig } from "./editor/milkdown/ImageBlock/imageUploadConfig";
+import { mathPlugin } from "./editor/milkdown/Math";
 
 import "@milkdown/crepe/theme/common/style.css";
 import "./editor/milkdown/BlockEdit/SlashMenu.css";
 import "./editor/milkdown/CodeMirror/CodeMirror.css";
 import "./editor/milkdown/ImageBlock/ImageBlock.css";
+import "katex/dist/katex.min.css";
+import "../styles/katex-custom.css";
 
 interface MilkdownEditorProps {
   value: string;
@@ -139,6 +142,7 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         }));
       })
       .use(imageInlineComponent)
+      .use(mathPlugin)
   );
 
   // 当value变化时，更新编辑器内容

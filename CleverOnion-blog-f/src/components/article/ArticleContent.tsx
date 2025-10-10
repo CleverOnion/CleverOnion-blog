@@ -3,6 +3,10 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
+import "../../styles/katex-custom.css";
 
 interface ArticleContentProps {
   content?: string;
@@ -21,6 +25,8 @@ const ArticleContent = forwardRef<HTMLElement, ArticleContentProps>(
         <div className="prose prose-slate prose-sm sm:prose-base md:prose-lg lg:prose-xl dark:prose-invert max-w-none text-left">
           {content ? (
             <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
               components={{
                 code({ node, inline, className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || "");

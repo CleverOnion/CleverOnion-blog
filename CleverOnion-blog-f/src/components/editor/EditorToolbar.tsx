@@ -9,6 +9,7 @@ import {
 import FormErrorMessage from "../ui/FormErrorMessage";
 import UnsavedChangesIndicator from "../ui/UnsavedChangesIndicator";
 import KeyboardShortcutsHelp from "../ui/KeyboardShortcutsHelp";
+import MarkdownImporter from "./MarkdownImporter";
 
 interface EditorToolbarProps {
   title: string;
@@ -22,11 +23,13 @@ interface EditorToolbarProps {
   onPublish: () => void;
   onUnpublish?: () => void;
   onUpdate?: () => void;
+  onImportMarkdown?: (content: string, filename: string) => void;
   titleError?: string;
   showTitleError?: boolean;
   registerTitleRef?: (ref: HTMLInputElement | null) => void;
   saving?: boolean;
   hasUnsavedChanges?: boolean;
+  hasContent?: boolean;
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({
@@ -40,11 +43,13 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onPublish,
   onUnpublish,
   onUpdate,
+  onImportMarkdown,
   titleError,
   showTitleError = false,
   registerTitleRef,
   saving = false,
   hasUnsavedChanges = false,
+  hasContent = false,
 }) => {
   const titleInputRef = useRef<HTMLInputElement>(null);
 
@@ -167,6 +172,13 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
         <div className="flex items-center space-x-3 ml-4">
           <UnsavedChangesIndicator hasUnsavedChanges={hasUnsavedChanges} />
+          {onImportMarkdown && (
+            <MarkdownImporter
+              onImport={onImportMarkdown}
+              hasContent={hasContent}
+              disabled={saving}
+            />
+          )}
           <KeyboardShortcutsHelp
             shortcuts={[
               { keys: ["Ctrl", "S"], description: "保存草稿" },
