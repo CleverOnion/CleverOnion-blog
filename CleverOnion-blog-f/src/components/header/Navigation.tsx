@@ -18,25 +18,10 @@ const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileCategoryOpen, setIsMobileCategoryOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // 模拟用户数据（用于保持UI样式）
-  const mockUser = {
-    name: "演示用户",
-    email: "demo@example.com",
-    avatarUrl: "/default-avatar.svg",
-  };
-
-  const handleGitHubLogin = () => {
-    console.log("GitHub登录功能已移除");
-  };
-
-  const handleLogout = () => {
-    console.log("登出功能已移除");
-    onMobileMenuClose();
-  };
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -83,6 +68,13 @@ const Navigation: React.FC<NavigationProps> = ({
 
     loadCategories();
   }, []);
+
+  // 当移动端菜单关闭时，重置分类展开状态
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      setIsMobileCategoryOpen(false);
+    }
+  }, [isMobileMenuOpen]);
 
   const navigationItems = [
     { path: "/", label: "主页" },
@@ -232,92 +224,107 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="absolute top-full left-0 right-0 md:hidden border-t border-gray-100/30 bg-white/95 backdrop-blur-sm z-40">
           <div className="px-6 py-4 space-y-2">
             {navigationItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`block px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
-                  (
-                    item.path === "/"
-                      ? isActive("/")
-                      : location.pathname.startsWith(item.path)
-                  )
-                    ? "text-blue-600 bg-blue-50"
-                    : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
-                }`}
-                style={{ fontFamily: "'FZDaHei', sans-serif" }}
-                onClick={onMobileMenuClose}
-              >
-                {item.label}
-              </Link>
-            ))}
+              <div key={item.path}>
+                {item.hasDropdown ? (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setIsMobileCategoryOpen(!isMobileCategoryOpen)
+                      }
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
+                        location.pathname.startsWith(item.path)
+                          ? "text-blue-600 bg-blue-50"
+                          : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                      }`}
+                      style={{ fontFamily: "'FZDaHei', sans-serif" }}
+                      aria-expanded={isMobileCategoryOpen}
+                    >
+                      <span>{item.label}</span>
+                      <svg
+                        className={`w-5 h-5 transition-transform duration-200 ${
+                          isMobileCategoryOpen ? "rotate-180" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
 
-            {/* Mobile Auth Section - 保持UI样式但移除认证逻辑 */}
-            <div className="border-t border-gray-200 pt-4 mt-4">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-3 px-4 py-3">
-                  <img
-                    src={mockUser.avatarUrl}
-                    alt={mockUser.name}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {mockUser.name}
-                    </p>
-                    <p className="text-sm text-gray-500 truncate">
-                      {mockUser.email}
-                    </p>
+                    {/* Mobile Category List */}
+                    <AnimatePresence>
+                      {isMobileCategoryOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 pr-2 pt-2 space-y-1">
+                            {categoriesLoading
+                              ? Array.from({ length: 6 }).map((_, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center space-x-3 px-4 py-2"
+                                  >
+                                    <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+                                    <div className="h-4 bg-gray-200 rounded flex-1 animate-pulse"></div>
+                                  </div>
+                                ))
+                              : categories.map((category) => {
+                                  const IconComponent = getIconComponent(
+                                    category.icon
+                                  );
+                                  return (
+                                    <Link
+                                      key={category.id}
+                                      to={`/category/${category.id}`}
+                                      className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                                      onClick={() => {
+                                        setIsMobileCategoryOpen(false);
+                                        onMobileMenuClose();
+                                      }}
+                                    >
+                                      <IconComponent className="text-lg text-gray-600 flex-shrink-0" />
+                                      <span className="text-gray-800 font-medium text-sm">
+                                        {category.name}
+                                      </span>
+                                    </Link>
+                                  );
+                                })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                </div>
-
-                <Link
-                  to="/admin"
-                  className="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
-                  onClick={onMobileMenuClose}
-                >
-                  <svg
-                    className="w-5 h-5 mr-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                ) : (
+                  <Link
+                    to={item.path}
+                    className={`block px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
+                      (
+                        item.path === "/"
+                          ? isActive("/")
+                          : location.pathname.startsWith(item.path)
+                      )
+                        ? "text-blue-600 bg-blue-50"
+                        : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                    }`}
+                    style={{ fontFamily: "'FZDaHei', sans-serif" }}
+                    onClick={onMobileMenuClose}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  管理后台
-                </Link>
-
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5 mr-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  退出登录
-                </button>
+                    {item.label}
+                  </Link>
+                )}
               </div>
-            </div>
+            ))}
           </div>
         </div>
       )}

@@ -11,14 +11,16 @@ const Logo: React.FC = () => {
   const [isFinalForm, setIsFinalForm] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+    // 只在需要触发动画时阻止默认导航
     if (isActivated && !isClicked) {
+      e.preventDefault();
       setIsClicked(true);
       // 延迟触发最终形态
       setTimeout(() => {
         setIsFinalForm(true);
       }, 1500);
     }
+    // 否则让Link正常导航到首页
   };
 
   return (

@@ -14,6 +14,7 @@ import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import Modal from "../../components/ui/Modal";
 import SkipToContent from "../../components/ui/SkipToContent";
 import EditorSkeleton from "../../components/editor/EditorSkeleton";
+import { AuthUtils, AuthAPI } from "../../api/auth";
 
 interface Article {
   id?: string;
@@ -47,6 +48,7 @@ const ArticleEditor = () => {
   const [saving, setSaving] = useState(false);
   const [originalArticle, setOriginalArticle] = useState<Article | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   // 表单验证
   const {
@@ -81,6 +83,40 @@ const ArticleEditor = () => {
     hasUnsavedChanges,
     "您有未保存的更改。如果离开此页面，您的更改将会丢失。"
   );
+
+  // 认证检查
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // 检查是否已登录
+        const token = AuthUtils.getAccessToken();
+        const isTokenValid = AuthUtils.isTokenValid();
+
+        if (!token || !isTokenValid) {
+          toast.error("请先登录");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        // 检查是否是管理员
+        const adminStatus = await AuthAPI.checkAdminStatus();
+
+        if (!adminStatus.isAdmin) {
+          toast.error("您没有管理员权限，无法访问编辑器");
+          navigate("/", { replace: true });
+          return;
+        }
+
+        setIsAuthorized(true);
+      } catch (error) {
+        console.error("管理员权限验证失败:", error);
+        toast.error("验证失败，请重新登录");
+        navigate("/", { replace: true });
+      }
+    };
+
+    checkAuth();
+  }, [navigate, toast]);
 
   // 键盘快捷键
   useKeyboardShortcuts([
@@ -483,6 +519,18 @@ const ArticleEditor = () => {
 
   // 检查是否有内容
   const hasContent = Boolean(article.title || article.content);
+
+  // 未授权则不渲染
+  if (!isAuthorized) {
+    return (
+      <div className="fixed inset-0 bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">正在验证权限...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 显示骨架屏
   if (isInitializing) {
